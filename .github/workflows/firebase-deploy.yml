@@ -28,6 +28,3 @@ jobs:
 
       - name: Check & Ensure Firestore Collection Exists
         run: bash scripts/check-firestore.sh hybrid-day-checkin events
-
-      - name: Deploy to Firebase
-        run: firebase deploy --only firestore
