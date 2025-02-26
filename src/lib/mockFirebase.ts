@@ -1,15 +1,13 @@
 export const mockHyroxCategories = [
-  { id: "1", name: "Pro Men" },
-  { id: "2", name: "Pro Women" },
-  { id: "3", name: "Men's Doubles" },
-  { id: "4", name: "Women's Doubles" },
-  { id: "5", name: "Mixed Doubles" },
-  { id: "6", name: "Open Men" },
-  { id: "7", name: "Open Women" },
-  { id: "8", name: "Relay Teams" },
+  { id: '1', name: 'Pro Men' },
+  { id: '2', name: 'Pro Women' },
+  { id: '3', name: "Men's Doubles" },
+  { id: '4', name: "Women's Doubles" },
+  { id: '5', name: 'Mixed Doubles' },
+  { id: '6', name: 'Open Men' },
+  { id: '7', name: 'Open Women' },
+  { id: '8', name: 'Relay Teams' },
 ];
-
-
 
 // Mock Firebase data store
 const participants = new Map<
@@ -62,22 +60,26 @@ const checkIns = new Map<
 >();
 
 export const mockFirebase = {
-async listCategories(){
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return mockHyroxCategories;
-},
+  async listCategories() {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return mockHyroxCategories;
+  },
 
   async getParticipant(id: string) {
-    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 500));
     return participants.get(id);
   },
 
-  async getByEmail(email: string) {
+  async getByEmail(email: string, category?: string) {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log(email);
-    Array.from(participants.values()).forEach((it) => console.log(it));
-    return Array.from(participants.values()).find((v) => v.email === email);
+    const participant = Array.from(participants.values()).find((v) => {
+      const emailMatch = v.email === email;
+      if (category) {
+        return emailMatch && v.category === category;
+      }
+      return emailMatch;
+    });
+    return participant;
   },
 
   async checkIn(participantId: string) {
