@@ -1,7 +1,7 @@
 <template>
   <div class="scanner">
-    <label for="cameraSelect">Select Camera:</label>
-    <select v-model="selectedDeviceId" @change="saveCameraPreference" id="cameraSelect">
+    <label for="cameraSelect">Select Camera (Desktop Only):</label>
+    <select v-if="!isMobile" v-model="selectedDeviceId" @change="saveCameraPreference" id="cameraSelect">
       <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
         {{ device.label || `Camera ${deviceIndex++}` }}
       </option>
@@ -29,6 +29,9 @@ let currentStream: MediaStream | null = null;
 
 const emit = defineEmits(["code-scanned"]);
 
+// Detect if the user is on a mobile device
+const isMobile = ref<boolean>(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
+
 // Camera selection
 const videoDevices = ref<MediaDeviceInfo[]>([]);
 const selectedDeviceId = ref<string | null>(null);
@@ -40,12 +43,14 @@ const getVideoDevices = async () => {
     const devices = await navigator.mediaDevices.enumerateDevices();
     videoDevices.value = devices.filter(device => device.kind === "videoinput");
 
-    // Load last preferred camera from localStorage
-    const savedDeviceId = localStorage.getItem("preferredCamera");
-    if (savedDeviceId && videoDevices.value.some(device => device.deviceId === savedDeviceId)) {
-      selectedDeviceId.value = savedDeviceId;
-    } else if (videoDevices.value.length > 0) {
-      selectedDeviceId.value = videoDevices.value[0].deviceId; // Default to first camera
+    // If not mobile, allow the user to select a camera
+    if (!isMobile.value) {
+      const savedDeviceId = localStorage.getItem("preferredCamera");
+      if (savedDeviceId && videoDevices.value.some(device => device.deviceId === savedDeviceId)) {
+        selectedDeviceId.value = savedDeviceId;
+      } else if (videoDevices.value.length > 0) {
+        selectedDeviceId.value = videoDevices.value[0].deviceId; // Default to first camera
+      }
     }
   } catch (err) {
     console.error("Error getting cameras:", err);
@@ -61,19 +66,30 @@ const saveCameraPreference = () => {
   restartScanner();
 };
 
+// Function to get constraints for camera selection
+const getCameraConstraints = () => {
+  if (isMobile.value) {
+    return { video: { facingMode: "environment" } }; // Always use back camera on mobile
+  } else {
+    return {
+      video: {
+        deviceId: selectedDeviceId.value ? { exact: selectedDeviceId.value } : undefined
+      }
+    };
+  }
+};
+
 const startScanner = async () => {
   isScanning.value = true;
   error.value = null;
 
   try {
-    // If no camera is selected, pick the first available one
-    if (!selectedDeviceId.value && videoDevices.value.length > 0) {
-      selectedDeviceId.value = videoDevices.value[0].deviceId;
-    }
+    // Get the correct camera constraints
+    const constraints = getCameraConstraints();
 
     // Start QR code scanning with selected device
     scannerControls = await codeReader.decodeFromVideoDevice(
-        selectedDeviceId.value || undefined, // Allow auto-selection if null
+        selectedDeviceId.value || undefined,
         videoElement.value!,
         (result, err) => {
           if (result) {
@@ -87,9 +103,7 @@ const startScanner = async () => {
     );
 
     // Store the active stream
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: selectedDeviceId.value ? { exact: selectedDeviceId.value } : undefined }
-    });
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
 
     // Assign stream to video element
     if (videoElement.value) {
@@ -123,7 +137,7 @@ const stopScanner = () => {
   }
 };
 
-// Restart scanner when switching cameras
+// Restart scanner when switching cameras (Desktop only)
 const restartScanner = () => {
   if (isScanning.value) {
     stopScanner();
