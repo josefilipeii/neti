@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import QRScanner from './QRScanner.vue';
 import { mockFirebase } from '../lib/mockFirebase';
 import debounce from 'lodash.debounce';
@@ -23,9 +23,9 @@ const participant = ref<{
 });
 
 const loading = ref(false);
-const error = ref('');
-const email = ref('');
-const isValidEmail = ref(false);
+const error = ref<string>('');
+const email = ref<string>('');
+const isValidEmail = ref(<boolean>false);
 
 // Store available HYROX categories
 const categories = ref<{ id: string; name: string }[]>([]);
@@ -43,7 +43,7 @@ const listCategories = async () => {
   }
 };
 
-const validateEmail = (email) => {
+const validateEmail = (email: string) => {
   return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email);
 };
 
@@ -154,16 +154,6 @@ const handleSubmit = async () => {
   }
 };
 
-const showPartnerField = computed(() => {
-  return (
-    participant.value.category === 'mixed-pairs' ||
-    participant.value.category === 'female-pairs'
-  );
-});
-
-const showTeamField = computed(() => {
-  return participant.value.category === 'team';
-});
 
 const categoryLabels: Record<string, string> = {
   'individual-male': 'Individual Male',

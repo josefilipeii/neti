@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/lib/mockFirebase.ts","./src/lib/supabase.ts","./src/App.vue","./src/components/CheckInForm.vue","./src/components/ParticipantsList.vue","./src/components/QRScanner.vue","./src/components/Statistics.vue"],"errors":true,"version":"5.7.3"}

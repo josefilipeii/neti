@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import {  onMounted, onUnmounted } from 'vue'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 
 const emit = defineEmits(['code-scanned'])
