@@ -28,12 +28,12 @@ const startScanner = async () => {
   try {
     // Start QR code scanning and store the controls to stop it later
     scannerControls = await codeReader.decodeFromVideoDevice(
-        null,
+        undefined,
         videoElement.value!,
         (result, err) => {
           error.value = '';
           if (result) {
-            emit("code-scanned", result.text);
+            emit("code-scanned", result.getText());
             stopScanner(); // Stop after a successful scan
           }
           if (err) {
