@@ -26,6 +26,7 @@ const loading = ref(false);
 const error = ref('');
 const email = ref('');
 const isValidEmail = ref(false);
+const readData = ref('N/A');
 
 // Store available HYROX categories
 const categories = ref<{ id: string; name: string }[]>([]);
@@ -167,6 +168,7 @@ const categoryLabels: Record<string, string> = {
 <template>
   <div>
     <QRScanner @code-scanned="handleQRScanned" />
+    <h3 class="font-medium text-gray-900">Dorsal Lido: {{ readData }}</h3>
 
     <div class="bg-white rounded-lg shadow-md p-6 mt-6">
       <h3 class="font-medium text-gray-900">Or By Email</h3>
