@@ -1,7 +1,15 @@
 <template>
   <div class="scanner">
-    <video ref="videoElement" class="video-preview"></video>
+    <label for="cameraSelect">Select Camera:</label>
+    <select v-model="selectedDeviceId" @change="saveCameraPreference" id="cameraSelect">
+      <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
+        {{ device.label || `Camera ${deviceIndex++}` }}
+      </option>
+    </select>
+
+    <video ref="videoElement" class="video-preview" autoplay playsinline></video>
     <p v-if="error" class="error">{{ error }}</p>
+
     <button @click="toggleScanner" class="scanner-btn">
       {{ isScanning ? "Stop Scanner" : "Start Scanner" }}
     </button>
@@ -9,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted, defineEmits } from "vue";
+import { ref, onMounted, onUnmounted, defineEmits } from "vue";
 import { BrowserMultiFormatReader, IScannerControls } from "@zxing/browser";
 
 const videoElement = ref<HTMLVideoElement | null>(null);
@@ -21,20 +29,56 @@ let currentStream: MediaStream | null = null;
 
 const emit = defineEmits(["code-scanned"]);
 
+// Camera selection
+const videoDevices = ref<MediaDeviceInfo[]>([]);
+const selectedDeviceId = ref<string | null>(null);
+let deviceIndex = 1;
+
+// Fetch available cameras
+const getVideoDevices = async () => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    videoDevices.value = devices.filter(device => device.kind === "videoinput");
+
+    // Load last preferred camera from localStorage
+    const savedDeviceId = localStorage.getItem("preferredCamera");
+    if (savedDeviceId && videoDevices.value.some(device => device.deviceId === savedDeviceId)) {
+      selectedDeviceId.value = savedDeviceId;
+    } else if (videoDevices.value.length > 0) {
+      selectedDeviceId.value = videoDevices.value[0].deviceId; // Default to first camera
+    }
+  } catch (err) {
+    console.error("Error getting cameras:", err);
+    error.value = "Unable to access cameras";
+  }
+};
+
+// Save camera preference to localStorage
+const saveCameraPreference = () => {
+  if (selectedDeviceId.value) {
+    localStorage.setItem("preferredCamera", selectedDeviceId.value);
+  }
+  restartScanner();
+};
+
 const startScanner = async () => {
   isScanning.value = true;
   error.value = null;
 
   try {
-    // Start QR code scanning and store the controls to stop it later
+    // If no camera is selected, pick the first available one
+    if (!selectedDeviceId.value && videoDevices.value.length > 0) {
+      selectedDeviceId.value = videoDevices.value[0].deviceId;
+    }
+
+    // Start QR code scanning with selected device
     scannerControls = await codeReader.decodeFromVideoDevice(
-        undefined,
+        selectedDeviceId.value || undefined, // Allow auto-selection if null
         videoElement.value!,
         (result, err) => {
-          error.value = '';
           if (result) {
             emit("code-scanned", result.getText());
-            stopScanner(); // Stop after a successful scan
+            stopScanner(); // Stop after successful scan
           }
           if (err) {
             error.value = "Error reading QR code";
@@ -42,8 +86,11 @@ const startScanner = async () => {
         }
     );
 
-    // Capture the video stream
-    currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    // Store the active stream
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: selectedDeviceId.value ? { exact: selectedDeviceId.value } : undefined }
+    });
+
     // Assign stream to video element
     if (videoElement.value) {
       videoElement.value.srcObject = currentStream;
@@ -58,34 +105,46 @@ const startScanner = async () => {
 const stopScanner = () => {
   isScanning.value = false;
 
-  // Stop the QR scanner process
+  // Stop QR scanner
   if (scannerControls) {
     scannerControls.stop();
     scannerControls = null;
   }
 
-  // Stop all video tracks to release the camera
+  // Stop video stream
   if (currentStream) {
     currentStream.getTracks().forEach(track => track.stop());
     currentStream = null;
   }
 
-  // Clear the video stream
+  // Clear video element
   if (videoElement.value) {
     videoElement.value.srcObject = null;
   }
 };
 
+// Restart scanner when switching cameras
+const restartScanner = () => {
+  if (isScanning.value) {
+    stopScanner();
+    startScanner();
+  }
+};
+
 const toggleScanner = () => {
   if (isScanning.value) {
-    error.value = '';
     stopScanner();
   } else {
     startScanner();
   }
 };
 
-// Ensure cleanup when the component is destroyed
+// Fetch devices on mount
+onMounted(() => {
+  getVideoDevices();
+});
+
+// Cleanup on unmount
 onUnmounted(() => {
   stopScanner();
 });
@@ -118,5 +177,10 @@ onUnmounted(() => {
 }
 .scanner-btn:hover {
   background-color: #0056b3;
+}
+select {
+  margin: 10px 0;
+  padding: 5px;
+  font-size: 14px;
 }
 </style>
