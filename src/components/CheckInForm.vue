@@ -54,6 +54,7 @@ onMounted(() => {
 });
 
 const handleQRScanned = async (code: string) => {
+  readData.value = code;
   loading.value = true;
   error.value = '';
 
