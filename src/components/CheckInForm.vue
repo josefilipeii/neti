@@ -95,12 +95,7 @@ const handleSearchByEmail = async () => {
 
     if (!data) {
       error.value = 'Participant not found';
-      return;
-    }
-
-    // If a category is selected, ensure participant matches
-    if (selectedCategory.value && data.category !== selectedCategory.value) {
-      error.value = 'Participant does not match the selected category';
+      console.log(error.value)
       return;
     }
 
@@ -125,12 +120,16 @@ const handleSearchByEmail = async () => {
 const debouncedSearch = debounce(handleSearchByEmail, 500);
 
 // Watch for email changes and trigger search when valid
-watch(email, (newEmail) => {
+watch([email, selectedCategory], ([newEmail, theCategory]) => {
   isValidEmail.value = validateEmail(newEmail);
-  if (isValidEmail.value && selectedCategory) {
+  console.log(isValidEmail.value , theCategory,newEmail, theCategory)
+  if (isValidEmail.value && theCategory) {
+    console.log(newEmail, theCategory)
     debouncedSearch();
   }
 });
+
+
 
 const handleSubmit = async () => {
   loading.value = true;
@@ -184,16 +183,11 @@ const categoryLabels: Record<string, string> = {
           'border-red-500 focus:ring-red-500': email && !isValidEmail,
         }"
       />
-    </div>
-
-    <!-- CATEGORY DROPDOWN SELECTION -->
-    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-      <h3 class="font-medium text-gray-900">Filter by Category</h3>
       <select
         v-model="selectedCategory"
         class="w-full p-2 border rounded-md focus:ring-2"
       >
-        <option value="">-- Select Category --</option>
+        <option :value="false">-- Select Category --</option>
         <option
           v-for="category in categories"
           :key="category.id"

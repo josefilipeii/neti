@@ -36,7 +36,7 @@ participants.set('QR002', {
   id: 'QR002',
   name: 'Jane Smith',
   email: 'jane@example.com',
-  category: 'individual-female',
+  category: 'Open Women',
   createdAt: new Date(),
 });
 
