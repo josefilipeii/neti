@@ -1,83 +1,122 @@
-<script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
-import {Html5QrcodeScanner, Html5QrcodeScanType} from 'html5-qrcode'
-
-const emit = defineEmits(['code-scanned'])
-const isScanning = ref(false)
-const lastScannedCode = ref('')
-let html5QrcodeScanner: any = null
-
-const startScanning = async () => {
-  isScanning.value = true
-  if (!html5QrcodeScanner) {
-    try {
-      html5QrcodeScanner = new Html5QrcodeScanner(
-          "qr-reader",
-          { fps: 10, qrbox: { width: 250, height: 250 },
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]},
-          false
-      )
-      html5QrcodeScanner.render(
-          (decodedText: string) => {
-            lastScannedCode.value = decodedText
-            emit('code-scanned', decodedText)
-            stopScanning() // Stop scanning after successful detection
-          },
-          (error: any) => {
-            console.warn(error)
-          }
-      )
-    } catch (error) {
-      console.error("Error accessing camera:", error)
-      isScanning.value = false
-    }
-  } else {
-    html5QrcodeScanner.resume()
-  }
-}
-
-const stopScanning = () => {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear()
-    html5QrcodeScanner = null
-  }
-  isScanning.value = false
-}
-
-
-
-
-onUnmounted(() => {
-  stopScanning()
-})
-</script>
-
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-semibold mb-6">Scan QR Code</h2>
-
-    <div class="flex gap-4 mb-4">
-      <button
-          @click="startScanning"
-          :disabled="isScanning"
-          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Start Scanning
-      </button>
-      <button
-          @click="stopScanning"
-          :disabled="!isScanning"
-          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Stop Scanning
-      </button>
-    </div>
-
-    <div id="qr-reader" class="w-full max-w-md mx-auto"></div>
-
-    <div v-if="lastScannedCode" class="mt-4 p-4 bg-gray-50 rounded-md">
-      <h3 class="font-medium text-gray-900">Last Scanned Code:</h3>
-      <p class="mt-2 text-gray-600 break-all">{{ lastScannedCode }}</p>
-    </div>
+  <div class="scanner">
+    <video ref="videoElement" class="video-preview"></video>
+    <p v-if="error" class="error">{{ error }}</p>
+    <button @click="toggleScanner" class="scanner-btn">
+      {{ isScanning ? "Stop Scanner" : "Start Scanner" }}
+    </button>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, onUnmounted, defineEmits } from "vue";
+import { BrowserMultiFormatReader, IScannerControls } from "@zxing/browser";
+
+const videoElement = ref<HTMLVideoElement | null>(null);
+const isScanning = ref(false);
+const error = ref<string | null>(null);
+const codeReader = new BrowserMultiFormatReader();
+let scannerControls: IScannerControls | null = null;
+let currentStream: MediaStream | null = null;
+
+const emit = defineEmits(["code-scanned"]);
+
+const startScanner = async () => {
+  isScanning.value = true;
+  error.value = null;
+
+  try {
+    // Start QR code scanning and store the controls to stop it later
+    scannerControls = await codeReader.decodeFromVideoDevice(
+        null,
+        videoElement.value!,
+        (result, err) => {
+          error.value = '';
+          if (result) {
+            emit("code-scanned", result.text);
+            stopScanner(); // Stop after a successful scan
+          }
+          if (err) {
+            error.value = "Error reading QR code";
+          }
+        }
+    );
+
+    // Capture the video stream
+    currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    // Assign stream to video element
+    if (videoElement.value) {
+      videoElement.value.srcObject = currentStream;
+    }
+  } catch (err) {
+    console.error("Scanner Error:", err);
+    error.value = "Could not access the camera";
+    isScanning.value = false;
+  }
+};
+
+const stopScanner = () => {
+  isScanning.value = false;
+
+  // Stop the QR scanner process
+  if (scannerControls) {
+    scannerControls.stop();
+    scannerControls = null;
+  }
+
+  // Stop all video tracks to release the camera
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+
+  // Clear the video stream
+  if (videoElement.value) {
+    videoElement.value.srcObject = null;
+  }
+};
+
+const toggleScanner = () => {
+  if (isScanning.value) {
+    error.value = '';
+    stopScanner();
+  } else {
+    startScanner();
+  }
+};
+
+// Ensure cleanup when the component is destroyed
+onUnmounted(() => {
+  stopScanner();
+});
+</script>
+
+<style scoped>
+.scanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.video-preview {
+  width: 100%;
+  max-width: 400px;
+  border: 2px solid black;
+}
+.error {
+  color: red;
+  margin-top: 10px;
+}
+.scanner-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.scanner-btn:hover {
+  background-color: #0056b3;
+}
+</style>
