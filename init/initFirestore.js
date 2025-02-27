@@ -2,12 +2,14 @@ const admin = require("firebase-admin");
 const fs = require("fs");
 async function initializeFirestore(filename) {
     try {
-        // ✅ Step 1: Decode and Load Service Account JSON Securely
-        if (!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-            throw new Error("❌ Missing FIREBASE_SERVICE_ACCOUNT_BASE64 environment variable.");
-        }
+
 
         const serviceAccountJson = fs.readFileSync('serviceAccountKey.json', 'utf8');
+
+        // ✅ Step 1: Decode and Load Service Account JSON Securely
+        if (!serviceAccountJson) {
+            throw new Error("❌ Missing serviceAccountKey.json file");
+        }
 
         // ✅ Step 2: Initialize Firebase Admin SDK
         admin.initializeApp({

@@ -22,9 +22,10 @@ jobs:
           npm install --prefix frontend
           npm run build --prefix frontend
 
+      - name: Decode and Create Service Account Key File
+        run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > serviceAccountKey.json
+
       - name: Run Firestore Initialization
-        env:
-          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
         run: |
           npm install --prefix init
           npm run init:firestore --prefix init
