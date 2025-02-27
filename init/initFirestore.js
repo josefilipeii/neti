@@ -27,7 +27,7 @@ async function initializeFirestore(filename) {
 
         // ✅ Step 4: Process Each Competition
         for (const competition of data.competitions) {
-            if (!competition.id || !competition.name || !competition.start_date || !competition.end_date) {
+            if (!competition.id || !competition.name || !competition.days) {
                 console.warn(`⚠️ Skipping invalid competition:`, competition);
                 continue;
             }
