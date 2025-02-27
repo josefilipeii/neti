@@ -48,23 +48,30 @@ async function initializeFirestore(filename) {
                 await competitionRef.update({ days: competition.days });
             }
 
-            // ✅ Step 5: Add Categories (Avoid Duplicates)
+            // ✅ Step 5: Add Categories (Avoid Duplicates Using `code`)
             const categoriesRef = competitionRef.collection("categories");
-            const existingCategoriesSnapshot = await categoriesRef.get();
-            const existingCategories = existingCategoriesSnapshot.docs.map(doc => doc.id);
-
             for (const category of competition.categories) {
                 if (!category.code || !category.name || !category.type) {
                     console.warn(`⚠️ Skipping invalid category in '${competition.name}':`, category);
                     continue;
                 }
 
-                if (!existingCategories.includes(category.id)) {
-                    await categoriesRef.doc(category.id).set(category);
-                    console.log(`✅ Added category '${category.name}'`);
-                } else {
-                    console.log(`⚠️ Category '${category.name}' already exists. Skipping.`);
+                // Check if a category with the same `code` already exists
+                const existingCategorySnapshot = await categoriesRef.where("code", "==", category.code).get();
+
+                if (!existingCategorySnapshot.empty) {
+                    console.log(`⚠️ Category '${category.name}' with code '${category.code}' already exists. Skipping.`);
+                    continue;
                 }
+
+                // Auto-generate Firestore ID and add the new category
+                await categoriesRef.add({
+                    code: category.code,  // Use `code` as the unique identifier
+                    name: category.name,
+                    type: category.type
+                });
+
+                console.log(`✅ Added category '${category.name}' with code '${category.code}'.`);
             }
         }
 
