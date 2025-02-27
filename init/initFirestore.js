@@ -1,6 +1,5 @@
-import admin from "firebase-admin";
-import { readFileSync } from "fs";
-
+const admin = require("firebase-admin");
+const fs = require("fs");
 async function initializeFirestore(filename) {
     try {
         // ✅ Step 1: Decode and Load Service Account JSON Securely
@@ -8,7 +7,7 @@ async function initializeFirestore(filename) {
             throw new Error("❌ Missing FIREBASE_SERVICE_ACCOUNT_BASE64 environment variable.");
         }
 
-        const serviceAccountJson = readFileSync('serviceAccountKey.json', 'utf8');
+        const serviceAccountJson = fs.readFileSync('serviceAccountKey.json', 'utf8');
 
         // ✅ Step 2: Initialize Firebase Admin SDK
         admin.initializeApp({
@@ -19,7 +18,7 @@ async function initializeFirestore(filename) {
         console.log("✅ Firestore initialized.");
 
         // ✅ Step 3: Load & Validate `data.json`
-        const data = JSON.parse(readFileSync(filename, "utf8"));
+        const data = JSON.parse(fs.readFileSync(filename, "utf8"));
         if (!data.competitions || !Array.isArray(data.competitions) || data.competitions.length === 0) {
             throw new Error("❌ Invalid data.json: Missing or empty competitions array.");
         }
