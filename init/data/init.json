@@ -6,18 +6,18 @@
       "location": "Viana do Castelo",
       "days": ["2025-05-23", "2025-05-24", "2025-05-25"],
       "categories": [
-        { "code": "open_men", "name": "Open Men", "type": "individual" },
-        { "code": "open_women", "name": "Open Women", "type": "individual" },
-        { "code": "pro_men", "name": "Pro Men", "type": "individual" },
-        { "code": "pro_women", "name": "Pro Women", "type": "individual" },
-        { "code": "doubles_men", "name": "Doubles Men", "type": "pair" },
-        { "code": "doubles_women", "name": "Doubles Women", "type": "pair" },
-        { "code": "doubles_mixed", "name": "Doubles Mixed", "type": "pair" },
-        { "code": "pro_doubles_men", "name": "Pro Doubles Men", "type": "pair" },
-        { "code": "pro_doubles_women", "name": "Pro Doubles Women", "type": "pair" },
-        { "code": "pro_doubles_mixed", "name": "Pro Doubles Mixed", "type": "pair" },
-        { "code": "team_relay", "name": "Team Relay", "type": "team_4" },
-        { "code": "pro_team_relay", "name": "Pro Team Relay", "type": "team_4" }
+        { "id": "open_men", "name": "Open Men", "type": "individual" },
+        { "id": "open_women", "name": "Open Women", "type": "individual" },
+        { "id": "pro_men", "name": "Pro Men", "type": "individual" },
+        { "id": "pro_women", "name": "Pro Women", "type": "individual" },
+        { "id": "doubles_men", "name": "Doubles Men", "type": "pair" },
+        { "id": "doubles_women", "name": "Doubles Women", "type": "pair" },
+        { "id": "doubles_mixed", "name": "Doubles Mixed", "type": "pair" },
+        { "id": "pro_doubles_men", "name": "Pro Doubles Men", "type": "pair" },
+        { "id": "pro_doubles_women", "name": "Pro Doubles Women", "type": "pair" },
+        { "id": "pro_doubles_mixed", "name": "Pro Doubles Mixed", "type": "pair" },
+        { "id": "team_relay", "name": "Team Relay", "type": "team_4" },
+        { "id": "pro_team_relay", "name": "Pro Team Relay", "type": "team_4" }
       ]
     }
   ]
