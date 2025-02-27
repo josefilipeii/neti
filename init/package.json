@@ -1,0 +1,14 @@
+{
+  "name": "init",
+  "version": "1.0.0",
+  "description": "Package with all dependencies to init application in firebase",
+  "main": "index.js",
+  "scripts": {
+    "init:firestore": "node initFirestore.js data/init.json"
+  },
+  "author": "josefilipechavarria",
+  "license": "ISC",
+  "dependencies": {
+    "firebase-admin": "^13.1.0"
+  }
+}

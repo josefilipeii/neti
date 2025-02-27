@@ -26,7 +26,7 @@ jobs:
       - name: Run Firestore Initialization
         env:
           FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
-        run: node init/initFirestore.js init/data/init.json
+        run: npm run init:firestore --prefix init
 
       - name: Deploy to Firebase
         run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --project hybrid-day-checkin
