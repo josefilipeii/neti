@@ -40,8 +40,6 @@ async function initializeFirestore(filename) {
                 await competitionRef.set({
                     name: competition.name,
                     location: competition.location,
-                    start_date: competition.start_date,
-                    end_date: competition.end_date,
                     days: competition.days  // ✅ Days are now part of the main document
                 });
                 console.log(`✅ Competition '${competition.name}' added.`);
