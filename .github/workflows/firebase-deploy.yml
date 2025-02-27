@@ -14,19 +14,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: npm install --prefix frontend
-
-      - name: Build Vue.js App
-        run: npm run build --prefix frontend
-
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
+
+      - name: Build Vue.js App
+        run: |
+          npm run build --prefix frontend
+          npm install --prefix frontend
 
       - name: Run Firestore Initialization
         env:
           FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
-        run: npm run init:firestore --prefix init
+        run: |
+          npm intall --prefix init
+          npm run init:firestore --prefix init
 
       - name: Deploy to Firebase
         run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --project hybrid-day-checkin
