@@ -73,7 +73,7 @@ async function initializeFirestore(filename) {
         console.log("🚀 All competitions have been processed!");
 
     } catch (error) {
-        console.error("❌ Error:", error.message);
+        console.error("❌ Error:", error);
         process.exit(1);
     }
 }
