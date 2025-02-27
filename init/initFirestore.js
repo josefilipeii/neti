@@ -4,7 +4,7 @@ async function initializeFirestore(filename) {
     try {
 
 
-        const serviceAccountJson = fs.readFileSync('serviceAccountKey.json', 'utf8');
+        const serviceAccountJson = fs.readFileSync('../serviceAccountKey.json', 'utf8');
 
         // ✅ Step 1: Decode and Load Service Account JSON Securely
         if (!serviceAccountJson) {
