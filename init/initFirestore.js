@@ -54,7 +54,7 @@ async function initializeFirestore(filename) {
             const existingCategories = existingCategoriesSnapshot.docs.map(doc => doc.id);
 
             for (const category of competition.categories) {
-                if (!category.id || !category.name || !category.type) {
+                if (!category.code || !category.name || !category.type) {
                     console.warn(`⚠️ Skipping invalid category in '${competition.name}':`, category);
                     continue;
                 }
