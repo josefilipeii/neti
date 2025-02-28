@@ -33,7 +33,7 @@ jobs:
           npm run build
 
       - name: Deploy Firebase Functions
-        run: firebase deploy --only functions --project my-project-id
+        run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --only functions --project hybrid-day-checkin
 
       - name: Deploy to Firebase
         run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --project hybrid-day-checkin
