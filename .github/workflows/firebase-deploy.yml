@@ -23,10 +23,10 @@ jobs:
           npm install
           npm run build
 
-      - name: Decode and Create Service Account Key File
+      - name: Set Up Firebase Authentication
         run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > $HOME/serviceAccountKey.json
-          export GOOGLE_APPLICATION_CREDENTIALS="$HOME/serviceAccountKey.json"
+            echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}' | base64 -d > $HOME/serviceAccountKey.json
+            export GOOGLE_APPLICATION_CREDENTIALS="$HOME/serviceAccountKey.json"
 
       - name: Install Dependencies
         working-directory: functions
