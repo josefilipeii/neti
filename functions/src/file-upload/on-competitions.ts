@@ -8,7 +8,7 @@ const db = admin.firestore();
 const storage = new Storage();
 
 
-const REGION = "eu";
+const REGION = "europe-west1";
 export const processCompetitionFile = functions.storage
   .onObjectFinalized({region: REGION}, async (object) => {
     const bucketName = object.data.bucket;
