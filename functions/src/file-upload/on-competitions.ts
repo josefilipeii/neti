@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {Storage} from "@google-cloud/storage";
-import {Category, Competition} from "../domain/domain";
+import {Category, Competition} from "../../../shared/domain";
 
 admin.initializeApp();
 const db = admin.firestore();

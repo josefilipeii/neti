@@ -2,7 +2,7 @@ export interface Competition {
     id: string;
     name: string;
     location?: string;
-    days: number;
+    days: string[];
     categories: Category[];
 }
 

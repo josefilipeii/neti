@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { mockFirebase } from '../lib/mockFirebase'
+import { mockFirebase } from '../lib/mockFirebase.ts'
 
 const checkedInParticipants = ref<any[]>([])
 const loading = ref(true)
