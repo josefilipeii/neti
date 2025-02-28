@@ -26,7 +26,7 @@ jobs:
       - name: Set Up Firebase Authentication
         run: |
             echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/serviceAccountKey.json
-            export GOOGLE_APPLICATION_CREDENTIALS="$HOME/serviceAccountKey.json"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/serviceAccountKey.json" >> $GITHUB_ENV
 
       - name: Install Dependencies
         working-directory: functions
