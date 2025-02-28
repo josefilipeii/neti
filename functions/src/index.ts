@@ -8,5 +8,4 @@ import {processCompetitionFile} from "./file-upload/on-competitions";
 //   response.send("Hello from Firebase!");
 // });
 
-
 export const onCompetitionsFileUpload = processCompetitionFile;
