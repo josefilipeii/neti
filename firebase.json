@@ -81,7 +81,7 @@
   ],
   "functions": [
     {
-      "source": "functions",
+      "source": "cloud/functions",
       "codebase": "default",
       "region": "europe-southwest1",
       "ignore": [
