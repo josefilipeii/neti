@@ -123,7 +123,7 @@ importers:
   cloud/functions:
     dependencies:
       '@shared':
-        specifier: workspace:*
+        specifier: file:../../packages/shared
         version: link:../../packages/shared
       firebase-admin:
         specifier: ^12.6.0
