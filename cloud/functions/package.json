@@ -1,8 +1,8 @@
 {
   "name": "functions",
   "scripts": {
-    "lint": "eslint --ext .ts ",
-    "lint:fix": "eslint --fix --ext .ts ",
+    "lint": "eslint --ext .ts src",
+    "lint:fix": "eslint --fix --ext .ts src ",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions,storage,firestore",
