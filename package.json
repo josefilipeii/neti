@@ -7,6 +7,10 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.5.2",
+  "scripts": {
+    "install": "pnpm -r install",
+    "build": "pnpm -r build"
+  },
   "dependencies": {
     "firebase": "^11.4.0",
     "lodash.debounce": "^4.0.8"
