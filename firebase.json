@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "site": "lobby.hybrid-day-checkin.web.app",
+    "target": "site1",
+    "site": "lobby",
     "public": "monorepo/apps/checkin/dist",
     "ignore": [
       "firebase.json",
