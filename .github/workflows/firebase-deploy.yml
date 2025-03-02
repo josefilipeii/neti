@@ -20,11 +20,12 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install Dependencies
-        run: pnpm -r install
 
       - name: Build Project
-        run: pnpm -r build
+        run: |
+          pnpm -r install
+          pnpm --filter @shared run build
+          pnpm -r build
 
       - name: Set Up Firebase Authentication
         run: |
