@@ -4,19 +4,11 @@
       <div>
         <CheckInForm/>
       </div>
-      <div>
-        <CompetitionDetails :competitions="competitions"/>
-        <Statistics/>
-        <ParticipantsList/>
-      </div>
     </div>
   </main>
 </template>
 <script setup lang="ts">
-import Statistics from "../components/Statistics.vue";
 import CheckInForm from "../components/CheckInForm.vue";
-import ParticipantsList from "../components/ParticipantsList.vue";
-import CompetitionDetails from "../components/CompetitionsList.vue";
 import {onMounted, ref} from "vue";
 import {useCompetitionsRepository} from "shared";
 import {Competition} from "shared";
