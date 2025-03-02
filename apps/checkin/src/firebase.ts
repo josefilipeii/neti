@@ -1,5 +1,5 @@
-import {firebaseWithFirestore} from "@shared";
-import {FirebaseConfig} from "@shared";
+import {firebaseWithFirestore} from "shared";
+import {FirebaseConfig} from "shared";
 
 export const firebaseConfig: FirebaseConfig = {
     apiKey: import.meta.env.FIREBASE_API_KEY,

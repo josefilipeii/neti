@@ -24,7 +24,7 @@ jobs:
       - name: Build Project
         run: |
           pnpm -r install
-          pnpm --filter @shared run build
+          pnpm --filter shared run build
           pnpm -r build
 
       - name: Set Up Firebase Authentication

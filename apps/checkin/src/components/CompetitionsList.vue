@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 
-import type {Competition} from "@shared/dist";
+import type {Competition} from "shared/dist";
 
 interface Props {
   competitions: Competition[]

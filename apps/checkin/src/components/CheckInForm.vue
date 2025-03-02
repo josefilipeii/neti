@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import QRScanner from './QRScanner.vue';
-import { mockFirebase } from '@shared';
+import { mockFirebase } from 'shared';
 import debounce from 'lodash.debounce';
 
 const participant = ref<{

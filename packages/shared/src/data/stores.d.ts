@@ -1,4 +1,4 @@
-import { Category, Competition } from "@shared/domain";
+import { Category, Competition } from "shared/domain";
 export interface CompetitionStore {
     competitions: () => Promise<Competition[]>;
 }

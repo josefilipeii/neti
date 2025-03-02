@@ -18,9 +18,9 @@ import CheckInForm from "../components/CheckInForm.vue";
 import ParticipantsList from "../components/ParticipantsList.vue";
 import CompetitionDetails from "../components/CompetitionsList.vue";
 import {onMounted, ref} from "vue";
-import {useCompetitionsRepository} from "@shared";
-import {Competition} from "@shared";
-import type {Repository} from "@shared";
+import {useCompetitionsRepository} from "shared";
+import {Competition} from "shared";
+import type {Repository} from "shared";
 import {db} from "../firebase";
 
 
