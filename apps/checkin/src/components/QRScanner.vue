@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, defineEmits } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { BrowserMultiFormatReader, IScannerControls } from "@zxing/browser";
 
 const videoElement = ref<HTMLVideoElement | null>(null);
