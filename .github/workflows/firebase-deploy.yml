@@ -20,6 +20,7 @@ jobs:
           node-version: 22
           cache: 'pnpm'
           run: | 
+            npm i -g pnpm
             corepack enable
             corepack prepare pnpm@latest --activate
             pnpm install --frozen-lockfile
