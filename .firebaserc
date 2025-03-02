@@ -7,6 +7,15 @@
       "hosting": {
         "self": [
           "hybrid-day-checkin"
+        ],
+        "odin-hybrid-day-checkin": [
+          "odin-hybrid-day-checkin"
+        ],
+        "heimdall-hybrid-day-checkin": [
+          "heimdall-hybrid-day-checkin"
+        ],
+        "self-hybrid-day-checkin": [
+          "self-hybrid-day-checkin"
         ]
       }
     }

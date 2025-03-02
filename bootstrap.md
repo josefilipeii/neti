@@ -43,7 +43,10 @@ gcloud storage buckets create gs://hybrid-day-checkin.firebasestorage.app \
 
 ``
 firebase hosting:sites:create odin-hybrid-day-checkin
+firebase target:apply hosting odin-hybrid-day-checkin odin-hybrid-day-checkin
 firebase hosting:sites:create heimdall-hybrid-day-checkin
+firebase target:apply hosting heimdall-hybrid-day-checkin heimdall-hybrid-day-checkin
 firebase hosting:sites:create self-hybrid-day-checkin
+firebase target:apply hosting self-hybrid-day-checkin self-hybrid-day-checkin
 
 ``
