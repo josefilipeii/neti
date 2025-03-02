@@ -12,18 +12,17 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js and pnpm
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'pnpm'
-          run: | 
-            npm i -g pnpm
-            corepack enable
-            corepack prepare pnpm@latest --activate
-            pnpm install --frozen-lockfile
+          node-version: 20
+        run: | 
+          npm i -g pnpm
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm install --frozen-lockfile
 
 
       - name: Build Project
