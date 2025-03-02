@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "public": "frontend/dist",
+    "site": "lobby.hybrid-day-checkin.web.app",
+    "public": "monorepo/apps/checkin/dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -26,7 +27,7 @@
   },
   "functions": [
     {
-      "source": "functions",
+      "source": "monorepo/functions",
       "codebase": "default",
       "region": "europe-southwest1",
       "ignore": [
