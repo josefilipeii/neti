@@ -1,31 +1,84 @@
 {
-  "hosting": {
-    "target": "site1",
-    "site": "lobby",
-    "public": "monorepo/apps/checkin/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**/*.@(js|css|woff|woff2|ttf|otf)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=31536000, immutable"
-          }
-        ]
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "target": "odin",
+      "public": "monorepo/apps/admin-dashboard/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css|woff|woff2|ttf|otf)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000, immutable"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "self",
+      "public": "monorepo/apps/self-checkin/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css|woff|woff2|ttf|otf)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000, immutable"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "heimdall",
+      "public": "monorepo/apps/checkin/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css|woff|woff2|ttf|otf)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000, immutable"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "functions": [
     {
       "source": "monorepo/functions",
