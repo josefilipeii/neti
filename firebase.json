@@ -81,7 +81,7 @@
   ],
   "functions": [
     {
-      "source": "monorepo/functions",
+      "source": "functions",
       "codebase": "default",
       "region": "europe-southwest1",
       "ignore": [
