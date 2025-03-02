@@ -1,6 +1,6 @@
 module.exports = [
   {
-    files: ["**/*.ts", "**/*.js"],
+    files: ["**/*.ts"],
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: "module",
