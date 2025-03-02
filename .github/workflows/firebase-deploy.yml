@@ -18,7 +18,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-        run: | 
+
+      - name: Install pnpm and dependencies
+        run: |
           npm i -g pnpm
           corepack enable
           corepack prepare pnpm@latest --activate
@@ -32,8 +34,8 @@ jobs:
 
       - name: Set Up Firebase Authentication
         run: |
-            echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/serviceAccountKey.json
-            echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/serviceAccountKey.json" >> $GITHUB_ENV
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/serviceAccountKey.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/serviceAccountKey.json" >> $GITHUB_ENV
 
 
       - name: Deploy Firebase
