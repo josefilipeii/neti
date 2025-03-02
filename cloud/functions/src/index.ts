@@ -13,14 +13,14 @@ import {generateQrForRegistration} from "./firestore/on-registration";
 // });
 
 export const onCompetitions = functions.storage
-    .onObjectFinalized({region: FUNCTIONS_REGION}, async (object) => {
-        useCompetitionsHandler(object);
-    });
+  .onObjectFinalized({region: FUNCTIONS_REGION}, async (object) => {
+    useCompetitionsHandler(object);
+  });
 
 export const onParticipants = functions.storage
-    .onObjectFinalized({region: FUNCTIONS_REGION}, async (object) => {
-        useParticipantsHandler(object);
-    });
+  .onObjectFinalized({region: FUNCTIONS_REGION}, async (object) => {
+    useParticipantsHandler(object);
+  });
 
 
 export const onRegistrationCreateQrCode = generateQrForRegistration;
