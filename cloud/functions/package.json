@@ -1,6 +1,7 @@
 {
   "name": "functions",
   "scripts": {
+    "preinstall": "corepack enable && corepack prepare pnpm@latest --activate",
     "lint": "eslint --ext .js,.ts ",
     "lint:fix": "eslint --fix --ext .js,.ts ",
     "build": "tsc",
