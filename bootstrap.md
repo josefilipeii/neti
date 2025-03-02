@@ -40,3 +40,10 @@ gcloud storage buckets create gs://hybrid-day-checkin.firebasestorage.app \
   --storage-class=STANDARD
 
 ```
+
+``
+firebase hosting:sites:create odin-hybrid-day-checkin
+firebase hosting:sites:create heimdall-hybrid-day-checkin
+firebase hosting:sites:create self-hybrid-day-checkin
+
+``

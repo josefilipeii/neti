@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "hybrid-day-checkin"
-  }
+  },
+  "targets": {
+    "hybrid-day-checkin": {
+      "hosting": {
+        "self": [
+          "hybrid-day-checkin"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

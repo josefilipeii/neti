@@ -1,7 +1,7 @@
 {
   "hosting": [
     {
-      "target": "odin",
+      "target": "odin-hybrid-day-checkin",
       "public": "monorepo/apps/admin-dashboard/dist",
       "ignore": [
         "firebase.json",
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "target": "self",
+      "target": "self-hybrid-day-checkin",
       "public": "monorepo/apps/self-checkin/dist",
       "ignore": [
         "firebase.json",
@@ -53,7 +53,7 @@
       ]
     },
     {
-      "target": "heimdall",
+      "target": "heimdall-hybrid-day-checkin",
       "public": "monorepo/apps/checkin/dist",
       "ignore": [
         "firebase.json",
