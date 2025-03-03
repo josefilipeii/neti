@@ -1,6 +1,7 @@
 import {Registration} from "shared";
-import {db} from "../firebase";
 import { doc, getDoc} from 'firebase/firestore';
+import {useFirestore} from "vuefire";
+
 
 interface QRDocument{
     id: string;
@@ -9,6 +10,7 @@ interface QRDocument{
 }
 
 export const registrationByQr = async (qr: string) => {
+    const db = useFirestore();
     const qrDocRef = doc(db, 'qrCodes', qr);
     const qrDoc = await getDoc(qrDocRef);
     if (!qrDoc.exists()) {
@@ -29,6 +31,7 @@ export const registrationByQr = async (qr: string) => {
 
 
 export const participantsById = async (competitionId: string, participantIds: string[]) => {
+    const db = useFirestore();
     const participants = [];
     for (const id of participantIds) {
         const participantRef = doc(db, `competitions/${competitionId}/participants`, id);

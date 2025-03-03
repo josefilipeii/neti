@@ -13,10 +13,9 @@ import {onMounted, ref} from "vue";
 import {useCompetitionsRepository} from "shared";
 import {Competition} from "shared";
 import type {Repository} from "shared";
-import {db} from "../firebase";
+import {useFirestore} from "vuefire";
 
-
-
+const db = useFirestore();
 const competitions = ref<Competition[]>([]);
 
 const repository: Repository = useCompetitionsRepository(db);
