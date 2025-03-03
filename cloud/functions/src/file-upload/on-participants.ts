@@ -2,6 +2,7 @@ import {Category, Heat, Participant, Registration} from "shared";
 import {StorageHandler} from "../domain";
 import {db, storage} from "../firebase";
 import csv from "csv-parser";
+import crypto from "crypto";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
 

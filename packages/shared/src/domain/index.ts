@@ -13,7 +13,7 @@ export interface Category {
 }
 
 
-export interface Heat{
+export interface Heat {
     id: string
     name: string;
     time: string;

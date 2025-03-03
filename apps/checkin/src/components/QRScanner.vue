@@ -118,6 +118,7 @@ const startScanner = async () => {
 
 const stopScanner = () => {
   isScanning.value = false;
+  error.value = null;
 
   // Stop QR scanner
   if (scannerControls) {
