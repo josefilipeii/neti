@@ -22,7 +22,7 @@ jobs:
       - name: Install pnpm and dependencies
         run: |
           npm i -g pnpm
-          pnpm install --frozen-lockfile
+          pnpm -r install --frozen-lockfile
 
 
       - name: Build Project
