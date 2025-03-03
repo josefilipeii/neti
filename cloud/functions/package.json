@@ -19,8 +19,7 @@
     "csv-parser": "^3.2.0",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.0.1",
-    "qrcode": "^1.5.4",
-    "shared": "file:../../packages/shared"
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",

@@ -1,4 +1,4 @@
-import {Category, Competition} from "shared";
+import {Category, Competition} from "../../../../packages/shared";
 import {Bucket, StorageHandler} from "../domain";
 import {addonsDirectory, participantsDirectory} from "../constants";
 import {db, storage} from "../firebase";

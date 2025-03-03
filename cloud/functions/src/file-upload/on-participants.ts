@@ -1,4 +1,4 @@
-import {Category, Heat, Participant, Registration} from "shared";
+import {Category, Heat, Participant, Registration} from "../../../../packages/shared";
 import {StorageHandler} from "../domain";
 import {db, storage} from "../firebase";
 import csv from "csv-parser";
