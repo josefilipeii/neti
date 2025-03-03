@@ -8,15 +8,17 @@ importers:
 
   .:
     dependencies:
-      tsu:
-        specifier: ^2.12.0
-        version: 2.12.0
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
 
 packages:
 
-  tsu@2.12.0:
-    resolution: {integrity: sha512-PD1BlUJgsevNSuVyzaV+tBzfmn0YyugQpinBBLDASvnvHDbZ3ldC8JmqfRyt0QoYBmo3V7gZb7hkfAA9PyIbQQ==}
+  typescript@5.8.2:
+    resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
 snapshots:
 
-  tsu@2.12.0: {}
+  typescript@5.8.2: {}

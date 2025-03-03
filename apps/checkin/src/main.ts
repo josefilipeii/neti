@@ -29,7 +29,7 @@ app.use(VueFire, {
         VueFireAuthWithDependencies({
             dependencies: {
                 errorMap:
-                    process.env.NODE_ENV !== 'production'
+                    import.meta.env.VITE_USE_FIREBASE_EMULATORS
                         ? debugErrorMap
                         : prodErrorMap,
                 persistence: [

@@ -8,7 +8,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "typescript": "^5.8.2",
-    "shared": "workspace:*"
+    "typescript": "^5.8.2"
   }
 }
