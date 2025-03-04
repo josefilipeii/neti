@@ -4,6 +4,7 @@ import {useCompetitionsHandler} from "./file-upload/on-competitions";
 import {useParticipantsHandler} from "./file-upload/on-participants";
 import {generateQrForRegistration} from "./firestore/on-registration";
 import {checkInUser} from "./http/checkin";
+import {authenticateWithToken} from "./http/authenticate-with-token";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -31,3 +32,6 @@ export const onParticipants = functions.storage
 export const onRegistrationCreateQrCode = generateQrForRegistration;
 
 export const handleCheckin = checkInUser;
+
+
+export const handleSigningToken = authenticateWithToken;

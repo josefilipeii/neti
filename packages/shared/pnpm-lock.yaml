@@ -8,11 +8,18 @@ importers:
 
   .:
     dependencies:
+      install:
+        specifier: ^0.13.0
+        version: 0.13.0
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
 
 packages:
+
+  install@0.13.0:
+    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
+    engines: {node: '>= 0.10'}
 
   typescript@5.8.2:
     resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
@@ -20,5 +27,7 @@ packages:
     hasBin: true
 
 snapshots:
+
+  install@0.13.0: {}
 
   typescript@5.8.2: {}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, reactive, ref, warn, watch} from 'vue';
+import {computed, reactive, ref} from 'vue';
 import QRScanner from './QRScanner.vue';
 import {useDocument, useFirestore} from "vuefire";
 import {collection, doc} from 'firebase/firestore'
@@ -93,6 +93,9 @@ const clearContext = () => {
           </div>
           <div class="block sm:inline-block">
             <span class="font-medium text-gray-700">Competition ID: {{ qrData.competition }}</span>
+          </div>
+          <div class="block sm:inline-block">
+            <span class="font-medium text-gray-700">Date: {{ qrData.day }} at {{qrData.time}}</span>
           </div>
         </div>
         <div class="overflow-x-auto">

@@ -94,6 +94,8 @@ export const useParticipantsHandler: StorageHandler = async (object) => {
 
             batch.set(registrationRef, {
               category: categoryId,
+              day: heatDay,
+              time: heatTime,
               participants: [{ name, email, contact }],
             }, { merge: true });
 

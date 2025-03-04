@@ -5,7 +5,7 @@ export const googleAuthProvider = new GoogleAuthProvider()
 
 <script setup lang="ts">
 import {useFirebaseAuth} from 'vuefire'
-import {signInWithPopup, signOut} from 'firebase/auth'
+import {signInWithPopup} from 'firebase/auth'
 import {useRouter} from 'vue-router'
 import {ref} from 'vue'
 

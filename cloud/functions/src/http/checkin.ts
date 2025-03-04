@@ -11,20 +11,26 @@ type ResponseType = { success: boolean; message: string };
  * Requires authentication.
  */
 export const checkInUser = onCall({ region: FUNCTIONS_REGION }, async (request: CallableRequest<RequestType>) => {
-  if (!request.auth) {
+  const auth = request.auth;
+  if (!auth) {
     throw new HttpsError("unauthenticated", "You must be logged in to check in.");
   }
 
-  const userEmail = request.auth.token.email || "self";
+  const authToken = auth.token;
+  const userEmail = authToken.email || authToken.allowedEmail;
   const { token } = request.data;
-  const provider = request.auth.token.firebase.sign_in_provider;
-  const type = provider === "google.com" ? "lobby" : provider === "self-checkin" ? "self" : "unknown";
+  const provider = authToken.firebase.sign_in_provider;
+  const type = provider === "google.com" ? "lobby" : provider === "custom" ? "self" : "unknown";
+
 
   if (!token) {
     throw new HttpsError("invalid-argument", "Missing token parameter.");
   }
-  if (type === "unknown") {
+  if (type === "unknown" || (type === "self" && authToken.custom_provider !== "self_checkin")) {
     throw new HttpsError("invalid-argument", "Invalid sign-in provider.");
+  }
+  if(authToken.allowedToken !== token){
+    throw new HttpsError("permission-denied", "Invalid token.");
   }
 
   const checkInTime = new Date();
@@ -38,7 +44,12 @@ export const checkInUser = onCall({ region: FUNCTIONS_REGION }, async (request: 
         throw new HttpsError("not-found", "QR code not found.");
       }
 
-      const { competition, dorsal, heat } = qrCodeSnap.data() as QRDocument;
+      const { competition, dorsal, heat, participants } = qrCodeSnap.data() as QRDocument;
+
+      if(!participants.map(it => it.email).includes(userEmail)){
+        throw new HttpsError("permission-denied", "Email does not match this token.");
+      }
+
       const registrationRef = db.doc(`/competitions/${competition}/heats/${heat}/registration/${dorsal}`);
 
       const redemption = { at: checkInTime, by: userEmail, how: type };

@@ -23,6 +23,8 @@ export interface Heat {
 export interface Registration {
     id?: string; //dorsal
     category: string;
+    day?: string;
+    time?: string;
     participants: RegistrationParticipant[];
 }
 
@@ -41,7 +43,7 @@ export interface Participant {
 }
 
 
-interface QRRedemption {
+export interface QRRedemption {
     at: Date;
     by: string;
     how: string;
@@ -53,6 +55,8 @@ export interface QRDocument{
     createdAt: string;
     dorsal?: string;
     heat?: string;
+    day?: string;
+    hour?: string;
     type: 'registration' | 'addon';
     category?: string;
     participants: RegistrationParticipant[];

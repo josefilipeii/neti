@@ -13,6 +13,7 @@
     "@zxing/library": "^0.21.3",
     "autoprefixer": "^10.4.20",
     "firebase": "^11.4.0",
+    "install": "^0.13.0",
     "lodash.debounce": "^4.0.8",
     "pinia": "^3.0.1",
     "pnpm": "^10.5.2",

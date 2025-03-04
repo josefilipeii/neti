@@ -11,6 +11,9 @@ importers:
       firebase:
         specifier: ^11.4.0
         version: 11.4.0
+      install:
+        specifier: ^0.13.0
+        version: 0.13.0
       lodash.debounce:
         specifier: ^4.0.8
         version: 4.0.8
@@ -311,6 +314,10 @@ packages:
 
   idb@7.1.1:
     resolution: {integrity: sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==}
+
+  install@0.13.0:
+    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
+    engines: {node: '>= 0.10'}
 
   is-fullwidth-code-point@3.0.0:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
@@ -800,6 +807,8 @@ snapshots:
   http-parser-js@0.5.9: {}
 
   idb@7.1.1: {}
+
+  install@0.13.0: {}
 
   is-fullwidth-code-point@3.0.0: {}
 
