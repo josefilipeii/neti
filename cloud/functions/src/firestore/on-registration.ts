@@ -4,12 +4,12 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { FUNCTIONS_REGION, QR_BUCKET_NAME } from "./../constants";
 import { Registration } from "../../../../packages/shared";
 import crypto from "crypto"; // Node.js built-in crypto module
-import bs58 from 'bs58'
+import bs58 from "bs58"
 import { defineSecret } from "firebase-functions/params";
 
 
 
-const selfCheckinSecret = defineSecret('QR_CODE_SECRET_KEY');
+const selfCheckinSecret = defineSecret("QR_CODE_SECRET_KEY");
 /**
  * Generates a deterministic but non-guessable hash-based QR ID.
  */
@@ -37,7 +37,7 @@ export const generateQrForRegistration = onDocumentCreated(
   },
   async (event) => {
     const snap = event.data;
-    const { competitionId, heatId, dorsal } = event.params;
+    const {competitionId, heatId, dorsal} = event.params;
 
     if (!snap || !snap.exists) {
       console.warn(`⚠️ No valid snapshot found for params: ${JSON.stringify(event.params)}, skipping QR generation.`);
@@ -48,39 +48,43 @@ export const generateQrForRegistration = onDocumentCreated(
       const registration = snap.data() as Registration;
       console.log(`📌 Processing QR Code for registration: ${registration.category} - Dorsal ${dorsal}`);
 
-      // ✅ Generate a deterministic but non-guessable QR ID
-      const qrId = generateQrId(competitionId, heatId, dorsal, selfCheckinSecret.value());
-      const qrRef = db.collection("qrCodes").doc(qrId);
+      await db.runTransaction(async (transaction) => {
+        // ✅ Generate a deterministic but non-guessable QR ID
+        const qrId = generateQrId(competitionId, heatId, dorsal, selfCheckinSecret.value());
+        const qrRef = db.collection("qrCodes").doc(qrId);
 
-      // ✅ Avoid generating duplicate QR codes
-      const qrSnap = await qrRef.get();
-      if (qrSnap.exists) {
-        console.log(`⚠️ QR Code already exists for ${qrId}, skipping regeneration.`);
-        return;
-      }
+        // ✅ Avoid generating duplicate QR codes
+        const qrSnap = await transaction.get(qrRef);
+        if (qrSnap.exists) {
+          console.log(`⚠️ QR Code already exists for ${qrId}, skipping regeneration.`);
+          return;
+        }
 
-      // ✅ Generate the QR Code
-      const qrCodeBuffer = await QRCode.toBuffer(qrId);
+        // ✅ Generate the QR Code
+        const qrCodeBuffer = await QRCode.toBuffer(qrId);
 
-      // ✅ Save QR data in Firestore
-      await qrRef.set({
-        type: "registration",
-        competition: competitionId,
-        heat: heatId,
-        createdAt: new Date(),
-        dorsal: dorsal,
-        qrId: qrId, // Store the QR ID in Firestore for reference
-        ...registration,
+        // ✅ Save QR data in Firestore
+        transaction.set(qrRef, {
+          type: "registration",
+          competition: competitionId,
+          heat: heatId,
+          createdAt: new Date(),
+          dorsal: dorsal,
+          ...registration,
+        });
+
+        // ✅ Store QR Code in Cloud Storage
+        const qrFilePath = `qr_codes/${competitionId}/registrations/${heatId}/${dorsal}.png`;
+        const bucket = storage.bucket(QR_BUCKET_NAME);
+        const file = bucket.file(qrFilePath);
+
+        await file.save(qrCodeBuffer, {contentType: "image/png"});
+
+        console.log(`✅ QR Code successfully stored at: ${qrFilePath}`);
+        // ✅ Update the registration document with the QR ID
+        transaction.update(snap.ref, {qrId});
       });
 
-      // ✅ Store QR Code in Cloud Storage
-      const qrFilePath = `qr_codes/${competitionId}/registrations/${heatId}/${dorsal}.png`;
-      const bucket = storage.bucket(QR_BUCKET_NAME);
-      const file = bucket.file(qrFilePath);
-
-      await file.save(qrCodeBuffer, { contentType: "image/png" });
-
-      console.log(`✅ QR Code successfully stored at: ${qrFilePath}`);
     } catch (error) {
       console.error("❌ Error generating QR Code:", error);
     }
