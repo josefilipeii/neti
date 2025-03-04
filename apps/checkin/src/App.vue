@@ -32,6 +32,7 @@
                 Checkins
               </router-link>
               <button
+                  v-if="signedIn"
                   @click="logout"
                   class="w-full md:w-auto px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700
                 text-white rounded-lg shadow-sm hover:shadow transition-all duration-200
@@ -52,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {useFirebaseAuth} from 'vuefire'
 import {signOut} from 'firebase/auth'
 import {useRouter} from 'vue-router'
@@ -61,6 +62,8 @@ const title = ref('Fitness Competition Check-in')
 const auth = useFirebaseAuth()
 const router = useRouter()
 const isMenuOpen = ref(false)
+
+const signedIn = computed(() => auth.currentUser !== null)
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
