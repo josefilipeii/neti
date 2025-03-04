@@ -80,25 +80,19 @@ const clearContext = () => {
     </div>
     <div v-if="data.token" class=" bg-gray-50 rounded-lg shadow-md p-6 mt-6">
       <h3 class="font-medium text-gray-900">QR: {{ data.token }}</h3>
-
-
       <div v-if="qrData && qrData.type === 'registration'" class="mb-6 p-4 rounded-md">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <span class="font-medium text-gray-700">Dorsal:</span>
-            <span class="ml-2 text-gray-600">{{ qrData.dorsal || 'N/A' }}</span>
+          <div class="block sm:inline-block">
+            <span class="font-medium text-gray-700">Dorsal: {{ qrData.dorsal || 'N/A' }}</span>
           </div>
-          <div>
-            <span class="font-medium text-gray-700">Heat:</span>
-            <span class="ml-2 text-gray-600">{{ qrData.heat || 'N/A' }}</span>
+          <div class="block sm:inline-block">
+            <span class="font-medium text-gray-700">Heat: {{ qrData.heat || 'N/A' }}</span>
           </div>
-          <div>
-            <span class="font-medium text-gray-700">Category:</span>
-            <span class="ml-2 text-gray-600">{{ qrData.category || 'N/A' }}</span>
+          <div class="block sm:inline-block">
+            <span class="font-medium text-gray-700">Category: {{ qrData.category || 'N/A' }}</span>
           </div>
-          <div>
-            <span class="font-medium text-gray-700">Competition ID:</span>
-            <span class="ml-2 text-gray-600">{{ qrData.competition }}</span>
+          <div class="block sm:inline-block">
+            <span class="font-medium text-gray-700">Competition ID: {{ qrData.competition }}</span>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -118,38 +112,23 @@ const clearContext = () => {
             </tr>
             </tbody>
           </table>
-        </div>
-        <div v-if="qrData.redeemed" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h4 class="text-green-800 font-medium mb-2">Check-in Status</h4>
-          <div class="space-y-1">
-            <p class="text-green-700">
-              <span class="font-medium">Date:</span> {{ qrData.redeemed.at?.toDate()?.toLocaleString() }}
-            </p>
-            <p class="text-green-700">
-              <span class="font-medium">By:</span> {{ qrData.redeemed.by }}
-            </p>
-            <p class="text-green-700">
-              <span class="font-medium">Method:</span> {{ qrData.redeemed.how === 'lobby' ? 'Front Desk' : 'Self Check-in' }}
-            </p>
-          </div>
-        </div>
-        <div class="mt-6"></div>
-        <button
-            v-if="!qrData.redeemed"
-            @click="handleCheckin"
-            :disabled="!qrData.participants || qrData.redeemed || loading"
-            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          <div class="mt-6"></div>
+          <button
+              v-if="!qrData.redeemed"
+              @click="handleCheckin"
+              :disabled="!qrData.participants || qrData.redeemed || loading"
+              class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
              disabled:opacity-50 disabled:cursor-not-allowed">
-          <span v-if="loading">Checking in...</span>
-          <span v-else>Check In</span>
-        </button>
-        <button
-            v-if="qrData"
-            @click="clearContext"
-            class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mt-4">
-          Clear Context
-        </button>
-
+            <span v-if="loading">Checking in...</span>
+            <span v-else>Check In</span>
+          </button>
+          <button
+              v-if="qrData"
+              @click="clearContext"
+              class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mt-4">
+            Clear Context
+          </button>
+        </div>
       </div>
     </div>
   </div>
