@@ -1,13 +1,13 @@
 <template>
   <div class="scanner">
-    <label for="cameraSelect">Select Camera (Desktop Only):</label>
     <select v-if="!isMobile" v-model="selectedDeviceId" @change="saveCameraPreference" id="cameraSelect">
+      <label for="cameraSelect">Select Camera (Desktop Only):</label>
       <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
         {{ device.label || `Camera ${deviceIndex++}` }}
       </option>
     </select>
 
-    <video ref="videoElement" class="video-preview" autoplay playsinline></video>
+    <video v-if="isScanning" ref="videoElement" class="video-preview" autoplay playsinline></video>
     <p v-if="error" class="error">{{ error }}</p>
 
     <button @click="toggleScanner" class="scanner-btn">
@@ -174,6 +174,7 @@ onUnmounted(() => {
 .video-preview {
   width: 100%;
   max-width: 400px;
+  height: 400px; /* Make the video element square */
   border: 2px solid black;
 }
 .error {

@@ -14,17 +14,22 @@ export interface Category {
 
 
 export interface Heat {
-    id: string
+    id?: string
     name: string;
     time: string;
     day: string;
 }
 
 export interface Registration {
-    id?: string;
-    dorsal: string;
+    id?: string; //dorsal
     category: string;
-    participants: string[];
+    participants: RegistrationParticipant[];
+}
+
+export interface RegistrationParticipant{
+    name: string;
+    email: string;
+    contact: string;
 }
 
 
