@@ -1,17 +1,22 @@
-import { collection, getDocs } from 'firebase/firestore';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.useCompetitionsRepository = void 0;
+const firestore_1 = require("firebase/firestore");
 const repository = (db) => {
     return {
         competitions: async () => {
-            const competitionsCollection = collection(db, 'competitions');
-            const snapshot = await getDocs(competitionsCollection);
+            const competitionsCollection = (0, firestore_1.collection)(db, 'competitions');
+            const snapshot = await (0, firestore_1.getDocs)(competitionsCollection);
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         },
         categories: async (competitionId) => {
-            const categoriesCollection = collection(db, `competitions/${competitionId}/categories`);
-            const snapshot = await getDocs(categoriesCollection);
+            const categoriesCollection = (0, firestore_1.collection)(db, `competitions/${competitionId}/categories`);
+            const snapshot = await (0, firestore_1.getDocs)(categoriesCollection);
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
     };
 };
-export const useCompetitionsRepository = (db) => (repository(db));
-//# sourceMappingURL=firestore.js.map
+const useCompetitionsRepository = (db) => {
+    return repository(db);
+};
+exports.useCompetitionsRepository = useCompetitionsRepository;

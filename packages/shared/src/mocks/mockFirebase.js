@@ -1,4 +1,7 @@
-export const mockHyroxCategories = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.mockFirebase = exports.mockHyroxCategories = void 0;
+exports.mockHyroxCategories = [
     { id: '1', name: 'Pro Men' },
     { id: '2', name: 'Pro Women' },
     { id: '3', name: "Men's Doubles" },
@@ -34,10 +37,10 @@ participants.set('QR003', {
     createdAt: new Date(),
 });
 const checkIns = new Map();
-export const mockFirebase = {
+exports.mockFirebase = {
     async listCategories() {
         await new Promise((resolve) => setTimeout(resolve, 500));
-        return mockHyroxCategories;
+        return exports.mockHyroxCategories;
     },
     async getParticipant(id) {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -75,4 +78,3 @@ export const mockFirebase = {
         return Array.from(participants.values());
     },
 };
-//# sourceMappingURL=mockFirebase.js.map
