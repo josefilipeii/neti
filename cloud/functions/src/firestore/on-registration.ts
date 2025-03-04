@@ -1,11 +1,15 @@
 import {db, storage} from "../firebase";
 import QRCode from "qrcode";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
-import {QR_BUCKET_NAME} from "./../constants";
+import {FUNCTIONS_REGION, QR_BUCKET_NAME} from "./../constants";
 import {Registration} from "../../../../packages/shared";
 
 
-export const generateQrForRegistration = onDocumentCreated("competitions/{competitionId}/heats/{heatId}/registrations/{dorsal}",
+export const generateQrForRegistration = onDocumentCreated(
+  {
+    document: "competitions/{competitionId}/heats/{heatId}/registrations/{dorsal}",
+    region: FUNCTIONS_REGION
+  },
   async (event) => {
 
     const snap = event.data;

@@ -83,7 +83,7 @@ const clearContext = () => {
 
 
       <div v-if="qrData && qrData.type === 'registration'" class="mb-6 p-4 rounded-md">
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <span class="font-medium text-gray-700">Dorsal:</span>
             <span class="ml-2 text-gray-600">{{ qrData.dorsal || 'N/A' }}</span>
