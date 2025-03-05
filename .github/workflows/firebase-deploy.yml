@@ -48,7 +48,7 @@ jobs:
       - name: Deploy Firebase
         run: |
           npm install -g firebase-tools
-          firebase functions:config:set \
+          firebase functions:config:env \
             QR_CODE_SECRET_KEY=${{ secrets.FIREBASE_SECRET_KEY }}
             BREVO_API_KEY=${{ env.BREVO_API_KEY }}
             BREVO_CHECKIN_TEMPLATE_ID=${{ env.BREVO_CHECKIN_TEMPLATE_ID }}
