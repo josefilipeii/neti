@@ -5,7 +5,6 @@ import { FUNCTIONS_REGION, QR_BUCKET_NAME } from "./../constants";
 import { Registration } from "../../../../packages/shared";
 import crypto from "crypto"; // Node.js built-in crypto module
 import bs58 from "bs58"
-import { defineSecret } from "firebase-functions/params";
 
 
 
@@ -70,6 +69,7 @@ export const generateQrForRegistration = onDocumentCreated(
           createdAt: new Date(),
           dorsal: dorsal,
           redeemableBy: registration.participants.map(it => it.email),
+          recipients: registration.participants.map(it => ({email: it.email})),
           category: registration.category,
           day: registration.day,
           time: registration.time,

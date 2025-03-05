@@ -3,7 +3,8 @@ import {CONFIG_BUCKET_NAME, FUNCTIONS_REGION} from "./constants";
 import {useCompetitionsHandler} from "./file-upload/on-competitions";
 import {useParticipantsHandler} from "./file-upload/on-participants";
 import {generateQrForRegistration} from "./firestore/on-registration";
-import {checkInUser} from "./http/checkin";
+import {checkInUser, selfCheckin} from "./http/checkin";
+import {handleEmailQueue} from "./firestore/on-email";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -31,4 +32,7 @@ export const onParticipants = functions.storage
 export const onRegistrationCreateQrCode = generateQrForRegistration;
 
 export const handleCheckin = checkInUser;
+export const handleSelfCheckin = selfCheckin;
+
+export const onEmailQueueCreate = handleEmailQueue
 

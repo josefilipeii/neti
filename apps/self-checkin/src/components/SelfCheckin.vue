@@ -10,159 +10,98 @@
         <input
             v-model="email"
             type="email"
+            :disabled="checkinDone"
             placeholder="Introduza o seu email"
             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <span v-if="inputError" class="text-red-500 text-sm">{{ inputError }}</span>
-        <span v-if="qrError" class="text-red-500 text-sm">Erro a descarregar token</span>
         <button
-            v-if="!qrDocument"
             type="submit"
             class="w-full bg-blue-500 text-white py-2 rounded-lg mt-4 hover:bg-blue-600 transition"
         >
           Validar
         </button>
       </form>
-      <div v-if="qrDocument && qrDocument.redeemed" class="text-green-500 text-sm mt-4">
-        Check-in realizado em {{ qrDocument.redeemed.at.toLocaleString() }} via
-        {{ qrDocument.redeemed.how === 'self' ? 'Checkin Automático' : 'Checkin Manual' }}
+      <div class="mt-6"></div>
+      <!-- Success Toast -->
+      <div v-if="successToast" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        {{ successToast }}
       </div>
-      <div v-if="qrDocument" class="mt-4">
-        <p><strong>Competição:</strong> {{ qrDocument.competition }}</p>
-        <p><strong>Heat:</strong> {{ qrDocument.heat }}</p>
-        <p><strong>Dorsal:</strong> {{ qrDocument.dorsal }}</p>
-        <p><strong>Categoria:</strong> {{ qrDocument.category }}</p>
-        <p v-if="qrDocument.day && qrDocument.time"><strong>Data:</strong> {{ qrDocument.day }} pelas {{ qrDocument.time }}</p>
-        <p><strong>Participantes:</strong></p>
-        <ul class="list-disc pl-5">
-          <li v-for="(participant, $index) in qrDocument.participants" :key="'participant'+$index">
-            {{ participant }}
-          </li>
-        </ul>
+
+      <!-- Error Toast -->
+      <div v-if="errorToast" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        {{ errorToast }}
       </div>
-      <button
-          v-if="qrDocument && !qrDocument.redeemed"
-          @click="submitCheckin"
-          class="w-full bg-blue-500 text-white py-2 rounded-lg mt-4 hover:bg-blue-600 transition"
-      >
-        Check-in
-      </button>
-      <button
-          v-if="fetchData.token"
-          @click="logout"
-          class="w-full bg-red-500 text-white py-2 rounded-lg mt-4 hover:bg-red-600 transition"
-      >
-        Limpar
-      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, onBeforeMount, reactive, ref, watch} from 'vue';
-import {useRoute} from 'vue-router';
-import {useCollection, useFirestore} from 'vuefire';
-import {httpsCallable} from 'firebase/functions';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { httpsCallable } from 'firebase/functions';
 import bannerImage from '../assets/banner.png';
-import {functions} from '../firebase.ts';
-import {collection, query, where} from 'firebase/firestore'
-import type {QRDocument} from "shared";
-
+import { functions } from '../firebase.ts';
 
 const route = useRoute();
-const fetchData = reactive<{ token: string, email: string }>({token: '', email: ''});
 const inputError = ref('');
-const message = ref('');
-const error = ref('');
 const email = ref('');
+const paramToken = ref('');
+const checkinDone = ref(false);
 const bannerUrl = ref(bannerImage);
-const db = useFirestore();
-
-
-const checkinFunction = httpsCallable(functions, "handleCheckin");
-
+const successToast = ref('');
+const errorToast = ref('');
+const checkinFunction = httpsCallable(functions, "handleSelfCheckin");
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const validEmail = computed(() => {
-  return emailRegex.test(email.value);
-});
+const validEmail = computed(() => emailRegex.test(email.value));
 
-const qrSource = computed(() =>
-    fetchData.token && fetchData.email ? query(
-        collection(db, 'qrCodes'),
-        where('self', '==', fetchData.token),
-        where('redeemableBy', 'array-contains', fetchData.email)
-    ) : null);
-
-const {data: qrData, error: qrError} = useCollection(qrSource, {
-  once: true, reset: true
-})
-
-
-const qrDocument = computed(() =>
-    qrData && qrData.value.length > 0 ? qrData.value[0] as QRDocument : null
-);
-
-
-const clearData = () => {
-  fetchData.token = '';
-  fetchData.email = '';
-  message.value = '';
-  error.value = '';
+const clearToasts = () => {
+  successToast.value = '';
+  errorToast.value = '';
 };
 
-onBeforeMount(async () => {
+onBeforeMount(() => {
   if (route.query.q) {
-    fetchData.token = route.query.q as string;
+    paramToken.value = route.query.q as string;
   }
-  await logout();
 });
 
 watch(
     () => route.query.q,
-    async (newValue) => {
-
-      clearData();
-      fetchData.token = newValue as string;
+    (newValue) => {
+      clearToasts();
+      paramToken.value = newValue as string;
     }
 );
 
 const validateForm = () => {
-  if (!fetchData.token) {
+  clearToasts();
+  if (!paramToken.value) {
     inputError.value = "Token inválido";
     return;
   }
-  if (!email) {
+  if (!email.value) {
     inputError.value = 'Por favor, introduza o seu email.';
     return;
   } else if (!validEmail.value) {
     inputError.value = 'Por favor, introduza um email válido.';
-  } else {
-    inputError.value = '';
-    fetchData.email = email.value;
+    return;
   }
+  inputError.value = '';
+  submitCheckin();
 };
 
 const submitCheckin = async () => {
   try {
-    await checkinFunction({
-      token: fetchData.token,
-      email: fetchData.email
-    });
-    reload();
+    await checkinFunction({ token: paramToken.value, email: email.value });
+    successToast.value = "Check-in efetuado com sucesso! Bem-vindo ao evento!";
+    checkinDone.value = true;
+    setTimeout(clearToasts, 3000);
   } catch (err) {
     console.error(err);
-    error.value = `Erro durante o checkin`;
+    errorToast.value = "Não foi possível realizar o check-in.";
+    setTimeout(clearToasts, 3000);
   }
-};
-
-const reload = () => {
-  const actualToken = fetchData.token;
-  fetchData.token = '';
-  fetchData.token = actualToken;
-}
-
-const logout = async () => {
-  clearData();
 };
 </script>

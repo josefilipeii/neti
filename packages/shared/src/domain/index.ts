@@ -62,7 +62,12 @@ export interface QRDocument{
     type: 'registration' | 'addon';
     category?: string;
     redeemableBy?: string[];
-    participants: string[];
+    recipients: Recipient[];
     self: string;
     redeemed?: QRRedemption;
+}
+
+export interface Recipient{
+    email: string;
+    name?: string;
 }
