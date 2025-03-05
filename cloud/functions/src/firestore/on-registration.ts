@@ -6,9 +6,6 @@ import { Registration } from "../../../../packages/shared";
 import crypto from "crypto"; // Node.js built-in crypto module
 import bs58 from "bs58"
 
-
-
-const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
 /**
  * Generates a deterministic but non-guessable hash-based QR ID.
  */
@@ -41,6 +38,8 @@ export const generateQrForRegistration = onDocumentCreated(
       console.warn(`⚠️ No valid snapshot found for params: ${JSON.stringify(event.params)}, skipping QR generation.`);
       return;
     }
+
+    const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
 
     try {
       const registration = snap.data() as Registration;
