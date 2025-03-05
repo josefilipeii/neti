@@ -1,7 +1,7 @@
 import { db } from "../firebase";
 import { FUNCTIONS_REGION } from "../constants";
 import { CallableRequest, HttpsError, onCall } from "firebase-functions/v2/https";
-import {QRDocument, QRRedemption} from "../../../../packages/shared";
+import {QRDocument, QRRedemption, QRRegistrationDocument} from "../../../../packages/shared";
 import {logger} from "firebase-functions";
 import {Email} from "../domain";
 
@@ -9,7 +9,7 @@ type CheckinRequestType = { token: string };
 type SelfCheckinRequestType = CheckinRequestType & { email: string};
 type ResponseType = { success: boolean; message: string };
 
-function triggerEmail(qrDocument: QRDocument,
+function triggerEmail(qrDocument: QRRegistrationDocument,
   token: string,
   checkInTime: Date,
   type: string,
@@ -24,26 +24,28 @@ function triggerEmail(qrDocument: QRDocument,
     params: {
       checkInTime: checkInTime,
       competition: qrDocument.competition,
-      heat: qrDocument.heat,
-      time: qrDocument.time,
-      dorsal: qrDocument.dorsal,
+      heat: qrDocument.registration?.heat?.name,
+      time: qrDocument.registration.heat.time,
+      dorsal: qrDocument.registration.dorsal,
       type: type
     }
   };
   transaction.set(newDocRef, emailParams);
 }
 
-function propagateCheckinStatus(qrDocument: QRDocument,
+function propagateCheckinStatus(qrDocument: QRRegistrationDocument,
   transaction: FirebaseFirestore.Transaction,
   qrCodeRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData, FirebaseFirestore.DocumentData>,
   redemption: QRRedemption,
   token: string) {
-  const registrationRef = db.doc(`/competitions/${(qrDocument.competition)}/heats/${(qrDocument.heat)}/registration/${(qrDocument.dorsal)}`);
+  let competition = qrDocument.competition;
+  let registration = qrDocument.registration;
+  const registrationRef = db.doc(`/competitions/${competition?.id}/heats/${(registration?.heat?.id)}/registration/${registration?.dorsal}`);
 
   // Use batch write to update both documents atomically
   transaction.set(qrCodeRef, {redeemed: redemption}, {merge: true});
   transaction.set(registrationRef, {checkin: redemption}, {merge: true});
-  triggerEmail(qrDocument, token, redemption.at as Date, redemption.how, transaction);
+  triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
 }
 
 
@@ -54,7 +56,7 @@ async function ensureNewEntry(transaction: FirebaseFirestore.Transaction,
     throw new HttpsError("not-found", "QR code not found.");
   }
 
-  return qrCodeSnap.data() as QRDocument;
+  return qrCodeSnap.data() as QRRegistrationDocument;
 }
 
 

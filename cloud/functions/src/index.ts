@@ -1,8 +1,7 @@
 import * as functions from "firebase-functions";
 import {CONFIG_BUCKET_NAME, FUNCTIONS_REGION} from "./constants";
 import {useCompetitionsHandler} from "./file-upload/on-competitions";
-import {useParticipantsHandler} from "./file-upload/on-participants";
-import {generateQrForRegistration} from "./firestore/on-registration";
+import {processParticipants} from "./file-upload/on-participants";
 import {checkInUser, selfCheckin} from "./http/checkin";
 import {handleEmailQueue} from "./firestore/on-email";
 
@@ -25,11 +24,9 @@ export const onCompetitions = functions.storage
 
 export const onParticipants = functions.storage
   .onObjectFinalized({region: FUNCTIONS_REGION, bucket: CONFIG_BUCKET_NAME}, async (object) => {
-    useParticipantsHandler(object);
+    processParticipants(object);
   });
 
-
-export const onRegistrationCreateQrCode = generateQrForRegistration;
 
 export const handleCheckin = checkInUser;
 export const handleSelfCheckin = selfCheckin;

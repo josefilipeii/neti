@@ -1,21 +1,28 @@
-import { Category, Heat } from "../../../../packages/shared";
-import { StorageHandler } from "../domain";
-import { db, storage } from "../firebase";
+import {Category, Heat} from "../../../../packages/shared";
+import {StorageHandler} from "../domain";
+import {db, storage} from "../firebase";
+import QRCode from "qrcode";
+import crypto from "crypto";
+import bs58 from "bs58";
 import csv from "csv-parser";
+import {QR_BUCKET_NAME} from "./../constants";
+import {firestore} from "firebase-admin";
+import WriteBatch = firestore.WriteBatch;
+import {Bucket, File} from "@google-cloud/storage";
+import WriteResult = firestore.WriteResult;
 
 const csvParser: NodeJS.ReadWriteStream = csv();
+const FIRESTORE_BATCH_LIMIT = 500; // Firestore allows max 500 operations per batch
 
-
-type Row = {
-  heatName: string;
-  heatDay: string;
-  heatTime: string;
-  dorsal: string;
-  category: string;
-  name: string;
-  email: string;
-  contact: string;
-};
+/** Generates a secure QR ID */
+function generateQrId(competitionId: string, heatId: string, dorsal: string, secretKey?: string): string {
+  if (!secretKey) {
+    throw new Error("Secret key not set in Firebase Functions Config.");
+  }
+  const rawString = `${competitionId}-${heatId}-${dorsal}`;
+  const hash = crypto.createHmac("sha256", secretKey).update(rawString).digest();
+  return bs58.encode(hash.subarray(0, 20));
+}
 
 function heatCollectionPath(eventId: string) {
   return `competitions/${eventId}/heats`;
@@ -25,121 +32,156 @@ function registrationCollectionPath(eventId: string, heatId: string) {
   return `${heatCollectionPath(eventId)}/${heatId}/registrations`;
 }
 
-export const useParticipantsHandler: StorageHandler = async (object) => {
+function qrCollectionPath() {
+  return "qrCodes";
+}
+
+export const processParticipants: StorageHandler = async (object) => {
   const bucketName = object.data.bucket;
   const filePath = object.data.name;
 
-  if (!filePath) {
-    console.error("❌ Missing file path in storage event.");
+  const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
+  if (!selfCheckinSecret) {
+    console.error("❌ Missing secret key in environment variables.");
     return;
   }
 
-  // ✅ Ensure file is a CSV inside "participants/{event_id}/"
-  if (!filePath.startsWith("participants/") || !filePath.match(/^participants\/[a-z0-9_]+\/.*\.csv$/)) {
-    console.log(`❌ Skipping file: ${filePath} (not in correct folder or not a CSV)`);
+  if (!filePath || !filePath.startsWith("participants/")) {
+    console.log(`❌ Skipping file: ${filePath}`);
     return;
   }
 
-  const bucket = storage.bucket(bucketName);
-  const file = bucket.file(filePath);
-  const pathParts = filePath.split("/");
-  const eventId = pathParts[1];
+
+  const bucket: Bucket = storage.bucket(bucketName);
+  const file: File = bucket.file(filePath);
+  const pathParts: string[] = filePath.split("/");
+  const eventId: string = pathParts[1];
 
   try {
-    const results: Row[] = [];
+    const competitionRef = db.collection("competitions").doc(eventId);
+    const competitionSnap = await competitionRef.get();
+    if (!competitionSnap.exists) {
+      console.error(`❌ Competition with ID ${eventId} does not exist.`);
+      return;
+    }
+    const competitionData = competitionSnap.data();
+
+    const qrBucket: Bucket = storage.bucket(QR_BUCKET_NAME);
+    const batchQueue: Promise<WriteResult[]>[] = [];
+    let batch: WriteBatch = db.batch();
+    let batchCount = 0;
+
+    const categoryCache = new Map<string, string>();
+    const heatCache = new Set<string>();
+
     file.createReadStream()
       .pipe(csvParser)
-      .on("data", (data: Row) => results.push(data))
-      .on("end", async () => {
-        try {
-          console.log(`📂 Processing ${results.length} rows from CSV: ${filePath}`);
+      .on("data", async (row) => {
+        const {heatName, heatDay, heatTime, dorsal, category, name, email, contact} = row;
+        if (!heatName || !heatDay || !heatTime || !dorsal || !category || !email || !name || !contact) {
+          console.log("⚠️ Skipping invalid row:", row);
+          return;
+        }
 
-          const batch = db.batch();
-          const categoryCache = new Map<string, string>(); // categoryName -> categoryId
-          const heatCache = new Set<string>(); // Set of processed heatIds
+        const heatId = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
+        const registrationRef = db.collection(registrationCollectionPath(eventId, heatId)).doc(dorsal);
+        const qrRef = db.collection(qrCollectionPath()).doc(dorsal);
+        const existingRegistration = await registrationRef.get();
 
-          for (const row of results) {
-            const { heatName, heatDay, heatTime, dorsal, category, name, email, contact } = row;
-            if (!heatName || !heatDay || !heatTime || !dorsal || !category || !email || !name || !contact) {
-              console.warn(`⚠️ Skipping invalid row in '${filePath}':`, row);
-              continue;
-            }
+        // Check if registration is already processed
+        if (existingRegistration.exists && existingRegistration.data()?.processedAt) {
+          console.log(`⚠️ Registration for dorsal ${dorsal} already processed, skipping.`);
+          return;
+        }
 
-            // ✅ Ensure category exists (cache first)
-            let categoryId = categoryCache.get(category);
-            if (!categoryId) {
-              const categoryDoc = await ensureCategory(eventId, category);
-              if (!categoryDoc) {
-                console.warn(`⚠️ Skipping row with unknown category '${category}' in '${filePath}':`, row);
-                continue;
-              }
-              categoryId = categoryDoc.id;
-              categoryCache.set(category, categoryId);
-            }
+        let categoryId = categoryCache.get(category);
+        if (!categoryId) {
+          const categoryDoc = await ensureCategory(eventId, category);
+          if (!categoryDoc) return;
+          categoryId = categoryDoc.id;
+          categoryCache.set(category, categoryId);
+        }
 
-            // ✅ Generate heat ID
-            const sanitizedHeatDate = heatDay.replace(/[^a-zA-Z0-9]/g, "_");
-            const sanitizedHeatTime = heatTime.replace(/[^a-zA-Z0-9]/g, "_");
-            const heatId = `${sanitizedHeatDate}-${sanitizedHeatTime}`;
+        if (!heatCache.has(heatId)) {
+          await ensureHeat(eventId, heatId, {name: heatName, day: heatDay, time: heatTime});
+          heatCache.add(heatId);
+        }
 
-            // ✅ Ensure heat exists (cache first)
-            if (!heatCache.has(heatId)) {
-              await ensureHeat(eventId, heatId, { name: heatName, day: heatDay, time: heatTime });
-              heatCache.add(heatId);
-            }
+        const qrId = generateQrId(eventId, heatId, dorsal, selfCheckinSecret);
+        const qrCodeBuffer: Buffer = await QRCode.toBuffer(qrId);
+        const qrFilePath = `qr_codes/${eventId}/registrations/${heatId}/${dorsal}.png`;
+        const qrFile: File = qrBucket.file(qrFilePath);
+        await qrFile.save(qrCodeBuffer, {contentType: "image/png"});
 
-            // ✅ Prepare registration data
-            const registrationPath = registrationCollectionPath(eventId, heatId);
-            const registrationRef = db.collection(registrationPath).doc(dorsal);
-
-            batch.set(registrationRef, {
-              category: categoryId,
+        const qrData = {
+          id: qrId,
+          createdAt: new Date().toISOString(),
+          type: "registration",
+          competition: {
+            id: eventId,
+            name: competitionData?.name,
+          },
+          registration: {
+            heat: {
+              id: heatId,
+              name: heatName,
               day: heatDay,
               time: heatTime,
-              participants: [{ name, email, contact }],
-            }, { merge: true });
+            },
+            dorsal,
+            category: {
+              id: categoryId,
+              name: category,
+            },
+            redeemableBy: [email],
+            participants: [{name, email}],
+          },
+          self: qrId,
+        };
 
+        batch.set(registrationRef, {
+          category: categoryId,
+          categoryName: category,
+          competitionName: competitionData?.name,
+          day: heatDay,
+          time: heatTime,
+          participants: [{name, email}],
+          qrId,
+          processedAt: new Date(), // ✅ Marks row as processed
+        }, {merge: true});
 
-            console.log(`✅ Queued registration for dorsal: ${dorsal}`);
-          }
+        batch.set(qrRef, qrData);
 
-          // ✅ Commit batch operation to Firestore
-          await batch.commit();
-          console.log("🚀 CSV data successfully processed and saved to Firestore!");
-
-        } catch (error) {
-          console.error("❌ Error processing CSV data:", error);
+        batchCount++;
+        if (batchCount >= FIRESTORE_BATCH_LIMIT) {
+          console.log(`🚀 Processing batch with ${batchCount} registrations...`);
+          batchQueue.push(batch.commit());
+          batch = db.batch();
+          batchCount = 0;
         }
+
+      })
+      .on("end", async () => {
+        if (batchCount > 0) {
+          console.log(`🚀 Processing batch with ${batchCount} registrations...`);
+          batchQueue.push(batch.commit());
+        }
+        await Promise.all(batchQueue);
+        console.log(`🚀 All registrations processed with QR codes ${batchCount}!`);
       });
   } catch (error) {
     console.error("❌ Error processing file:", error);
   }
 };
 
-/**
- * Ensures the category exists and returns it.
- */
+async function ensureHeat(eventId: string, heatId: string, heatData: Heat) {
+  const heatRef = db.collection(heatCollectionPath(eventId)).doc(heatId);
+  if (!(await heatRef.get()).exists) await heatRef.set(heatData);
+}
+
 async function ensureCategory(eventId: string, categoryName: string): Promise<Category | null> {
   const categoriesCollection = db.collection(`competitions/${eventId}/categories`);
   const categoryQuery = await categoriesCollection.where("name", "==", categoryName).get();
-
-  if (categoryQuery.empty) {
-    console.warn(`⚠️ Category '${categoryName}' not found for competition '${eventId}'.`);
-    return null;
-  }
-
+  if (categoryQuery.empty) return null;
   return categoryQuery.docs[0].data() as Category;
-}
-
-/**
- * Ensures the heat exists in Firestore.
- */
-async function ensureHeat(eventId: string, heatId: string, heatData: Heat) {
-  const heatRef = db.collection(heatCollectionPath(eventId)).doc(heatId);
-  const heatSnapshot = await heatRef.get();
-
-  if (!heatSnapshot.exists) {
-    await heatRef.set(heatData);
-    console.log(`✅ Added new heat: ${heatData.name}`);
-  }
 }

@@ -5,7 +5,7 @@
     "lint:fix": "eslint --fix --ext .ts src ",
     "build": "npm run lint && tsc",
     "build:watch": "tsc --watch",
-    "serve:only": "npm run build",
+    "serve:only": "npm run lint:fix &&  npm run build",
     "serve": "npm run build && firebase emulators:start",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",

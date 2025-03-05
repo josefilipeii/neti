@@ -45,29 +45,51 @@ export interface Participant {
 }
 
 
-export interface QRRedemption {
-    at: Date | Timestamp;
-    by: string;
-    how: string;
-}
-
-export interface QRDocument{
+export interface QRCompetition {
     id: string;
-    competition: string;
-    createdAt: string;
-    dorsal?: string;
-    heat?: string;
-    day?: string;
-    time?: string;
-    type: 'registration' | 'addon';
-    category?: string;
-    redeemableBy?: string[];
-    recipients: Recipient[];
-    self: string;
-    redeemed?: QRRedemption;
+    name: string;
 }
 
-export interface Recipient{
+interface QRHeat{
+    id: string;
+    name: string;
+    day: string;
+    time: string;
+}
+
+export interface QRegistration {
+    heat: QRHeat;
+    dorsal: string;
+    category: QRCategory;
+}
+
+export interface QRCategory {
+    id: string;
+    name: string;
+}
+
+
+interface QRRecipient {
     email: string;
     name?: string;
+}
+
+export interface QRDocument {
+    id: string;
+    createdAt: string;
+    type: "registration" | "addon";
+    redeemed?: QRRedemption;
+    redeemableBy: string[];
+    recipients: QRRecipient[];
+}
+
+export interface QRRegistrationDocument extends QRDocument {
+    competition: QRCompetition;
+    registration: QRegistration;
+}
+
+export interface QRRedemption {
+    at: Date;
+    how: string;
+    by: string;
 }

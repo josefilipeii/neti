@@ -1,7 +1,8 @@
 import { Category, Competition } from "../../../../packages/shared";
-import { Bucket, StorageHandler } from "../domain";
+import { StorageHandler } from "../domain";
 import { addonsDirectory, participantsDirectory } from "../constants";
 import { db, storage } from "../firebase";
+import {Bucket} from "@google-cloud/storage";
 
 export const useCompetitionsHandler: StorageHandler = async (object) => {
   const bucketName = object.data.bucket;
@@ -18,7 +19,7 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
     return;
   }
 
-  const bucket = storage.bucket(bucketName);
+  const bucket: Bucket = storage.bucket(bucketName);
   const file = bucket.file(filePath);
 
   try {

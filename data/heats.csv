@@ -1,0 +1,232 @@
+heatName,heatDay,heatTime,dorsal,category,name,email,contact
+Men  - Heat 1,2025-05-12,08:00,0800-01,Hybrid Men,Name LastName Athlete 1,jose.filipe.chavarria+at1@gmail.com,910000001
+Men  - Heat 1,2025-05-12,08:00,0800-02,Hybrid Men,Name LastName Athlete 2,jose.filipe.chavarria+at2@gmail.com,910000002
+Men  - Heat 1,2025-05-12,08:00,0800-03,Hybrid Men,Name LastName Athlete 3,jose.filipe.chavarria+at3@gmail.com,910000003
+Men  - Heat 1,2025-05-12,08:00,0800-04,Hybrid Men,Name LastName Athlete 4,jose.filipe.chavarria+at4@gmail.com,910000004
+Men  - Heat 1,2025-05-12,08:00,0800-05,Hybrid Men,Name LastName Athlete 5,jose.filipe.chavarria+at5@gmail.com,910000005
+Men  - Heat 1,2025-05-12,08:00,0800-06,Hybrid Men,Name LastName Athlete 6,jose.filipe.chavarria+at6@gmail.com,910000006
+Men  - Heat 1,2025-05-12,08:00,0800-07,Hybrid Men,Name LastName Athlete 7,jose.filipe.chavarria+at7@gmail.com,910000007
+Men - Heat 2,2025-05-12,08:15,0815-01,Hybrid Men,Name LastName Athlete 8,jose.filipe.chavarria+at8@gmail.com,910000008
+Men - Heat 2,2025-05-12,08:15,0815-02,Hybrid Men,Name LastName Athlete 9,jose.filipe.chavarria+at9@gmail.com,910000009
+Men - Heat 2,2025-05-12,08:15,0815-03,Hybrid Men,Name LastName Athlete 10,jose.filipe.chavarria+at10@gmail.com,910000010
+Men - Heat 2,2025-05-12,08:15,0815-04,Hybrid Men,Name LastName Athlete 11,jose.filipe.chavarria+at11@gmail.com,910000011
+Men - Heat 2,2025-05-12,08:15,0815-05,Hybrid Men,Name LastName Athlete 12,jose.filipe.chavarria+at12@gmail.com,910000012
+Men - Heat 2,2025-05-12,08:15,0815-06,Hybrid Men,Name LastName Athlete 13,jose.filipe.chavarria+at13@gmail.com,910000013
+Men - Heat 2,2025-05-12,08:15,0815-07,Hybrid Men,Name LastName Athlete 14,jose.filipe.chavarria+at14@gmail.com,910000014
+Men - Heat 3,2025-05-12,08:30,0830-01,Hybrid Men,Name LastName Athlete 15,jose.filipe.chavarria+at15@gmail.com,910000015
+Men - Heat 3,2025-05-12,08:30,0830-02,Hybrid Men,Name LastName Athlete 16,jose.filipe.chavarria+at16@gmail.com,910000016
+Men - Heat 3,2025-05-12,08:30,0830-03,Hybrid Men,Name LastName Athlete 17,jose.filipe.chavarria+at17@gmail.com,910000017
+Men - Heat 3,2025-05-12,08:30,0830-04,Hybrid Men,Name LastName Athlete 18,jose.filipe.chavarria+at18@gmail.com,910000018
+Men - Heat 3,2025-05-12,08:30,0830-05,Hybrid Men,Name LastName Athlete 19,jose.filipe.chavarria+at19@gmail.com,910000019
+Men - Heat 3,2025-05-12,08:30,0830-06,Hybrid Men,Name LastName Athlete 20,jose.filipe.chavarria+at20@gmail.com,910000020
+Men - Heat 3,2025-05-12,08:30,0830-07,Hybrid Men,Name LastName Athlete 21,jose.filipe.chavarria+at21@gmail.com,910000021
+Men - Heat 4,2025-05-12,08:35,0835-01,Hybrid Men,Name LastName Athlete 22,jose.filipe.chavarria+at22@gmail.com,910000022
+Men - Heat 4,2025-05-12,08:35,0835-02,Hybrid Men,Name LastName Athlete 23,jose.filipe.chavarria+at23@gmail.com,910000023
+Men - Heat 4,2025-05-12,08:35,0835-03,Hybrid Men,Name LastName Athlete 24,jose.filipe.chavarria+at24@gmail.com,910000024
+Men - Heat 4,2025-05-12,08:35,0835-04,Hybrid Men,Name LastName Athlete 25,jose.filipe.chavarria+at25@gmail.com,910000025
+Men - Heat 4,2025-05-12,08:35,0835-05,Hybrid Men,Name LastName Athlete 26,jose.filipe.chavarria+at26@gmail.com,910000026
+Men - Heat 4,2025-05-12,08:35,0835-06,Hybrid Men,Name LastName Athlete 27,jose.filipe.chavarria+at27@gmail.com,910000027
+Men - Heat 4,2025-05-12,08:35,0835-07,Hybrid Men,Name LastName Athlete 28,jose.filipe.chavarria+at28@gmail.com,910000028
+Men - Heat 5,2025-05-12,08:55,0855-01,Hybrid Men,Name LastName Athlete 29,jose.filipe.chavarria+at29@gmail.com,910000029
+Men - Heat 5,2025-05-12,08:55,0855-02,Hybrid Men,Name LastName Athlete 30,jose.filipe.chavarria+at30@gmail.com,910000030
+Men - Heat 5,2025-05-12,08:55,0855-03,Hybrid Men,Name LastName Athlete 31,jose.filipe.chavarria+at31@gmail.com,910000031
+Men - Heat 5,2025-05-12,08:55,0855-04,Hybrid Men,Name LastName Athlete 32,jose.filipe.chavarria+at32@gmail.com,910000032
+Men - Heat 5,2025-05-12,08:55,0855-05,Hybrid Men,Name LastName Athlete 33,jose.filipe.chavarria+at33@gmail.com,910000033
+Men - Heat 5,2025-05-12,08:55,0855-06,Hybrid Men,Name LastName Athlete 34,jose.filipe.chavarria+at34@gmail.com,910000034
+Men - Heat 5,2025-05-12,08:55,0855-07,Hybrid Men,Name LastName Athlete 35,jose.filipe.chavarria+at35@gmail.com,910000035
+Men - Heat 6,2025-05-12,09:15,0915-01,Hybrid Men,Name LastName Athlete 36,jose.filipe.chavarria+at36@gmail.com,910000036
+Men - Heat 6,2025-05-12,09:15,0915-02,Hybrid Men,Name LastName Athlete 37,jose.filipe.chavarria+at37@gmail.com,910000037
+Men - Heat 6,2025-05-12,09:15,0915-03,Hybrid Men,Name LastName Athlete 38,jose.filipe.chavarria+at38@gmail.com,910000038
+Men - Heat 6,2025-05-12,09:15,0915-04,Hybrid Men,Name LastName Athlete 39,jose.filipe.chavarria+at39@gmail.com,910000039
+Men - Heat 6,2025-05-12,09:15,0915-05,Hybrid Men,Name LastName Athlete 40,jose.filipe.chavarria+at40@gmail.com,910000040
+Men - Heat 6,2025-05-12,09:15,0915-06,Hybrid Men,Name LastName Athlete 41,jose.filipe.chavarria+at41@gmail.com,910000041
+Men - Heat 6,2025-05-12,09:15,0915-07,Hybrid Men,Name LastName Athlete 42,jose.filipe.chavarria+at42@gmail.com,910000042
+Men - Heat 7,2025-05-12,09:35,0935-01,Hybrid Men,Name LastName Athlete 43,jose.filipe.chavarria+at43@gmail.com,910000043
+Men - Heat 7,2025-05-12,09:35,0935-02,Hybrid Men,Name LastName Athlete 44,jose.filipe.chavarria+at44@gmail.com,910000044
+Men - Heat 7,2025-05-12,09:35,0935-03,Hybrid Men,Name LastName Athlete 45,jose.filipe.chavarria+at45@gmail.com,910000045
+Men - Heat 7,2025-05-12,09:35,0935-04,Hybrid Men,Name LastName Athlete 46,jose.filipe.chavarria+at46@gmail.com,910000046
+Men - Heat 7,2025-05-12,09:35,0935-05,Hybrid Men,Name LastName Athlete 47,jose.filipe.chavarria+at47@gmail.com,910000047
+Men - Heat 7,2025-05-12,09:35,0935-06,Hybrid Men,Name LastName Athlete 48,jose.filipe.chavarria+at48@gmail.com,910000048
+Men - Heat 7,2025-05-12,09:35,0935-07,Hybrid Men,Name LastName Athlete 49,jose.filipe.chavarria+at49@gmail.com,910000049
+Men - Heat 8,2025-05-12,09:55,0955-01,Hybrid Men,Name LastName Athlete 50,jose.filipe.chavarria+at50@gmail.com,910000050
+Men - Heat 8,2025-05-12,09:55,0955-02,Hybrid Men,Name LastName Athlete 51,jose.filipe.chavarria+at51@gmail.com,910000051
+Men - Heat 8,2025-05-12,09:55,0955-03,Hybrid Men,Name LastName Athlete 52,jose.filipe.chavarria+at52@gmail.com,910000052
+Men - Heat 8,2025-05-12,09:55,0955-04,Hybrid Men,Name LastName Athlete 53,jose.filipe.chavarria+at53@gmail.com,910000053
+Men - Heat 8,2025-05-12,09:55,0955-05,Hybrid Men,Name LastName Athlete 54,jose.filipe.chavarria+at54@gmail.com,910000054
+Men - Heat 8,2025-05-12,09:55,0955-06,Hybrid Men,Name LastName Athlete 55,jose.filipe.chavarria+at55@gmail.com,910000055
+Men - Heat 8,2025-05-12,09:55,0955-07,Hybrid Men,Name LastName Athlete 56,jose.filipe.chavarria+at56@gmail.com,910000056
+Pro Men - Heat 9,2025-05-12,10:25,1025-01,Hybrid Pro Men,Name LastName Athlete 57,jose.filipe.chavarria+at57@gmail.com,910000057
+Pro Men - Heat 9,2025-05-12,10:25,1025-02,Hybrid Pro Men,Name LastName Athlete 58,jose.filipe.chavarria+at58@gmail.com,910000058
+Pro Men - Heat 9,2025-05-12,10:25,1025-03,Hybrid Pro Men,Name LastName Athlete 59,jose.filipe.chavarria+at59@gmail.com,910000059
+Pro Men - Heat 9,2025-05-12,10:25,1025-04,Hybrid Pro Men,Name LastName Athlete 60,jose.filipe.chavarria+at60@gmail.com,910000060
+Pro Men - Heat 9,2025-05-12,10:25,1025-05,Hybrid Pro Men,Name LastName Athlete 61,jose.filipe.chavarria+at61@gmail.com,910000061
+Pro Men - Heat 9,2025-05-12,10:25,1025-06,Hybrid Pro Men,Name LastName Athlete 62,jose.filipe.chavarria+at62@gmail.com,910000062
+Pro Men - Heat 9,2025-05-12,10:25,1025-07,Hybrid Pro Men,Name LastName Athlete 63,jose.filipe.chavarria+at63@gmail.com,910000063
+Pro Men - Heat 10,2025-05-12,10:45,1045-01,Hybrid Pro Men,Name LastName Athlete 64,jose.filipe.chavarria+at64@gmail.com,910000064
+Pro Men - Heat 10,2025-05-12,10:45,1045-02,Hybrid Pro Men,Name LastName Athlete 65,jose.filipe.chavarria+at65@gmail.com,910000065
+Pro Men - Heat 10,2025-05-12,10:45,1045-03,Hybrid Pro Men,Name LastName Athlete 66,jose.filipe.chavarria+at66@gmail.com,910000066
+Pro Men - Heat 10,2025-05-12,10:45,1045-04,Hybrid Pro Men,Name LastName Athlete 67,jose.filipe.chavarria+at67@gmail.com,910000067
+Pro Men - Heat 10,2025-05-12,10:45,1045-05,Hybrid Pro Men,Name LastName Athlete 68,jose.filipe.chavarria+at68@gmail.com,910000068
+Pro Men - Heat 10,2025-05-12,10:45,1045-06,Hybrid Pro Men,Name LastName Athlete 69,jose.filipe.chavarria+at69@gmail.com,910000069
+Pro Men - Heat 10,2025-05-12,10:45,1045-07,Hybrid Pro Men,Name LastName Athlete 70,jose.filipe.chavarria+at70@gmail.com,910000070
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-01,Hybrid Pro Women,Name LastName Athlete 71,jose.filipe.chavarria+at71@gmail.com,910000071
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-02,Hybrid Women,Name LastName Athlete 72,jose.filipe.chavarria+at72@gmail.com,910000072
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-03,Hybrid Women,Name LastName Athlete 73,jose.filipe.chavarria+at73@gmail.com,910000073
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-04,Hybrid Women,Name LastName Athlete 74,jose.filipe.chavarria+at74@gmail.com,910000074
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-05,Hybrid Women,Name LastName Athlete 75,jose.filipe.chavarria+at75@gmail.com,910000075
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-06,Hybrid Women,Name LastName Athlete 76,jose.filipe.chavarria+at76@gmail.com,910000076
+Pro Woman &  Woman - Heat 17,2025-05-12,13:00,1300-07,Hybrid Women,Name LastName Athlete 77,jose.filipe.chavarria+at77@gmail.com,910000077
+Men  - Heat 1,2025-05-13,08:00,0800-01,Hybrid Men,Name LastName Athlete 1,jose.filipe.chavarria+at1@gmail.com,910000001
+Men  - Heat 1,2025-05-13,08:00,0800-02,Hybrid Men,Name LastName Athlete 2,jose.filipe.chavarria+at2@gmail.com,910000002
+Men  - Heat 1,2025-05-13,08:00,0800-03,Hybrid Men,Name LastName Athlete 3,jose.filipe.chavarria+at3@gmail.com,910000003
+Men  - Heat 1,2025-05-13,08:00,0800-04,Hybrid Men,Name LastName Athlete 4,jose.filipe.chavarria+at4@gmail.com,910000004
+Men  - Heat 1,2025-05-13,08:00,0800-05,Hybrid Men,Name LastName Athlete 5,jose.filipe.chavarria+at5@gmail.com,910000005
+Men  - Heat 1,2025-05-13,08:00,0800-06,Hybrid Men,Name LastName Athlete 6,jose.filipe.chavarria+at6@gmail.com,910000006
+Men  - Heat 1,2025-05-13,08:00,0800-07,Hybrid Men,Name LastName Athlete 7,jose.filipe.chavarria+at7@gmail.com,910000007
+Men - Heat 2,2025-05-13,08:15,0815-01,Hybrid Men,Name LastName Athlete 8,jose.filipe.chavarria+at8@gmail.com,910000008
+Men - Heat 2,2025-05-13,08:15,0815-02,Hybrid Men,Name LastName Athlete 9,jose.filipe.chavarria+at9@gmail.com,910000009
+Men - Heat 2,2025-05-13,08:15,0815-03,Hybrid Men,Name LastName Athlete 10,jose.filipe.chavarria+at10@gmail.com,910000010
+Men - Heat 2,2025-05-13,08:15,0815-04,Hybrid Men,Name LastName Athlete 11,jose.filipe.chavarria+at11@gmail.com,910000011
+Men - Heat 2,2025-05-13,08:15,0815-05,Hybrid Men,Name LastName Athlete 12,jose.filipe.chavarria+at12@gmail.com,910000012
+Men - Heat 2,2025-05-13,08:15,0815-06,Hybrid Men,Name LastName Athlete 13,jose.filipe.chavarria+at13@gmail.com,910000013
+Men - Heat 2,2025-05-13,08:15,0815-07,Hybrid Men,Name LastName Athlete 14,jose.filipe.chavarria+at14@gmail.com,910000014
+Men - Heat 3,2025-05-13,08:30,0830-01,Hybrid Men,Name LastName Athlete 15,jose.filipe.chavarria+at15@gmail.com,910000015
+Men - Heat 3,2025-05-13,08:30,0830-02,Hybrid Men,Name LastName Athlete 16,jose.filipe.chavarria+at16@gmail.com,910000016
+Men - Heat 3,2025-05-13,08:30,0830-03,Hybrid Men,Name LastName Athlete 17,jose.filipe.chavarria+at17@gmail.com,910000017
+Men - Heat 3,2025-05-13,08:30,0830-04,Hybrid Men,Name LastName Athlete 18,jose.filipe.chavarria+at18@gmail.com,910000018
+Men - Heat 3,2025-05-13,08:30,0830-05,Hybrid Men,Name LastName Athlete 19,jose.filipe.chavarria+at19@gmail.com,910000019
+Men - Heat 3,2025-05-13,08:30,0830-06,Hybrid Men,Name LastName Athlete 20,jose.filipe.chavarria+at20@gmail.com,910000020
+Men - Heat 3,2025-05-13,08:30,0830-07,Hybrid Men,Name LastName Athlete 21,jose.filipe.chavarria+at21@gmail.com,910000021
+Men - Heat 4,2025-05-13,08:35,0835-01,Hybrid Men,Name LastName Athlete 22,jose.filipe.chavarria+at22@gmail.com,910000022
+Men - Heat 4,2025-05-13,08:35,0835-02,Hybrid Men,Name LastName Athlete 23,jose.filipe.chavarria+at23@gmail.com,910000023
+Men - Heat 4,2025-05-13,08:35,0835-03,Hybrid Men,Name LastName Athlete 24,jose.filipe.chavarria+at24@gmail.com,910000024
+Men - Heat 4,2025-05-13,08:35,0835-04,Hybrid Men,Name LastName Athlete 25,jose.filipe.chavarria+at25@gmail.com,910000025
+Men - Heat 4,2025-05-13,08:35,0835-05,Hybrid Men,Name LastName Athlete 26,jose.filipe.chavarria+at26@gmail.com,910000026
+Men - Heat 4,2025-05-13,08:35,0835-06,Hybrid Men,Name LastName Athlete 27,jose.filipe.chavarria+at27@gmail.com,910000027
+Men - Heat 4,2025-05-13,08:35,0835-07,Hybrid Men,Name LastName Athlete 28,jose.filipe.chavarria+at28@gmail.com,910000028
+Men - Heat 5,2025-05-13,08:55,0855-01,Hybrid Men,Name LastName Athlete 29,jose.filipe.chavarria+at29@gmail.com,910000029
+Men - Heat 5,2025-05-13,08:55,0855-02,Hybrid Men,Name LastName Athlete 30,jose.filipe.chavarria+at30@gmail.com,910000030
+Men - Heat 5,2025-05-13,08:55,0855-03,Hybrid Men,Name LastName Athlete 31,jose.filipe.chavarria+at31@gmail.com,910000031
+Men - Heat 5,2025-05-13,08:55,0855-04,Hybrid Men,Name LastName Athlete 32,jose.filipe.chavarria+at32@gmail.com,910000032
+Men - Heat 5,2025-05-13,08:55,0855-05,Hybrid Men,Name LastName Athlete 33,jose.filipe.chavarria+at33@gmail.com,910000033
+Men - Heat 5,2025-05-13,08:55,0855-06,Hybrid Men,Name LastName Athlete 34,jose.filipe.chavarria+at34@gmail.com,910000034
+Men - Heat 5,2025-05-13,08:55,0855-07,Hybrid Men,Name LastName Athlete 35,jose.filipe.chavarria+at35@gmail.com,910000035
+Men - Heat 6,2025-05-13,09:15,0915-01,Hybrid Men,Name LastName Athlete 36,jose.filipe.chavarria+at36@gmail.com,910000036
+Men - Heat 6,2025-05-13,09:15,0915-02,Hybrid Men,Name LastName Athlete 37,jose.filipe.chavarria+at37@gmail.com,910000037
+Men - Heat 6,2025-05-13,09:15,0915-03,Hybrid Men,Name LastName Athlete 38,jose.filipe.chavarria+at38@gmail.com,910000038
+Men - Heat 6,2025-05-13,09:15,0915-04,Hybrid Men,Name LastName Athlete 39,jose.filipe.chavarria+at39@gmail.com,910000039
+Men - Heat 6,2025-05-13,09:15,0915-05,Hybrid Men,Name LastName Athlete 40,jose.filipe.chavarria+at40@gmail.com,910000040
+Men - Heat 6,2025-05-13,09:15,0915-06,Hybrid Men,Name LastName Athlete 41,jose.filipe.chavarria+at41@gmail.com,910000041
+Men - Heat 6,2025-05-13,09:15,0915-07,Hybrid Men,Name LastName Athlete 42,jose.filipe.chavarria+at42@gmail.com,910000042
+Men - Heat 7,2025-05-13,09:35,0935-01,Hybrid Men,Name LastName Athlete 43,jose.filipe.chavarria+at43@gmail.com,910000043
+Men - Heat 7,2025-05-13,09:35,0935-02,Hybrid Men,Name LastName Athlete 44,jose.filipe.chavarria+at44@gmail.com,910000044
+Men - Heat 7,2025-05-13,09:35,0935-03,Hybrid Men,Name LastName Athlete 45,jose.filipe.chavarria+at45@gmail.com,910000045
+Men - Heat 7,2025-05-13,09:35,0935-04,Hybrid Men,Name LastName Athlete 46,jose.filipe.chavarria+at46@gmail.com,910000046
+Men - Heat 7,2025-05-13,09:35,0935-05,Hybrid Men,Name LastName Athlete 47,jose.filipe.chavarria+at47@gmail.com,910000047
+Men - Heat 7,2025-05-13,09:35,0935-06,Hybrid Men,Name LastName Athlete 48,jose.filipe.chavarria+at48@gmail.com,910000048
+Men - Heat 7,2025-05-13,09:35,0935-07,Hybrid Men,Name LastName Athlete 49,jose.filipe.chavarria+at49@gmail.com,910000049
+Men - Heat 8,2025-05-13,09:55,0955-01,Hybrid Men,Name LastName Athlete 50,jose.filipe.chavarria+at50@gmail.com,910000050
+Men - Heat 8,2025-05-13,09:55,0955-02,Hybrid Men,Name LastName Athlete 51,jose.filipe.chavarria+at51@gmail.com,910000051
+Men - Heat 8,2025-05-13,09:55,0955-03,Hybrid Men,Name LastName Athlete 52,jose.filipe.chavarria+at52@gmail.com,910000052
+Men - Heat 8,2025-05-13,09:55,0955-04,Hybrid Men,Name LastName Athlete 53,jose.filipe.chavarria+at53@gmail.com,910000053
+Men - Heat 8,2025-05-13,09:55,0955-05,Hybrid Men,Name LastName Athlete 54,jose.filipe.chavarria+at54@gmail.com,910000054
+Men - Heat 8,2025-05-13,09:55,0955-06,Hybrid Men,Name LastName Athlete 55,jose.filipe.chavarria+at55@gmail.com,910000055
+Men - Heat 8,2025-05-13,09:55,0955-07,Hybrid Men,Name LastName Athlete 56,jose.filipe.chavarria+at56@gmail.com,910000056
+Pro Men - Heat 9,2025-05-13,10:25,1025-01,Hybrid Pro Men,Name LastName Athlete 57,jose.filipe.chavarria+at57@gmail.com,910000057
+Pro Men - Heat 9,2025-05-13,10:25,1025-02,Hybrid Pro Men,Name LastName Athlete 58,jose.filipe.chavarria+at58@gmail.com,910000058
+Pro Men - Heat 9,2025-05-13,10:25,1025-03,Hybrid Pro Men,Name LastName Athlete 59,jose.filipe.chavarria+at59@gmail.com,910000059
+Pro Men - Heat 9,2025-05-13,10:25,1025-04,Hybrid Pro Men,Name LastName Athlete 60,jose.filipe.chavarria+at60@gmail.com,910000060
+Pro Men - Heat 9,2025-05-13,10:25,1025-05,Hybrid Pro Men,Name LastName Athlete 61,jose.filipe.chavarria+at61@gmail.com,910000061
+Pro Men - Heat 9,2025-05-13,10:25,1025-06,Hybrid Pro Men,Name LastName Athlete 62,jose.filipe.chavarria+at62@gmail.com,910000062
+Pro Men - Heat 9,2025-05-13,10:25,1025-07,Hybrid Pro Men,Name LastName Athlete 63,jose.filipe.chavarria+at63@gmail.com,910000063
+Pro Men - Heat 10,2025-05-13,10:45,1045-01,Hybrid Pro Men,Name LastName Athlete 64,jose.filipe.chavarria+at64@gmail.com,910000064
+Pro Men - Heat 10,2025-05-13,10:45,1045-02,Hybrid Pro Men,Name LastName Athlete 65,jose.filipe.chavarria+at65@gmail.com,910000065
+Pro Men - Heat 10,2025-05-13,10:45,1045-03,Hybrid Pro Men,Name LastName Athlete 66,jose.filipe.chavarria+at66@gmail.com,910000066
+Pro Men - Heat 10,2025-05-13,10:45,1045-04,Hybrid Pro Men,Name LastName Athlete 67,jose.filipe.chavarria+at67@gmail.com,910000067
+Pro Men - Heat 10,2025-05-13,10:45,1045-05,Hybrid Pro Men,Name LastName Athlete 68,jose.filipe.chavarria+at68@gmail.com,910000068
+Pro Men - Heat 10,2025-05-13,10:45,1045-06,Hybrid Pro Men,Name LastName Athlete 69,jose.filipe.chavarria+at69@gmail.com,910000069
+Pro Men - Heat 10,2025-05-13,10:45,1045-07,Hybrid Pro Men,Name LastName Athlete 70,jose.filipe.chavarria+at70@gmail.com,910000070
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-01,Hybrid Pro Women,Name LastName Athlete 71,jose.filipe.chavarria+at71@gmail.com,910000071
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-02,Hybrid Women,Name LastName Athlete 72,jose.filipe.chavarria+at72@gmail.com,910000072
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-03,Hybrid Women,Name LastName Athlete 73,jose.filipe.chavarria+at73@gmail.com,910000073
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-04,Hybrid Women,Name LastName Athlete 74,jose.filipe.chavarria+at74@gmail.com,910000074
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-05,Hybrid Women,Name LastName Athlete 75,jose.filipe.chavarria+at75@gmail.com,910000075
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-06,Hybrid Women,Name LastName Athlete 76,jose.filipe.chavarria+at76@gmail.com,910000076
+Pro Woman &  Woman - Heat 17,2025-05-13,13:00,1300-07,Hybrid Women,Name LastName Athlete 77,jose.filipe.chavarria+at77@gmail.com,910000077
+Men  - Heat 1,2025-05-14,08:00,0800-01,Hybrid Men,Name LastName Athlete 1,jose.filipe.chavarria+at1@gmail.com,910000001
+Men  - Heat 1,2025-05-14,08:00,0800-02,Hybrid Men,Name LastName Athlete 2,jose.filipe.chavarria+at2@gmail.com,910000002
+Men  - Heat 1,2025-05-14,08:00,0800-03,Hybrid Men,Name LastName Athlete 3,jose.filipe.chavarria+at3@gmail.com,910000003
+Men  - Heat 1,2025-05-14,08:00,0800-04,Hybrid Men,Name LastName Athlete 4,jose.filipe.chavarria+at4@gmail.com,910000004
+Men  - Heat 1,2025-05-14,08:00,0800-05,Hybrid Men,Name LastName Athlete 5,jose.filipe.chavarria+at5@gmail.com,910000005
+Men  - Heat 1,2025-05-14,08:00,0800-06,Hybrid Men,Name LastName Athlete 6,jose.filipe.chavarria+at6@gmail.com,910000006
+Men  - Heat 1,2025-05-14,08:00,0800-07,Hybrid Men,Name LastName Athlete 7,jose.filipe.chavarria+at7@gmail.com,910000007
+Men - Heat 2,2025-05-14,08:15,0815-01,Hybrid Men,Name LastName Athlete 8,jose.filipe.chavarria+at8@gmail.com,910000008
+Men - Heat 2,2025-05-14,08:15,0815-02,Hybrid Men,Name LastName Athlete 9,jose.filipe.chavarria+at9@gmail.com,910000009
+Men - Heat 2,2025-05-14,08:15,0815-03,Hybrid Men,Name LastName Athlete 10,jose.filipe.chavarria+at10@gmail.com,910000010
+Men - Heat 2,2025-05-14,08:15,0815-04,Hybrid Men,Name LastName Athlete 11,jose.filipe.chavarria+at11@gmail.com,910000011
+Men - Heat 2,2025-05-14,08:15,0815-05,Hybrid Men,Name LastName Athlete 12,jose.filipe.chavarria+at12@gmail.com,910000012
+Men - Heat 2,2025-05-14,08:15,0815-06,Hybrid Men,Name LastName Athlete 13,jose.filipe.chavarria+at13@gmail.com,910000013
+Men - Heat 2,2025-05-14,08:15,0815-07,Hybrid Men,Name LastName Athlete 14,jose.filipe.chavarria+at14@gmail.com,910000014
+Men - Heat 3,2025-05-14,08:30,0830-01,Hybrid Men,Name LastName Athlete 15,jose.filipe.chavarria+at15@gmail.com,910000015
+Men - Heat 3,2025-05-14,08:30,0830-02,Hybrid Men,Name LastName Athlete 16,jose.filipe.chavarria+at16@gmail.com,910000016
+Men - Heat 3,2025-05-14,08:30,0830-03,Hybrid Men,Name LastName Athlete 17,jose.filipe.chavarria+at17@gmail.com,910000017
+Men - Heat 3,2025-05-14,08:30,0830-04,Hybrid Men,Name LastName Athlete 18,jose.filipe.chavarria+at18@gmail.com,910000018
+Men - Heat 3,2025-05-14,08:30,0830-05,Hybrid Men,Name LastName Athlete 19,jose.filipe.chavarria+at19@gmail.com,910000019
+Men - Heat 3,2025-05-14,08:30,0830-06,Hybrid Men,Name LastName Athlete 20,jose.filipe.chavarria+at20@gmail.com,910000020
+Men - Heat 3,2025-05-14,08:30,0830-07,Hybrid Men,Name LastName Athlete 21,jose.filipe.chavarria+at21@gmail.com,910000021
+Men - Heat 4,2025-05-14,08:35,0835-01,Hybrid Men,Name LastName Athlete 22,jose.filipe.chavarria+at22@gmail.com,910000022
+Men - Heat 4,2025-05-14,08:35,0835-02,Hybrid Men,Name LastName Athlete 23,jose.filipe.chavarria+at23@gmail.com,910000023
+Men - Heat 4,2025-05-14,08:35,0835-03,Hybrid Men,Name LastName Athlete 24,jose.filipe.chavarria+at24@gmail.com,910000024
+Men - Heat 4,2025-05-14,08:35,0835-04,Hybrid Men,Name LastName Athlete 25,jose.filipe.chavarria+at25@gmail.com,910000025
+Men - Heat 4,2025-05-14,08:35,0835-05,Hybrid Men,Name LastName Athlete 26,jose.filipe.chavarria+at26@gmail.com,910000026
+Men - Heat 4,2025-05-14,08:35,0835-06,Hybrid Men,Name LastName Athlete 27,jose.filipe.chavarria+at27@gmail.com,910000027
+Men - Heat 4,2025-05-14,08:35,0835-07,Hybrid Men,Name LastName Athlete 28,jose.filipe.chavarria+at28@gmail.com,910000028
+Men - Heat 5,2025-05-14,08:55,0855-01,Hybrid Men,Name LastName Athlete 29,jose.filipe.chavarria+at29@gmail.com,910000029
+Men - Heat 5,2025-05-14,08:55,0855-02,Hybrid Men,Name LastName Athlete 30,jose.filipe.chavarria+at30@gmail.com,910000030
+Men - Heat 5,2025-05-14,08:55,0855-03,Hybrid Men,Name LastName Athlete 31,jose.filipe.chavarria+at31@gmail.com,910000031
+Men - Heat 5,2025-05-14,08:55,0855-04,Hybrid Men,Name LastName Athlete 32,jose.filipe.chavarria+at32@gmail.com,910000032
+Men - Heat 5,2025-05-14,08:55,0855-05,Hybrid Men,Name LastName Athlete 33,jose.filipe.chavarria+at33@gmail.com,910000033
+Men - Heat 5,2025-05-14,08:55,0855-06,Hybrid Men,Name LastName Athlete 34,jose.filipe.chavarria+at34@gmail.com,910000034
+Men - Heat 5,2025-05-14,08:55,0855-07,Hybrid Men,Name LastName Athlete 35,jose.filipe.chavarria+at35@gmail.com,910000035
+Men - Heat 6,2025-05-14,09:15,0915-01,Hybrid Men,Name LastName Athlete 36,jose.filipe.chavarria+at36@gmail.com,910000036
+Men - Heat 6,2025-05-14,09:15,0915-02,Hybrid Men,Name LastName Athlete 37,jose.filipe.chavarria+at37@gmail.com,910000037
+Men - Heat 6,2025-05-14,09:15,0915-03,Hybrid Men,Name LastName Athlete 38,jose.filipe.chavarria+at38@gmail.com,910000038
+Men - Heat 6,2025-05-14,09:15,0915-04,Hybrid Men,Name LastName Athlete 39,jose.filipe.chavarria+at39@gmail.com,910000039
+Men - Heat 6,2025-05-14,09:15,0915-05,Hybrid Men,Name LastName Athlete 40,jose.filipe.chavarria+at40@gmail.com,910000040
+Men - Heat 6,2025-05-14,09:15,0915-06,Hybrid Men,Name LastName Athlete 41,jose.filipe.chavarria+at41@gmail.com,910000041
+Men - Heat 6,2025-05-14,09:15,0915-07,Hybrid Men,Name LastName Athlete 42,jose.filipe.chavarria+at42@gmail.com,910000042
+Men - Heat 7,2025-05-14,09:35,0935-01,Hybrid Men,Name LastName Athlete 43,jose.filipe.chavarria+at43@gmail.com,910000043
+Men - Heat 7,2025-05-14,09:35,0935-02,Hybrid Men,Name LastName Athlete 44,jose.filipe.chavarria+at44@gmail.com,910000044
+Men - Heat 7,2025-05-14,09:35,0935-03,Hybrid Men,Name LastName Athlete 45,jose.filipe.chavarria+at45@gmail.com,910000045
+Men - Heat 7,2025-05-14,09:35,0935-04,Hybrid Men,Name LastName Athlete 46,jose.filipe.chavarria+at46@gmail.com,910000046
+Men - Heat 7,2025-05-14,09:35,0935-05,Hybrid Men,Name LastName Athlete 47,jose.filipe.chavarria+at47@gmail.com,910000047
+Men - Heat 7,2025-05-14,09:35,0935-06,Hybrid Men,Name LastName Athlete 48,jose.filipe.chavarria+at48@gmail.com,910000048
+Men - Heat 7,2025-05-14,09:35,0935-07,Hybrid Men,Name LastName Athlete 49,jose.filipe.chavarria+at49@gmail.com,910000049
+Men - Heat 8,2025-05-14,09:55,0955-01,Hybrid Men,Name LastName Athlete 50,jose.filipe.chavarria+at50@gmail.com,910000050
+Men - Heat 8,2025-05-14,09:55,0955-02,Hybrid Men,Name LastName Athlete 51,jose.filipe.chavarria+at51@gmail.com,910000051
+Men - Heat 8,2025-05-14,09:55,0955-03,Hybrid Men,Name LastName Athlete 52,jose.filipe.chavarria+at52@gmail.com,910000052
+Men - Heat 8,2025-05-14,09:55,0955-04,Hybrid Men,Name LastName Athlete 53,jose.filipe.chavarria+at53@gmail.com,910000053
+Men - Heat 8,2025-05-14,09:55,0955-05,Hybrid Men,Name LastName Athlete 54,jose.filipe.chavarria+at54@gmail.com,910000054
+Men - Heat 8,2025-05-14,09:55,0955-06,Hybrid Men,Name LastName Athlete 55,jose.filipe.chavarria+at55@gmail.com,910000055
+Men - Heat 8,2025-05-14,09:55,0955-07,Hybrid Men,Name LastName Athlete 56,jose.filipe.chavarria+at56@gmail.com,910000056
+Pro Men - Heat 9,2025-05-14,10:25,1025-01,Hybrid Pro Men,Name LastName Athlete 57,jose.filipe.chavarria+at57@gmail.com,910000057
+Pro Men - Heat 9,2025-05-14,10:25,1025-02,Hybrid Pro Men,Name LastName Athlete 58,jose.filipe.chavarria+at58@gmail.com,910000058
+Pro Men - Heat 9,2025-05-14,10:25,1025-03,Hybrid Pro Men,Name LastName Athlete 59,jose.filipe.chavarria+at59@gmail.com,910000059
+Pro Men - Heat 9,2025-05-14,10:25,1025-04,Hybrid Pro Men,Name LastName Athlete 60,jose.filipe.chavarria+at60@gmail.com,910000060
+Pro Men - Heat 9,2025-05-14,10:25,1025-05,Hybrid Pro Men,Name LastName Athlete 61,jose.filipe.chavarria+at61@gmail.com,910000061
+Pro Men - Heat 9,2025-05-14,10:25,1025-06,Hybrid Pro Men,Name LastName Athlete 62,jose.filipe.chavarria+at62@gmail.com,910000062
+Pro Men - Heat 9,2025-05-14,10:25,1025-07,Hybrid Pro Men,Name LastName Athlete 63,jose.filipe.chavarria+at63@gmail.com,910000063
+Pro Men - Heat 10,2025-05-14,10:45,1045-01,Hybrid Pro Men,Name LastName Athlete 64,jose.filipe.chavarria+at64@gmail.com,910000064
+Pro Men - Heat 10,2025-05-14,10:45,1045-02,Hybrid Pro Men,Name LastName Athlete 65,jose.filipe.chavarria+at65@gmail.com,910000065
+Pro Men - Heat 10,2025-05-14,10:45,1045-03,Hybrid Pro Men,Name LastName Athlete 66,jose.filipe.chavarria+at66@gmail.com,910000066
+Pro Men - Heat 10,2025-05-14,10:45,1045-04,Hybrid Pro Men,Name LastName Athlete 67,jose.filipe.chavarria+at67@gmail.com,910000067
+Pro Men - Heat 10,2025-05-14,10:45,1045-05,Hybrid Pro Men,Name LastName Athlete 68,jose.filipe.chavarria+at68@gmail.com,910000068
+Pro Men - Heat 10,2025-05-14,10:45,1045-06,Hybrid Pro Men,Name LastName Athlete 69,jose.filipe.chavarria+at69@gmail.com,910000069
+Pro Men - Heat 10,2025-05-14,10:45,1045-07,Hybrid Pro Men,Name LastName Athlete 70,jose.filipe.chavarria+at70@gmail.com,910000070
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-01,Hybrid Pro Women,Name LastName Athlete 71,jose.filipe.chavarria+at71@gmail.com,910000071
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-02,Hybrid Women,Name LastName Athlete 72,jose.filipe.chavarria+at72@gmail.com,910000072
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-03,Hybrid Women,Name LastName Athlete 73,jose.filipe.chavarria+at73@gmail.com,910000073
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-04,Hybrid Women,Name LastName Athlete 74,jose.filipe.chavarria+at74@gmail.com,910000074
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-05,Hybrid Women,Name LastName Athlete 75,jose.filipe.chavarria+at75@gmail.com,910000075
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-06,Hybrid Women,Name LastName Athlete 76,jose.filipe.chavarria+at76@gmail.com,910000076
+Pro Woman &  Woman - Heat 17,2025-05-14,13:00,1300-07,Hybrid Women,Name LastName Athlete 77,jose.filipe.chavarria+at77@gmail.com,910000077
