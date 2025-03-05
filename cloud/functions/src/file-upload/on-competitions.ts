@@ -3,19 +3,20 @@ import { StorageHandler } from "../domain";
 import { addonsDirectory, participantsDirectory } from "../constants";
 import { db, storage } from "../firebase";
 import {Bucket} from "@google-cloud/storage";
+import {logger} from "firebase-functions";
 
 export const useCompetitionsHandler: StorageHandler = async (object) => {
   const bucketName = object.data.bucket;
   const filePath = object.data.name;
 
   if (!filePath) {
-    console.error("❌ Missing file path in storage event.");
+    logger.error("❌ Missing file path in storage event.");
     return;
   }
 
   // ✅ Ensure the file is in "competitions/" and is a JSON file
   if (!filePath.startsWith("competitions/") || !filePath.endsWith(".json")) {
-    console.log(`❌ Skipping file: ${filePath} (not in competitions/ or not a JSON)`);
+    logger.log(`❌ Skipping file: ${filePath} (not in competitions/ or not a JSON)`);
     return;
   }
 
@@ -35,7 +36,7 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
     await Promise.all(
       jsonData.competitions.map(async (competition: Competition) => {
         if (!competition.id || !competition.name || !competition.days) {
-          console.warn("⚠️ Skipping invalid competition:", competition);
+          logger.warn("⚠️ Skipping invalid competition:", competition);
           return;
         }
 
@@ -51,10 +52,10 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
               location: competition.location,
               days: competition.days,
             });
-            console.log(`✅ Competition '${competition.name}' added.`);
+            logger.log(`✅ Competition '${competition.name}' added.`);
           } else {
             transaction.update(competitionRef, { days: competition.days });
-            console.log(`⚠️ Competition '${competition.name}' exists. Updated days.`);
+            logger.log(`⚠️ Competition '${competition.name}' exists. Updated days.`);
           }
         });
 
@@ -65,9 +66,9 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
       })
     );
 
-    console.log("🚀 Firestore data successfully updated!");
+    logger.log("🚀 Firestore data successfully updated!");
   } catch (error) {
-    console.error("❌ Error processing file:", error);
+    logger.error("❌ Error processing file:", error);
   }
 };
 
@@ -102,17 +103,17 @@ async function processCategories(competitionId: string, categories: Category[]) 
 
   categories.forEach((category) => {
     if (!category.id || !category.name || !category.type) {
-      console.warn(`⚠️ Skipping invalid category in '${competitionId}':`, category);
+      logger.warn(`⚠️ Skipping invalid category in '${competitionId}':`, category);
       return;
     }
 
     const categoryRef = categoriesRef.doc(category.id);
     if (!existingCategories.has(category.id)) {
       batch.set(categoryRef, category);
-      console.log(`✅ Added category '${category.name}'`);
+      logger.log(`✅ Added category '${category.name}'`);
     } else {
       batch.set(categoryRef, category, { merge: true });
-      console.log(`⚠️ Category '${category.name}' already exists. Updated.`);
+      logger.log(`⚠️ Category '${category.name}' already exists. Updated.`);
     }
   });
 

@@ -8,6 +8,7 @@ import csv from "csv-parser";
 import { QR_BUCKET_NAME } from "./../constants";
 import { Bucket, File } from "@google-cloud/storage";
 import { DocumentReference, Transaction } from "firebase-admin/firestore";
+import {logger} from "firebase-functions";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
 
@@ -45,7 +46,7 @@ export const processParticipants: StorageHandler = async (object) => {
   const filePath: string = object.data.name;
 
   if (!filePath || !filePath.startsWith("participants/")) {
-    console.log(`❌ Skipping file: ${filePath}`);
+    logger.log(`❌ Skipping file: ${filePath}`);
     return;
   }
 
@@ -59,7 +60,7 @@ export const processParticipants: StorageHandler = async (object) => {
     const competitionRef: DocumentReference = db.collection("competitions").doc(eventId);
     const competitionSnap = await competitionRef.get();
     if (!competitionSnap.exists) {
-      console.error(`❌ Competition with ID ${eventId} does not exist.`);
+      logger.error(`❌ Competition with ID ${eventId} does not exist.`);
       return;
     }
     const competitionData = competitionSnap.data();
@@ -72,7 +73,7 @@ export const processParticipants: StorageHandler = async (object) => {
         try {
           const { heatName, heatDay, heatTime, dorsal, category, name, email, contact } = row;
           if (!heatName || !heatDay || !heatTime || !dorsal || !category || !email || !name || !contact) {
-            console.warn("⚠️ Skipping invalid row:", row);
+            logger.warn("⚠️ Skipping invalid row:", row);
             return;
           }
 
@@ -86,7 +87,7 @@ export const processParticipants: StorageHandler = async (object) => {
             const existingRegistration = await transaction.get(registrationRef);
 
             if (existingRegistration.exists && existingRegistration.data()?.processedAt) {
-              console.log(`⚠️ Registration for dorsal ${dorsal} already processed, skipping.`);
+              logger.log(`⚠️ Registration for dorsal ${dorsal} already processed, skipping.`);
               return;
             }
 
@@ -141,13 +142,13 @@ export const processParticipants: StorageHandler = async (object) => {
             });
           });
         } catch (error) {
-          console.error("❌ Error processing row:", error);
+          logger.error("❌ Error processing row:", error);
         }
       })
       .on("end", () => {
-        console.log("🚀 All registrations processed with QR codes!");
+        logger.log("🚀 All registrations processed with QR codes!");
       });
   } catch (error) {
-    console.error("❌ Error processing file:", error);
+    logger.error("❌ Error processing file:", error);
   }
 };

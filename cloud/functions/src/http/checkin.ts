@@ -110,7 +110,7 @@ async function handleCheckin(
   return await db.runTransaction(async (transaction) => {
     const qrDocument = await ensureNewEntry(transaction, qrCodeRef);
     if (qrDocument.redeemed) {
-      console.log("QR code has already been redeemed. Return success");
+      logger.log("QR code has already been redeemed. Return success");
       return { success: false, message: "QR code has already been redeemed." };
     }
     if (type === "self") validateInputSelfCheckin(email, qrDocument);
