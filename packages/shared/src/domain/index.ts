@@ -61,6 +61,7 @@ export interface QRegistration {
     heat: QRHeat;
     dorsal: string;
     category: QRCategory;
+    participants: QRParticipant[];
 }
 
 export interface QRCategory {
@@ -69,9 +70,10 @@ export interface QRCategory {
 }
 
 
-interface QRRecipient {
+interface QRParticipant {
     email: string;
     name?: string;
+    contact?: string;
 }
 
 export interface QRDocument {
@@ -80,7 +82,6 @@ export interface QRDocument {
     type: "registration" | "addon";
     redeemed?: QRRedemption;
     redeemableBy: string[];
-    recipients: QRRecipient[];
 }
 
 export interface QRRegistrationDocument extends QRDocument {
@@ -89,7 +90,7 @@ export interface QRRegistrationDocument extends QRDocument {
 }
 
 export interface QRRedemption {
-    at: Date;
+    at: Timestamp;
     how: string;
     by: string;
 }

@@ -57,7 +57,7 @@ import {useFirebaseAuth} from 'vuefire'
 import {signOut} from 'firebase/auth'
 import {useRouter} from 'vue-router'
 
-const title = ref('Fitness Competition Check-in')
+const title = ref('Entrada de Participantes')
 const auth = useFirebaseAuth()
 const router = useRouter()
 const isMenuOpen = ref(false)
