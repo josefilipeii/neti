@@ -44,9 +44,9 @@ export const checkInUser = onCall({ region: FUNCTIONS_REGION }, async (request: 
         throw new HttpsError("not-found", "QR code not found.");
       }
 
-      const { competition, dorsal, heat, participants } = qrCodeSnap.data() as QRDocument;
+      const { competition, dorsal, heat, redeemableBy } = qrCodeSnap.data() as QRDocument;
 
-      if(!participants.map(it => it.email).includes(userEmail)){
+      if(!redeemableBy?.includes(userEmail)){
         throw new HttpsError("permission-denied", "Email does not match this token.");
       }
 

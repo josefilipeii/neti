@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Competition {
     id: string;
     name: string;
@@ -44,7 +46,7 @@ export interface Participant {
 
 
 export interface QRRedemption {
-    at: Date;
+    at: Date | Timestamp;
     by: string;
     how: string;
 }
@@ -56,9 +58,11 @@ export interface QRDocument{
     dorsal?: string;
     heat?: string;
     day?: string;
-    hour?: string;
+    time?: string;
     type: 'registration' | 'addon';
     category?: string;
-    participants: RegistrationParticipant[];
+    redeemableBy?: string[];
+    participants: string[];
+    self: string;
     redeemed?: QRRedemption;
 }

@@ -9,7 +9,7 @@ import { defineSecret } from "firebase-functions/params";
 
 
 
-const selfCheckinSecret = defineSecret("QR_CODE_SECRET_KEY");
+const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
 /**
  * Generates a deterministic but non-guessable hash-based QR ID.
  */
@@ -32,8 +32,7 @@ function generateQrId(competitionId: string, heatId: string, dorsal:string, secr
 export const generateQrForRegistration = onDocumentCreated(
   {
     document: "competitions/{competitionId}/heats/{heatId}/registrations/{dorsal}",
-    region: FUNCTIONS_REGION,
-    secrets: [selfCheckinSecret]
+    region: FUNCTIONS_REGION
   },
   async (event) => {
     const snap = event.data;
@@ -50,7 +49,7 @@ export const generateQrForRegistration = onDocumentCreated(
 
       await db.runTransaction(async (transaction) => {
         // ✅ Generate a deterministic but non-guessable QR ID
-        const qrId = generateQrId(competitionId, heatId, dorsal, selfCheckinSecret.value());
+        const qrId = generateQrId(competitionId, heatId, dorsal, selfCheckinSecret);
         const qrRef = db.collection("qrCodes").doc(qrId);
 
         // ✅ Avoid generating duplicate QR codes
@@ -70,7 +69,12 @@ export const generateQrForRegistration = onDocumentCreated(
           heat: heatId,
           createdAt: new Date(),
           dorsal: dorsal,
-          ...registration,
+          redeemableBy: registration.participants.map(it => it.email),
+          category: registration.category,
+          day: registration.day,
+          time: registration.time,
+          self: qrId,
+          participants: registration.participants.map(it => it.name),
         });
 
         // ✅ Store QR Code in Cloud Storage

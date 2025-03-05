@@ -103,15 +103,11 @@ const clearContext = () => {
             <thead class="bg-gray-50">
             <tr>
               <th class="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th class="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th class="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
             </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="(participant, $index) in qrData.participants" :key="'participant-'+$index">
               <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{{ participant.name }}</td>
-              <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">{{ participant.email }}</td>
-              <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">{{ participant.contact }}</td>
             </tr>
             </tbody>
           </table>

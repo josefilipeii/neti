@@ -15,33 +15,33 @@
         />
         <span v-if="inputError" class="text-red-500 text-sm">{{ inputError }}</span>
         <span v-if="qrError" class="text-red-500 text-sm">Erro a descarregar token</span>
-
         <button
-            v-if="!qrData"
+            v-if="!qrDocument"
             type="submit"
             class="w-full bg-blue-500 text-white py-2 rounded-lg mt-4 hover:bg-blue-600 transition"
         >
           Validar
         </button>
       </form>
-      <div v-if="qrData && qrData.redeemed" class="text-green-500 text-sm mt-4">
-        Check-in realizado em {{ qrData.redeemed.at.toDate().toLocaleString() }} via {{ qrData.redeemed === 'self' ? 'Checkin Automático' : 'Checkin Manual' }}
+      <div v-if="qrDocument && qrDocument.redeemed" class="text-green-500 text-sm mt-4">
+        Check-in realizado em {{ qrDocument.redeemed.at.toLocaleString() }} via
+        {{ qrDocument.redeemed.how === 'self' ? 'Checkin Automático' : 'Checkin Manual' }}
       </div>
-      <div v-if="qrData" class="mt-4">
-        <p><strong>Competição:</strong> {{ qrData.competition }}</p>
-        <p><strong>Heat:</strong> {{ qrData.heat }}</p>
-        <p><strong>Dorsal:</strong> {{ qrData.dorsal }}</p>
-        <p><strong>Categoria:</strong> {{ qrData.category }}</p>
-        <p v-if="qrData.day && qrData.time"><strong>Data:</strong> {{ qrData.day }} pelas {{qrData.time}}</p>
+      <div v-if="qrDocument" class="mt-4">
+        <p><strong>Competição:</strong> {{ qrDocument.competition }}</p>
+        <p><strong>Heat:</strong> {{ qrDocument.heat }}</p>
+        <p><strong>Dorsal:</strong> {{ qrDocument.dorsal }}</p>
+        <p><strong>Categoria:</strong> {{ qrDocument.category }}</p>
+        <p v-if="qrDocument.day && qrDocument.time"><strong>Data:</strong> {{ qrDocument.day }} pelas {{ qrDocument.time }}</p>
         <p><strong>Participantes:</strong></p>
         <ul class="list-disc pl-5">
-          <li v-for="participant in qrData.participants" :key="participant.name">
-            {{ participant.name }}
+          <li v-for="(participant, $index) in qrDocument.participants" :key="'participant'+$index">
+            {{ participant }}
           </li>
         </ul>
       </div>
       <button
-          v-if="qrData && !qrData.redeemed"
+          v-if="qrDocument && !qrDocument.redeemed"
           @click="submitCheckin"
           class="w-full bg-blue-500 text-white py-2 rounded-lg mt-4 hover:bg-blue-600 transition"
       >
@@ -52,7 +52,7 @@
           @click="logout"
           class="w-full bg-red-500 text-white py-2 rounded-lg mt-4 hover:bg-red-600 transition"
       >
-        Sair
+        Limpar
       </button>
     </div>
   </div>
@@ -61,59 +61,59 @@
 <script setup lang="ts">
 import {computed, onBeforeMount, reactive, ref, watch} from 'vue';
 import {useRoute} from 'vue-router';
-import {signInWithCustomToken, signOut} from 'firebase/auth';
-import {useDocument, useFirebaseAuth, useFirestore} from 'vuefire';
+import {useCollection, useFirestore} from 'vuefire';
 import {httpsCallable} from 'firebase/functions';
 import bannerImage from '../assets/banner.png';
 import {functions} from '../firebase.ts';
-import {collection, doc} from 'firebase/firestore'
+import {collection, query, where} from 'firebase/firestore'
+import type {QRDocument} from "shared";
 
-const auth = useFirebaseAuth();
+
 const route = useRoute();
-const email = ref('');
-const paramToken = ref('');
-const fetchData = reactive<{token: string}>({token: ''});
+const fetchData = reactive<{ token: string, email: string }>({token: '', email: ''});
 const inputError = ref('');
 const message = ref('');
 const error = ref('');
+const email = ref('');
 const bannerUrl = ref(bannerImage);
 const db = useFirestore();
 
-interface CustomAuthenticationResponse {
-  token: string;
-}
 
-interface CustomAuthenticationRequest {
-  token: string;
-  email: string;
-}
-
-const fetchSigningToken = httpsCallable<CustomAuthenticationRequest, CustomAuthenticationResponse>(functions, 'handleSigningToken');
 const checkinFunction = httpsCallable(functions, "handleCheckin");
 
-const qrSource = computed(() =>
-    fetchData.token ? doc(collection(db, 'qrCodes'), fetchData.token)
-        : null
-);
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const {data: qrData, error: qrError} = useDocument(qrSource, {
+const validEmail = computed(() => {
+  return emailRegex.test(email.value);
+});
+
+const qrSource = computed(() =>
+    fetchData.token && fetchData.email ? query(
+        collection(db, 'qrCodes'),
+        where('self', '==', fetchData.token),
+        where('redeemableBy', 'array-contains', fetchData.email)
+    ) : null);
+
+const {data: qrData, error: qrError} = useCollection(qrSource, {
   once: true, reset: true
 })
 
 
-const clearEmail = () => {
-  email.value = '';
-};
+const qrDocument = computed(() =>
+    qrData && qrData.value.length > 0 ? qrData.value[0] as QRDocument : null
+);
+
 
 const clearData = () => {
   fetchData.token = '';
+  fetchData.email = '';
   message.value = '';
   error.value = '';
 };
 
 onBeforeMount(async () => {
   if (route.query.q) {
-    paramToken.value = route.query.q as string;
+    fetchData.token = route.query.q as string;
   }
   await logout();
 });
@@ -121,48 +121,33 @@ onBeforeMount(async () => {
 watch(
     () => route.query.q,
     async (newValue) => {
-      clearEmail();
+
       clearData();
-      await logout();
-      paramToken.value = newValue as string;
+      fetchData.token = newValue as string;
     }
 );
 
 const validateForm = () => {
-  if (!paramToken.value) {
+  if (!fetchData.token) {
     inputError.value = "Token inválido";
     return;
   }
-  if (!email.value) {
+  if (!email) {
     inputError.value = 'Por favor, introduza o seu email.';
+    return;
+  } else if (!validEmail.value) {
+    inputError.value = 'Por favor, introduza um email válido.';
   } else {
     inputError.value = '';
-    validate();
-  }
-};
-
-const validate = async () => {
-  try {
-    const response = await fetchSigningToken({
-      token: paramToken.value,
-      email: email.value
-    });
-    if (auth && response.data && response.data.token) {
-      await signInWithCustomToken(auth, response.data.token);
-      fetchData.token = paramToken.value;
-    } else {
-      throw new Error('Resposta de token inválida');
-    }
-  } catch (error) {
-    console.error('Falha no login:', error);
-    inputError.value = 'Token Inválido';
+    fetchData.email = email.value;
   }
 };
 
 const submitCheckin = async () => {
   try {
     await checkinFunction({
-      token: fetchData.token
+      token: fetchData.token,
+      email: fetchData.email
     });
     reload();
   } catch (err) {
@@ -179,7 +164,5 @@ const reload = () => {
 
 const logout = async () => {
   clearData();
-  clearEmail()
-  await signOut(auth!!);
 };
 </script>
