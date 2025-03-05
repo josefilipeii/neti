@@ -3,11 +3,14 @@ import {Email} from "../domain";
 import * as admin from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
+import {FUNCTIONS_REGION} from "../constants";
 
 const brevoApiKey = process.env.BREVO_API_KEY;
 const brevoCheckinTemplateId = process.env.BREVO_CHECKIN_TEMPLATE_ID;
 
-export const handleEmailQueue = onDocumentCreated("/email-queue/{docId}", async (event) => {
+export const handleEmailQueue = onDocumentCreated({
+  region: FUNCTIONS_REGION,
+  document:"/email-queue/{docId}"}, async (event) => {
   const checkinTemplateId = Number(brevoCheckinTemplateId);
   if (!brevoCheckinTemplateId || !brevoApiKey || isNaN(checkinTemplateId)) {
     logger.log(brevoApiKey, brevoCheckinTemplateId);

@@ -4,6 +4,7 @@ import {useCompetitionsHandler} from "./file-upload/on-competitions";
 import {processParticipants} from "./file-upload/on-participants";
 import {checkInUser, selfCheckin} from "./http/checkin";
 import {handleEmailQueue} from "./firestore/on-email";
+import {generateQRCodes} from "./firestore/qr-codes";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -30,6 +31,9 @@ export const onParticipants = functions.storage
 
 export const handleCheckin = checkInUser;
 export const handleSelfCheckin = selfCheckin;
+
+
+export const onParticipantsCreate = generateQRCodes
 
 export const onEmailQueueCreate = handleEmailQueue
 
