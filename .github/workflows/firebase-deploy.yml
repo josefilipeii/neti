@@ -44,14 +44,16 @@ jobs:
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/serviceAccountKey.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/serviceAccountKey.json" >> $GITHUB_ENV
 
+      - name: Setup .env for functions
+        run: |
+          echo "QR_CODE_SECRET_KEY=${{ secrets.FIREBASE_SECRET_KEY }}" >> functions/.env
+          echo "BREVO_API_KEY=${{ env.BREVO_API_KEY }}" >> functions/.env
+          echo "BREVO_CHECKIN_TEMPLATE_ID=${{ env.BREVO_CHECKIN_TEMPLATE_ID }}" >> functions/.env
+
 
       - name: Deploy Firebase
         run: |
           npm install -g firebase-tools
-          firebase functions:config:env \
-            QR_CODE_SECRET_KEY=${{ secrets.FIREBASE_SECRET_KEY }}
-            BREVO_API_KEY=${{ env.BREVO_API_KEY }}
-            BREVO_CHECKIN_TEMPLATE_ID=${{ env.BREVO_CHECKIN_TEMPLATE_ID }}
           firebase deploy --only functions --project ${{ env.FIREBASE_PROJECT }}
           firebase deploy --only hosting --project ${{ env.FIREBASE_PROJECT }}
 
