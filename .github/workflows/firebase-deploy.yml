@@ -46,9 +46,9 @@ jobs:
 
       - name: Setup .env for functions
         run: |
-          echo "QR_CODE_SECRET_KEY=${{ secrets.FIREBASE_SECRET_KEY }}" >> functions/.env
-          echo "BREVO_API_KEY=${{ env.BREVO_API_KEY }}" >> functions/.env
-          echo "BREVO_CHECKIN_TEMPLATE_ID=${{ env.BREVO_CHECKIN_TEMPLATE_ID }}" >> functions/.env
+          echo "QR_CODE_SECRET_KEY=${{ secrets.FIREBASE_SECRET_KEY }}" >> cloud/functions/.env
+          echo "BREVO_API_KEY=${{ env.BREVO_API_KEY }}" >> cloud/functions/.env
+          echo "BREVO_CHECKIN_TEMPLATE_ID=${{ env.BREVO_CHECKIN_TEMPLATE_ID }}" >> cloud/functions/.env
 
 
       - name: Deploy Firebase
