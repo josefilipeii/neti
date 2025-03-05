@@ -22,7 +22,7 @@ export interface Email{
     to: Recipient[];
     cc?: Recipient[];
     ref: string;
-    type: 'checkin' | 'registration';
+    type: "checkin" | "registration";
     params: Record<string, unknown | undefined>;
     sentAt?: Date;
 }

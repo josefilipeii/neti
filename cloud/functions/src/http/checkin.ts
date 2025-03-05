@@ -10,10 +10,10 @@ type SelfCheckinRequestType = CheckinRequestType & { email: string};
 type ResponseType = { success: boolean; message: string };
 
 function triggerEmail(qrDocument: QRDocument,
-                      token: string,
-                      checkInTime: Date,
-                      type: string,
-                      transaction: FirebaseFirestore.Transaction) {
+  token: string,
+  checkInTime: Date,
+  type: string,
+  transaction: FirebaseFirestore.Transaction) {
   const newDocRef = db.collection("/email-queue").doc();
 
   const recipients = qrDocument.recipients;
@@ -34,10 +34,10 @@ function triggerEmail(qrDocument: QRDocument,
 }
 
 function propagateCheckinStatus(qrDocument: QRDocument,
-                                transaction: FirebaseFirestore.Transaction,
-                                qrCodeRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData, FirebaseFirestore.DocumentData>,
-                                redemption: QRRedemption,
-                                token: string) {
+  transaction: FirebaseFirestore.Transaction,
+  qrCodeRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData, FirebaseFirestore.DocumentData>,
+  redemption: QRRedemption,
+  token: string) {
   const registrationRef = db.doc(`/competitions/${(qrDocument.competition)}/heats/${(qrDocument.heat)}/registration/${(qrDocument.dorsal)}`);
 
   // Use batch write to update both documents atomically
@@ -47,7 +47,8 @@ function propagateCheckinStatus(qrDocument: QRDocument,
 }
 
 
-async function ensureNewEntry(transaction: FirebaseFirestore.Transaction, qrCodeRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData, FirebaseFirestore.DocumentData>) {
+async function ensureNewEntry(transaction: FirebaseFirestore.Transaction,
+  qrCodeRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData, FirebaseFirestore.DocumentData>) {
   const qrCodeSnap = await transaction.get(qrCodeRef);
   if (!qrCodeSnap.exists) {
     throw new HttpsError("not-found", "QR code not found.");
@@ -87,7 +88,7 @@ export const checkInUser = onCall({ region: FUNCTIONS_REGION }, async (request: 
     return await db.runTransaction(async (transaction) => {
       // Fetch QR document safely
       const qrDocument = await ensureNewEntry(transaction, qrCodeRef);
-      const redemption: QRRedemption = {at: checkInTime, by: agentEmail, how: 'lobby'};
+      const redemption: QRRedemption = {at: checkInTime, by: agentEmail, how: "lobby"};
       propagateCheckinStatus(qrDocument, transaction, qrCodeRef, redemption, token);
       return {success: true, message: "User checked in successfully!"} as ResponseType;
     });
@@ -100,32 +101,32 @@ export const checkInUser = onCall({ region: FUNCTIONS_REGION }, async (request: 
 });
 
 export const selfCheckin = onCall(
-    { region: FUNCTIONS_REGION,
-      enforceAppCheck: true,
-    }, async (
-        request: CallableRequest<SelfCheckinRequestType>) => {
+  { region: FUNCTIONS_REGION,
+    enforceAppCheck: true,
+  }, async (
+    request: CallableRequest<SelfCheckinRequestType>) => {
 
     const { token, email } = request.data;
-      logger.log("Self check-in request", request);
+    logger.log("Self check-in request", request);
 
-      const checkInTime = new Date();
-      const qrCodeRef = db.collection("qrCodes").doc(token);
+    const checkInTime = new Date();
+    const qrCodeRef = db.collection("qrCodes").doc(token);
 
-      try {
-        return await db.runTransaction(async (transaction) => {
-          // Fetch QR document safely
-          const qrDocument = await ensureNewEntry(transaction, qrCodeRef);
-          validateInputSelfCheckin(email, qrDocument);
-          const redemption: QRRedemption = {at: checkInTime, by: email, how: 'self'};
-          propagateCheckinStatus(qrDocument, transaction, qrCodeRef, redemption, token);
-          return {success: true, message: "User checked in successfully!"} as ResponseType;
-        });
-      } catch (error) {
-        console.error("Check-in failed:", error);
-        if (error instanceof HttpsError) throw error;
-        throw new HttpsError("internal", "Check-in failed");
-      }
-});
+    try {
+      return await db.runTransaction(async (transaction) => {
+        // Fetch QR document safely
+        const qrDocument = await ensureNewEntry(transaction, qrCodeRef);
+        validateInputSelfCheckin(email, qrDocument);
+        const redemption: QRRedemption = {at: checkInTime, by: email, how: "self"};
+        propagateCheckinStatus(qrDocument, transaction, qrCodeRef, redemption, token);
+        return {success: true, message: "User checked in successfully!"} as ResponseType;
+      });
+    } catch (error) {
+      console.error("Check-in failed:", error);
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Check-in failed");
+    }
+  });
 
 
 

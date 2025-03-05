@@ -3,7 +3,7 @@
   "scripts": {
     "lint": "eslint --ext .ts src",
     "lint:fix": "eslint --fix --ext .ts src ",
-    "build": "tsc",
+    "build": "npm run lint && tsc",
     "build:watch": "tsc --watch",
     "serve:only": "npm run build",
     "serve": "npm run build && firebase emulators:start",
