@@ -5,7 +5,7 @@ import { QRRedemption, QRRegistrationDocument } from "../../../../packages/share
 import { logger } from "firebase-functions";
 import { Email, Recipient } from "../domain";
 import { DocumentReference, Transaction } from "firebase-admin/firestore";
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 
 type CheckinRequestType = { token: string };
 type SelfCheckinRequestType = CheckinRequestType & { email: string };
