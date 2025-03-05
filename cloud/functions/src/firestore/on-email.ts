@@ -1,7 +1,7 @@
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {Email} from "../domain";
 import * as admin from "firebase-admin";
-import {Timestamp} from "firebase/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
 
 const brevoApiKey = process.env.BREVO_API_KEY;
