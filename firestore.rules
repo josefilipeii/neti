@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Function to check if the user has a specific role in the roles array
+    function hasRole(role) {
+      return role in request.auth.token.roles;
+    }
+
+    // Function to check if the request comes from a Cloud Function
+    function isCloudFunction() {
+      return request.auth.token.firebase.sign_in_provider == "firebase";
+    }
+
+    match /{document=**} {
+      // Admins and Cloud Functions have full access
+      allow read, write: if hasRole("admin") || isCloudFunction();
+
+      // Dashboard users can read everywhere but not write
+      allow read: if hasRole("dashboard");
+    }
+
+    // Lobby users can only read QRData
+    match /QRData/{document} {
+      allow read: if hasRole("lobby");
+    }
+  }
+}

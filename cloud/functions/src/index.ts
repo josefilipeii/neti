@@ -6,6 +6,7 @@ import {checkInUser, selfCheckin} from "./http/checkin";
 import {processRegistrations} from "./firestore/registrations";
 import {processEmailQueue} from "./pubsub/on-email";
 import {handleEmailQueue} from "./firestore/on-email-queue";
+import {userImportHandler} from "./file-upload/on-users";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -27,6 +28,11 @@ export const onCompetitions = functions.storage
 export const onParticipants = functions.storage
   .onObjectFinalized({region: STORAGE_REGION}, async (object) => {
     processParticipants(object);
+  });
+
+export const onUsers = functions.storage
+  .onObjectFinalized({region: STORAGE_REGION}, async (object) => {
+    userImportHandler(object);
   });
 
 

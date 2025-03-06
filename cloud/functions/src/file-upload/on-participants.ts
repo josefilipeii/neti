@@ -5,6 +5,7 @@ import { Bucket, File } from "@google-cloud/storage";
 import { logger } from "firebase-functions";
 import { tempCollectionPath } from "../domain/collections";
 import { firestore } from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
 
@@ -53,7 +54,7 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               category,
               participants: [{ name, email, contact }],
               status: "pending",
-              createdAt: firestore.Timestamp.now(),
+              createdAt: Timestamp.now(),
             });
 
             batchCount++;
