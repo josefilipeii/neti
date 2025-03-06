@@ -43,6 +43,10 @@ export const checkInUser = onCall(
       throw new HttpsError("unauthenticated", "You must be logged in to check in.");
     }
 
+    const roles = request.auth.token.roles|| [];
+    if (!roles?.includes("lobby") && !roles?.includes("dashboard")) {
+      throw new HttpsError("permission-denied", `You dont have permissions to do it. ${roles}`);
+    }
     return handleCheckin(request, "lobby");
   }
 );

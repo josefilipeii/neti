@@ -31,6 +31,25 @@ router.beforeEach(async (to) => {
                 path: '/login'
             }
         }
+        try {
+            // 🔄 Force token refresh to ensure latest claims
+            await currentUser.getIdToken(true);
+            const tokenResult = await currentUser.getIdTokenResult();
+            let claimRoles = tokenResult.claims.roles as string[];
+          /*  if (!claimRoles || !claimRoles.includes('lobby')) {
+                console.warn("⚠ No custom claims found, redirecting to error page.");
+                return {
+                    path: '/not-allowed'
+                }
+            }*/
+
+            console.log("✅ User claims:", claimRoles);
+        } catch (error) {
+            console.error("❌ Error fetching claims:", error);
+            return {
+                path: 'error'
+            }
+        }
     }
 })
 
