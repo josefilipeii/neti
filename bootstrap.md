@@ -41,6 +41,9 @@ gcloud projects add-iam-policy-binding hybrid-day-checkin \
   --role="roles/pubsub.subscriber"
   
   
+gcloud projects add-iam-policy-binding hybrid-day-checkin \
+  --member="serviceAccount:ci-deploy@hybrid-day-checkin.iam.gserviceaccount.com" \
+  --role="roles/pubsub.admin"
 
 
 ```
