@@ -26,18 +26,18 @@ jobs:
 
       - name: Generate .env for checkin app
         run: |
-          echo "${{ vars.CHECKIN_ENVS }}" > ./apps/checkin/.env
+          echo "${{ vars.CHECKIN_ENVS }}" >> apps/checkin/.env
           echo "Generated .env for checkin"
 
       - name: Generate .env for self-checkin app
         run: |
-          echo "${{ vars.SELF_CHECKIN_ENVS }}" > ./apps/self-checkin/.env
+          echo "${{ vars.SELF_CHECKIN_ENVS }}" >> apps/self-checkin/.env
           cat ./apps/self-checkin/.env
           echo "Generated .env for self-checkin"
 
       - name: Generate .env for admin-dashboard app
         run: |
-          echo "${{ vars.ADMIN_DASHBOARD_ENVS }}" > ./apps/admin-dashboard/.env
+          echo "${{ vars.ADMIN_DASHBOARD_ENVS }}" >> apps/admin-dashboard/.env
           echo "Generated .env for admin-dashboard"
 
       - name: Build Project
