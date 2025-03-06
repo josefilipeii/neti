@@ -46,7 +46,7 @@ jobs:
 
       - name: Setup .env for functions
         run: |
-          echo "QR_CODE_SECRET_KEY=${{ vars.FIREBASE_SECRET_KEY }}" >> cloud/functions/.env
+          echo "QR_CODE_SECRET_KEY=${{ secrets.FIREBASE_SECRET_KEY }}" >> cloud/functions/.env
           echo "BREVO_API_KEY=${{ vars.BREVO_API_KEY }}" >> cloud/functions/.env
           echo "BREVO_CHECKIN_TEMPLATE_ID=${{ vars.BREVO_CHECKIN_TEMPLATE_ID }}" >> cloud/functions/.env
 
