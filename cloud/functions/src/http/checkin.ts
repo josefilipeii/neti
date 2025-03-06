@@ -14,7 +14,7 @@ type ResponseType = { success: boolean; message: string };
 
 
 export const checkInUser = onCall(
-  { region: FIRESTORE_REGION },
+  { region: FIRESTORE_REGION , enforceAppCheck: true },
   async (request: CallableRequest<CheckinRequestType>) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "You must be logged in to check in.");

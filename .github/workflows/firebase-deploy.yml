@@ -24,15 +24,20 @@ jobs:
           npm i -g pnpm
           pnpm -r install --frozen-lockfile
 
-      - name: Inject Firebase Environment Variables
+      - name: Generate .env for checkin app
         run: |
-          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" >> $GITHUB_ENV
-          echo "VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
-          echo "VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
-          echo "VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
-          echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
-          echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> $GITHUB_ENV
-          echo "VITE_RECAPTCHA_SITE_KEY=${{ vars.RECAPTCHA_SITE_KEY }}" >> $GITHUB_ENV
+          echo "${{ vars.CHECKIN_ENVS }}" > ./apps/checkin/.env
+          echo "Generated .env for checkin"
+
+      - name: Generate .env for self-checkin app
+        run: |
+          echo "${{ vars.SELF_CHECKIN_ENVS }}" > ./apps/self-checkin/.env
+          echo "Generated .env for self-checkin"
+
+      - name: Generate .env for admin-dashboard app
+        run: |
+          echo "${{ vars.ADMIN_DASHBOARD_ENVS }}" > ./apps/admin-dashboard/.env
+          echo "Generated .env for admin-dashboard"
 
       - name: Build Project
         run: |

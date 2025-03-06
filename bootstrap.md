@@ -1,5 +1,28 @@
 # IAM roles
 ```
+
+
+firebase apps:create WEB self-checkin --project hybrid-day-checkin
+firebase apps:create WEB checkin --project hybrid-day-checkin
+firebase apps:create WEB admin-dashboard --project hybrid-day-checkin
+
+
+firebase apps:sdkconfig WEB 1:744203796029:web:34e0f6a1a56378efbd3454  | jq -r '. | to_entries | map("VITE_FIREBASE_" + (.key | ascii_upcase) + "=\"" + .value + "\"") | .[]'
+
+
+firebase apps:sdkconfig WEB checkin-app --project your-project-id \
+  | jq -r '. | to_entries | map("VITE_FIREBASE_" + (.key | ascii_upcase) + "=\"" + .value + "\"") | .[]'
+
+firebase apps:sdkconfig WEB checkin --project your-project-id \
+  | jq -r '. | to_entries | map("VITE_FIREBASE_" + (.key | ascii_upcase) + "=\"" + .value + "\"") | .[]'
+
+
+firebase apps:sdkconfig WEB admin-dashboard --project your-project-id \
+  | jq -r '. | to_entries | map("VITE_FIREBASE_" + (.key | ascii_upcase) + "=\"" + .value + "\"") | .[]'
+
+
+
+
 gcloud projects add-iam-policy-binding hybrid-day-checkin \
   --member="serviceAccount:service-744203796029@gs-project-accounts.iam.gserviceaccount.com" \
   --role="roles/pubsub.publisher"
