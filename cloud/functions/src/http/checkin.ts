@@ -13,20 +13,50 @@ type SelfCheckinRequestType = CheckinRequestType & { email: string };
 type ResponseType = { success: boolean; message: string };
 
 
+// Get allowed origins from Firebase Config (or use environment variables)
+const ALLOWED_ORIGINS_CHECKIN = process.env.ALLOWED_ORIGINS_CHECKIN?.split(",") || [
+  "https://heimdall-hybrid-day-checkin.web.app",
+  "https://odin-hybrid-day-checkin.web.app"
+];
+
+const ALLOWED_ORIGINS_SELFCHECKIN = process.env.ALLOWED_ORIGINS_SELFCHECKIN?.split(",") || [
+  "https://heimdall-hybrid-day-checkin.web.app"
+];
+
+// Function to check allowed origins dynamically
+function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType | SelfCheckinRequestType>, allowedOrigins: string[]) {
+  const origin = request.rawRequest.headers.origin;
+
+  if (!origin || !allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
+    console.error(`Blocked request from origin: ${origin}`);
+    throw new HttpsError("permission-denied", "Unauthorized origin");
+  }
+}
+
+// Lobby Check-In Function (Heimdall-based origin)
 export const checkInUser = onCall(
-  { region: FIRESTORE_REGION , enforceAppCheck: true },
+  { region: FIRESTORE_REGION, enforceAppCheck: true },
   async (request: CallableRequest<CheckinRequestType>) => {
+    enforceAllowedOrigin(request, ALLOWED_ORIGINS_CHECKIN); // ✅ Allow only Heimdall domains
+
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "You must be logged in to check in.");
     }
+
     return handleCheckin(request, "lobby");
   }
 );
 
+// Self Check-In Function (Self-based origin)
 export const selfCheckin = onCall(
   { region: FIRESTORE_REGION, enforceAppCheck: true },
-  async (request: CallableRequest<SelfCheckinRequestType>) => handleCheckin(request, "self")
+  async (request: CallableRequest<SelfCheckinRequestType>) => {
+    enforceAllowedOrigin(request, ALLOWED_ORIGINS_SELFCHECKIN); // ✅ Allow only Self domains
+
+    return handleCheckin(request, "self");
+  }
 );
+
 
 function triggerEmail(
   qrDocument: QRRegistrationDocument,
