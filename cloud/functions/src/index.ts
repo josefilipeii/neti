@@ -35,6 +35,6 @@ export const handleSelfCheckin = selfCheckin;
 
 
 export const triggerEmail = handleEmailQueue;
-export const sendEmail = processEmailQueue;
+export const sendQueueEmail = processEmailQueue;
 
 export const onParticipantsCreate = processRegistrations

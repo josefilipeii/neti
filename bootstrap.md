@@ -27,6 +27,20 @@ gcloud projects add-iam-policy-binding hybrid-day-checkin \
 gcloud projects add-iam-policy-binding hybrid-day-checkin \
   --member="serviceAccount:744203796029-compute@developer.gserviceaccount.com" \
   --role="roles/editor"
+  
+  gcloud projects add-iam-policy-binding  hybrid-day-checkin \
+  --member="serviceAccount:744203796029-compute@developer.gserviceaccount.com" \
+  --role="roles/pubsub.editor"
+  
+    gcloud projects add-iam-policy-binding  hybrid-day-checkin \
+  --member="serviceAccount:744203796029-compute@developer.gserviceaccount.com" \
+  --role="roles/pubsub.publisher"
+  
+    gcloud projects add-iam-policy-binding  hybrid-day-checkin \
+  --member="serviceAccount:744203796029-compute@developer.gserviceaccount.com" \
+  --role="roles/pubsub.subscriber"
+  
+  
 
 
 ```
