@@ -3,20 +3,12 @@ import { db, storage } from "../firebase";
 import csv from "csv-parser";
 import { Bucket, File } from "@google-cloud/storage";
 import { DocumentReference } from "firebase-admin/firestore";
-import {logger} from "firebase-functions";
+import { logger } from "firebase-functions";
+import {tempCollectionPath} from "../domain/collections";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
 
-
-function heatCollectionPath(eventId: string): string {
-  return `competitions/${eventId}/heats`;
-}
-
-function registrationCollectionPath(eventId: string, heatId: string): string {
-  return `${heatCollectionPath(eventId)}/${heatId}/registrations`;
-}
-
-
+/** Uploads raw participant data to a temporary Firestore collection */
 export const processParticipants: StorageHandler = async (object) => {
   const bucketName: string = object.data.bucket;
   const filePath: string = object.data.name;
@@ -32,14 +24,6 @@ export const processParticipants: StorageHandler = async (object) => {
   const eventId: string = pathParts[1];
 
   try {
-    const competitionRef: DocumentReference = db.collection("competitions").doc(eventId);
-    const competitionSnap = await competitionRef.get();
-    if (!competitionSnap.exists) {
-      logger.error(`❌ Competition with ID ${eventId} does not exist.`);
-      return;
-    }
-    const competitionData = competitionSnap.data();
-
     file.createReadStream()
       .pipe(csvParser)
       .on("data", async (row: Record<string, string>) => {
@@ -49,12 +33,11 @@ export const processParticipants: StorageHandler = async (object) => {
             logger.warn("⚠️ Skipping invalid row:", row);
             return;
           }
-          logger.info(`📝 Processing row: ${JSON.stringify(row)}`);
 
           const heatId: string = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
-          const registrationRef: DocumentReference = db.collection(registrationCollectionPath(eventId, heatId)).doc(dorsal);
+          const tempRef: DocumentReference = db.collection(tempCollectionPath).doc();
 
-          await registrationRef.set({
+          await tempRef.set({
             eventId,
             heatId,
             heatName,
@@ -62,20 +45,18 @@ export const processParticipants: StorageHandler = async (object) => {
             heatTime,
             dorsal,
             category,
-            categoryName: category,
-            competitionName: competitionData?.name,
             participants: [{ name, email, contact }],
-            status: "pending", // Mark as pending for the second trigger
+            status: "pending",
             createdAt: new Date(),
           });
 
-          logger.log(`✅ Participant ${dorsal} added to Firestore.`);
+          logger.log(`✅ Participant ${dorsal} added to temporary Firestore collection.`);
         } catch (error) {
           logger.error("❌ Error processing row:", error);
         }
       })
       .on("end", () => {
-        logger.log("🚀 CSV processed. Firestore trigger will handle QR code generation.");
+        logger.log("🚀 CSV processed. Firestore trigger will handle registration and QR generation.");
       });
   } catch (error) {
     logger.error("❌ Error processing file:", error);

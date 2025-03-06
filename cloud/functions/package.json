@@ -18,6 +18,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.5",
+    "@google-cloud/pubsub": "^4.10.0",
     "bs58": "^6.0.0",
     "csv-parser": "^3.2.0",
     "firebase-admin": "^12.6.0",

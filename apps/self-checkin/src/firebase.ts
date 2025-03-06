@@ -15,7 +15,7 @@ export const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const firestore = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
-const functions = getFunctions(firebaseApp, "europe-west1");
+const functions = getFunctions(firebaseApp, "europe-southwest1");
 
 if (import.meta.env.DEV) {
     console.log('🔥 Using Firebase Emulators');

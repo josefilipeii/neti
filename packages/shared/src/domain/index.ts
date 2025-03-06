@@ -15,13 +15,6 @@ export interface Category {
 }
 
 
-export interface Heat {
-    id?: string
-    name: string;
-    time: string;
-    day: string;
-}
-
 export interface Registration {
     id?: string; //dorsal
     category: string;
@@ -50,15 +43,11 @@ export interface QRCompetition {
     name: string;
 }
 
-interface QRHeat{
-    id: string;
-    name: string;
-    day: string;
-    time: string;
-}
 
 export interface QRegistration {
-    heat: QRHeat;
+    heat: string;
+    day: string;
+    time: string;
     dorsal: string;
     category: QRCategory;
     participants: QRParticipant[];

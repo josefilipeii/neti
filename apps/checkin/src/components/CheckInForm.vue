@@ -88,13 +88,10 @@ const clearContext = () => {
             <span class="font-medium text-gray-700">Dorsal: {{ data.registration.dorsal || 'N/A' }}</span>
           </div>
           <div class="block sm:inline-block">
-            <span class="font-medium text-gray-700">Bateria: {{ data.registration?.heat?.name || 'N/A' }}</span>
-          </div>
-          <div class="block sm:inline-block">
             <span class="font-medium text-gray-700">Categoria: {{ data.registration?.category?.name || 'N/A' }}</span>
           </div>
           <div class="block sm:inline-block">
-            <span class="font-medium text-gray-700">Data: {{ data.registration?.heat?.day}} às {{ data.registration?.heat?.time }}</span>
+            <span class="font-medium text-gray-700">Data: {{ data.registration?.day}} às {{ data.registration?.time }}</span>
           </div>
         </div>
         <div class="overflow-x-auto">

@@ -1,59 +1,65 @@
+import { logger } from "firebase-functions";
+import { FIRESTORE_REGION } from "../constants";
 import { db } from "../firebase";
-import { FUNCTIONS_REGION } from "../constants";
+import { Timestamp, Transaction } from "firebase-admin/firestore";
+import { DocumentReference } from "firebase-admin/firestore";
 import { CallableRequest, HttpsError, onCall } from "firebase-functions/v2/https";
 import { QRRedemption, QRRegistrationDocument } from "../../../../packages/shared";
-import { logger } from "firebase-functions";
 import { Email, Recipient } from "../domain";
-import { DocumentReference, Transaction } from "firebase-admin/firestore";
-import { Timestamp } from "firebase-admin/firestore";
+
 
 type CheckinRequestType = { token: string };
 type SelfCheckinRequestType = CheckinRequestType & { email: string };
 type ResponseType = { success: boolean; message: string };
 
-export const checkInUser = onCall({ region: FUNCTIONS_REGION }, async (request: CallableRequest<CheckinRequestType>) => {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "You must be logged in to check in.");
+
+export const checkInUser = onCall(
+  { region: FIRESTORE_REGION },
+  async (request: CallableRequest<CheckinRequestType>) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "You must be logged in to check in.");
+    }
+    return handleCheckin(request, "lobby");
   }
-  return handleCheckin(request, "lobby");
-});
+);
 
 export const selfCheckin = onCall(
-  { region: FUNCTIONS_REGION, enforceAppCheck: true },
+  { region: FIRESTORE_REGION, enforceAppCheck: true },
   async (request: CallableRequest<SelfCheckinRequestType>) => handleCheckin(request, "self")
 );
 
-async function triggerEmail(
+function triggerEmail(
   qrDocument: QRRegistrationDocument,
   token: string,
-  checkInTime: Timestamp,
-  type: string,
-  transaction: Transaction
-) {
+  checkInTime: FirebaseFirestore.Timestamp,
+  type: string
+  , transaction: FirebaseFirestore.Transaction) {
   try {
-    const newDocRef = db.collection("email-queue").doc();
-    const recipients: Recipient[] = qrDocument.registration.participants.map(p => p as Recipient);
+    const recipients: Recipient[] = qrDocument.registration.participants.map((p) => p as Recipient);
 
-    const emailParams: Email = {
+    const email: Email = {
       to: recipients,
       type: "checkin",
       ref: token,
       params: {
         checkinTime: checkInTime.toDate(),
         competition: qrDocument.competition?.name,
-        heat: qrDocument.registration?.heat?.name,
-        time: qrDocument.registration?.heat?.time,
-        day: new Date(qrDocument.registration?.heat?.day).toLocaleDateString("en-GB"),
+        time: qrDocument.registration?.time,
+        day: new Date(qrDocument.registration?.day)?.toLocaleDateString("en-GB"),
         dorsal: qrDocument.registration?.dorsal,
         category: qrDocument.registration?.category?.name,
         type,
       },
     };
 
-    transaction.set(newDocRef, emailParams);
-    logger.info(`✅ Email triggered for ${recipients.length} recipients.`);
+    // **Write to Firestore (Triggers Firestore Trigger)**
+    const docRef = db.collection("email-queue").doc();
+    transaction.set(docRef, email);
+    logger.info(`✅ Email job written to Firestore (Queued): ${docRef.id}`);
+
+    logger.info(`✅ Email job published to Pub/Sub for ${recipients.length} recipients.`);
   } catch (error) {
-    logger.error("❌ Failed to queue email:", error);
+    logger.error("❌ Failed to publish email job to Pub/Sub:", error);
   }
 }
 
@@ -67,25 +73,27 @@ async function processCheckin(
   try {
     const competition = qrDocument.competition;
     const registration = qrDocument.registration;
-    if (!competition?.id || !registration?.heat?.id || !registration?.dorsal) {
-      throw new HttpsError("invalid-argument", "Invalid registration data.");
+    if (!competition?.id || !registration?.heat || !registration?.dorsal) {
+      throw new HttpsError("unknown", "Invalid registration data.");
     }
 
-    const registrationRef = db.doc(`/competitions/${competition.id}/heats/${registration.heat.id}/registrations/${registration.dorsal}`);
+    const registrationRef = db.doc(
+      `/competitions/${competition.id}/heats/${registration.heat}/registrations/${registration.dorsal}`
+    );
 
     transaction.set(qrCodeRef, { redeemed: redemption }, { merge: true });
     transaction.set(registrationRef, { checkin: redemption }, { merge: true });
-    await triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
+
+    // **Trigger Email via Pub/Sub**
+    triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
     logger.info(`✅ Check-in propagated for dorsal ${registration.dorsal} in competition ${competition.name}`);
   } catch (error) {
     logger.error("❌ Error processing check-in:", error);
+    throw new HttpsError("unavailable", "Invalid registration data.");
   }
 }
 
-async function ensureNewEntry(
-  transaction: Transaction,
-  qrCodeRef: DocumentReference
-): Promise<QRRegistrationDocument> {
+async function ensureNewEntry(transaction: Transaction, qrCodeRef: DocumentReference): Promise<QRRegistrationDocument> {
   const qrCodeSnap = await transaction.get(qrCodeRef);
   if (!qrCodeSnap.exists) {
     throw new HttpsError("not-found", "QR code not found.");
@@ -120,9 +128,13 @@ async function handleCheckin(
   });
 }
 
-
 function validateInputSelfCheckin(userEmail: string, qrDocument: QRRegistrationDocument) {
-  if (!userEmail || (!qrDocument.redeemableBy?.includes(userEmail) && !qrDocument.registration?.participants.some(p => p.email === userEmail))) {
+  if (
+    !userEmail ||
+      (!qrDocument.redeemableBy?.includes(userEmail) &&
+          !qrDocument.registration?.participants.some((p) => p.email === userEmail))
+  ) {
     throw new HttpsError("permission-denied", "Email does not match this token.");
   }
 }
+

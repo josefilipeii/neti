@@ -1,13 +1,14 @@
-import {Category, Participant} from "../../../../packages/shared";
+import {Category, Competition, Participant} from "../../../../packages/shared";
 import {db, storage} from "../firebase";
 import QRCode from "qrcode";
 import crypto from "crypto";
 import bs58 from "bs58";
-import {FUNCTIONS_REGION, QR_BUCKET_NAME} from "./../constants";
+import {FIRESTORE_REGION, QR_BUCKET_NAME} from "./../constants";
 import {Bucket, File} from "@google-cloud/storage";
 import {Transaction} from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import {qrCollectionPath, registrationCollectionPath} from "../domain/collections";
 
 /** Generates a secure QR ID */
 function generateQrId(competitionId: string, heatId: string, dorsal: string, secretKey?: string): string {
@@ -19,42 +20,39 @@ function generateQrId(competitionId: string, heatId: string, dorsal: string, sec
   return bs58.encode(hash.subarray(0, 20));
 }
 
-function qrCollectionPath(): string {
-  return "qrCodes";
-}
 
-function heatCollectionPath(eventId: string): string {
-  return `competitions/${eventId}/heats`;
-}
-
-async function ensureCategory(eventId: string, categoryName: string, transaction: Transaction): Promise<Category | null> {
+const ensureCategory = async (eventId: string, categoryName: string, transaction: Transaction): Promise<Category | null> => {
   const categoriesCollection = db.collection(`competitions/${eventId}/categories`);
   const categoryQuery = await transaction.get(categoriesCollection.where("name", "==", categoryName));
   if (categoryQuery.empty) return null;
   return categoryQuery.docs[0].data() as Category;
 }
 
-
-function registrationCollectionPath(eventId: string, heatId: string): string {
-  return `${heatCollectionPath(eventId)}/${heatId}/registrations`;
+const ensureEvent = async (eventId: string, transaction: Transaction): Promise<Competition | null> => {
+  const eventRef = db.doc(`competitions/${eventId}`);
+  const eventSnap = await transaction.get(eventRef);
+  if (!eventSnap.exists) {
+    logger.error(`❌ Event with ID ${eventId} does not exist.`);
+    return null;
+  }
+  return eventSnap.data() as Competition;
 }
 
-
-export const generateQRCodes = onDocumentCreated(
+export const processRegistrations = onDocumentCreated(
   {
-    region: FUNCTIONS_REGION,
-    document: "competitions/{eventId}/heats/{heatId}/registrations/{dorsal}"
-  }, async (event) => {
+    region: FIRESTORE_REGION,
+    document: "tempRegistrations/{docId}"
+  },
+  async (event) => {
     const snap = event.data;
     if (!snap?.exists) {
-      logger.warn(`⚠️ No valid snapshot found for params: ${JSON.stringify(event.params)}, skipping QR code generation.`);
+      logger.warn("⚠️ No valid snapshot found, skipping registration processing.");
       return;
     }
     const data = snap.data();
-
     if (!data || data.status !== "pending") return;
 
-    const {eventId, heatId, dorsal, categoryName, participants} = data;
+    const {eventId, heatId, heatDay, heatTime,  dorsal, category, participants} = data;
     const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
     if (!selfCheckinSecret) {
       logger.error("❌ Secret key missing.");
@@ -64,39 +62,60 @@ export const generateQRCodes = onDocumentCreated(
     const qrId: string = generateQrId(eventId, heatId, dorsal, selfCheckinSecret);
     const qrBucket: Bucket = storage.bucket(QR_BUCKET_NAME);
     const qrCodeBuffer: Buffer = await QRCode.toBuffer(qrId);
-
     const qrFilePath: string = `qr_codes/${eventId}/registrations/${heatId}/${dorsal}.png`;
     const qrFile: File = qrBucket.file(qrFilePath);
     await qrFile.save(qrCodeBuffer, {contentType: "image/png"});
 
     await db.runTransaction(async (transaction) => {
+
+      const tempRef = snap.ref;
+
       const registrationRef = db.collection(registrationCollectionPath(eventId, heatId)).doc(dorsal);
-      const qrRef = db.collection(qrCollectionPath()).doc(qrId);
+      const qrRef = db.collection(qrCollectionPath).doc(qrId);
 
-      const categoryDoc = await ensureCategory(eventId, categoryName, transaction);
-      if (!categoryDoc) return;
+      const eventDoc = await ensureEvent(eventId, transaction);
+      if(!eventDoc) {
+        logger.warn(`❌ Event with ID ${eventId} does not exist.`);
+        return;
+      }
 
-      transaction.update(registrationRef, {
+      const categoryDoc = await ensureCategory(eventId, category, transaction);
+      if (!categoryDoc) {
+        logger.warn(`❌ Category ${category} does not exist for event ${eventId}.`);
+        return;
+      }
+
+      transaction.set(registrationRef, {
         qrId,
         status: "processed",
-        category: categoryDoc.id,
+        category: {id: categoryDoc.id, name: category},
         processedAt: new Date(),
+        time: heatTime,
+        day: heatDay,
+        participants,
       });
 
       transaction.set(qrRef, {
         createdAt: new Date(),
         type: "registration",
-        competition: {id: eventId, name: data.competitionName},
+        competition: {id: eventId, name: eventDoc.name},
         redeemableBy: participants.map((p: Participant) => p.email),
         registration: {
-          heat: {id: heatId, name: data.heatName, day: data.heatDay, time: data.heatTime},
+          heat: heatId,
+          time: heatTime,
+          day: heatDay,
           dorsal,
-          category: {id: categoryDoc.id, name: categoryName},
+          category: {id: categoryDoc.id, name: category},
           participants,
         },
         self: qrId,
       });
+
+      transaction.update(tempRef, {status: "processed"});
+
     });
 
-    logger.log(`✅ QR Code ${qrId} generated and saved.`);
-  });
+
+    logger.log(`✅ QR Code ${qrId} generated and registration completed.`);
+  }
+);
