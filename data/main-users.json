@@ -1,7 +1,7 @@
 [
   {
     "email": "jose.filipe.chavarria@gmail.com",
-    "roles": ["admin", "lobby", "dashboard"]
+    "roles": ["user"]
   },
   {
     "email": "miguel.borlido@crossfitvianadocastelo.com",
