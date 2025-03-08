@@ -54,12 +54,17 @@ export interface QRCompetition {
 
 
 export interface QRegistration {
-    heat: string;
+    heat: QRHeat;
     day: string;
     time: string;
     dorsal: string;
     category: QRCategory;
     participants: QRParticipant[];
+}
+
+export interface QRHeat {
+    id: string,
+    name: string
 }
 
 export interface QRCategory {

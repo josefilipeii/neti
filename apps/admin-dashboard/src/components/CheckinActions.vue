@@ -20,7 +20,7 @@ const props = defineProps<{
   qrId: string;
 }>();
 
-const checkinFunction = httpsCallable(functions, "handleCheckinAdmin");
+const checkinFunction = httpsCallable(functions, "handleCheckin");
 
 const buttonDisabled = ref(false);
 const message = ref('');
@@ -37,15 +37,17 @@ const handleButtonClick = async () => {
 const handleCheckin = async () => {
   try {
     await checkinFunction({
-      qrId: props.qrId,
-      competition: props.competition,
-      heat: props.heat,
-      registration: props.registration,
+      token: props.qrId
     });
     message.value = `Checkin realizado para ${props.competition}/${props.heat}/${props.registration}`
   } catch (err) {
     error.value = `Error: ${err}`;
+
   }
+  setTimeout(() => {
+    error.value = '';
+    message.value = '';
+  }, 10000);
 };
 
 

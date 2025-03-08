@@ -16,11 +16,13 @@ type ResponseType = { success: boolean; message: string };
 // Get allowed origins from Firebase Config (or use environment variables)
 const ALLOWED_ORIGINS_CHECKIN = process.env.ALLOWED_ORIGINS_CHECKIN?.split(",") || [
   "https://heimdall-hybrid-day-checkin.web.app",
-  "https://odin-hybrid-day-checkin.web.app"
+  "https://odin-hybrid-day-checkin.web.app",
+  "http://localhost:5173"
 ];
 
 const ALLOWED_ORIGINS_SELFCHECKIN = process.env.ALLOWED_ORIGINS_SELFCHECKIN?.split(",") || [
-  "https://heimdall-hybrid-day-checkin.web.app"
+  "https://heimdall-hybrid-day-checkin.web.app",
+  "http://localhost:5173"
 ];
 
 // Function to check allowed origins dynamically
@@ -33,6 +35,7 @@ function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType | Self
   }
 }
 
+
 // Lobby Check-In Function (Heimdall-based origin)
 export const checkInUser = onCall(
   { region: FIRESTORE_REGION, enforceAppCheck: true },
@@ -44,7 +47,7 @@ export const checkInUser = onCall(
     }
 
     const roles = request.auth.token.roles|| [];
-    if (!roles?.includes("lobby") && !roles?.includes("dashboard")) {
+    if (!roles?.includes("lobby") && !roles?.includes("admin")) {
       throw new HttpsError("permission-denied", `You dont have permissions to do it. ${roles}`);
     }
     return handleCheckin(request, "lobby");
@@ -76,7 +79,7 @@ function triggerEmail(
       type: "checkin",
       ref: token,
       params: {
-        heat: qrDocument.registration?.heat,
+        heat: qrDocument.registration?.heat?.name,
         checkinTime: checkInTime.toDate(),
         competition: qrDocument.competition?.name,
         time: qrDocument.registration?.time,
@@ -113,12 +116,13 @@ async function processCheckin(
     }
 
     const registrationRef = db.doc(
-      `/competitions/${competition.id}/heats/${registration.heat}/registrations/${registration.dorsal}`
+      `/competitions/${competition.id}/heats/${registration.heat.id}/registrations/${registration.dorsal}`
     );
 
     const checkinRef = db.doc(
-      `/competitions/${competition.id}/heats/${registration.heat}/checkins/${registration.dorsal}`
+      `/competitions/${competition.id}/heats/${registration.heat.id}/checkins/${registration.dorsal}`
     );
+    console.log(`/competitions/${competition.id}/heats/${registration.heat.id}/checkins/${registration.dorsal}`)
 
     transaction.set(qrCodeRef, { redeemed: redemption }, { merge: true });
     transaction.set(registrationRef, { checkin: redemption }, { merge: true });
