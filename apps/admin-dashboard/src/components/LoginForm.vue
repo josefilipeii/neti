@@ -13,16 +13,13 @@ const auth = useFirebaseAuth();
 
 
 const loginWithGoogle = async () => {
-
-
   try {
-    await signInWithPopup(auth!!, googleAuthProvider);
-    router.push('/'); // Redirect to root after login
+    await signInWithPopup(auth!, googleAuthProvider);
+    await router.push('/'); // Redirect to root after login
   } catch (error) {
     console.error('Login failed:', error);
   }
 };
-
 </script>
 
 <template>
@@ -31,9 +28,12 @@ const loginWithGoogle = async () => {
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
       <button
           @click="loginWithGoogle"
-          class="w-full px-4 py-2 text-left rounded transition duration-200 bg-[#F7B63B] text-black hover:bg-gray-500"
-      >
-        Login with Google
+          class="flex items-center justify-center w-full
+          max-w-xs px-4 py-2 text-sm font-medium text-gray-700 bg-white
+          border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 focus:outline-none
+          focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+        <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/355037/google.svg" alt="Google Logo" />
+        Login com Google
       </button>
     </div>
   </div>

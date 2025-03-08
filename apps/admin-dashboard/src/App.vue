@@ -37,7 +37,7 @@ import {useFirebaseAuth} from 'vuefire'
 import {signOut} from 'firebase/auth'
 import {useRouter} from 'vue-router'
 
-const title = ref('Entrada de Participantes')
+const title = ref('Consola de Gestão')
 const auth = useFirebaseAuth()
 const router = useRouter()
 

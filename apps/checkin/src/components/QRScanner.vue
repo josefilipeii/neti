@@ -1,16 +1,38 @@
 <template>
-  <div class="scanner">
-    <select v-if="!isMobile" v-model="selectedDeviceId" @change="saveCameraPreference" id="cameraSelect">
-      <label for="cameraSelect">Select Camera (Desktop Only):</label>
-      <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
-        {{ device.label || `Camera ${deviceIndex++}` }}
-      </option>
-    </select>
+  <div class="flex flex-col items-center justify-center p-4">
+    <!-- Camera Selection (Desktop Only) -->
+    <div v-if="!isMobile" class="w-full max-w-sm mb-4">
+      <label for="cameraSelect" class="block text-gray-700 font-medium mb-2">Select Camera:</label>
+      <select
+          v-model="selectedDeviceId"
+          @change="saveCameraPreference"
+          id="cameraSelect"
+          class="w-full p-2 border rounded-lg bg-white shadow-sm focus:ring focus:ring-blue-300"
+      >
+        <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
+          {{ device.label || `Camera ${deviceIndex++}` }}
+        </option>
+      </select>
+    </div>
 
-    <video v-if="isScanning" ref="videoElement" class="video-preview" autoplay playsinline></video>
-    <p v-if="error" class="error">{{ error }}</p>
+    <!-- QR Scanner Preview -->
+    <div class="relative w-full max-w-sm aspect-square bg-gray-900 rounded-lg overflow-hidden shadow-lg">
+      <video v-if="isScanning" ref="videoElement" class="w-full h-full object-cover" autoplay playsinline></video>
+      <div v-if="!isScanning" class="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+        <p class="text-white text-sm">Camera inactive</p>
+      </div>
+    </div>
 
-    <button @click="toggleScanner" class="scanner-btn">
+    <!-- Error Message -->
+    <p v-if="error" class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-lg shadow">
+      {{ error }}
+    </p>
+
+    <!-- Scanner Toggle Button -->
+    <button
+        @click="toggleScanner"
+        class="mt-4 w-full max-w-sm bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-300"
+    >
       {{ isScanning ? "Stop Scanner" : "Start Scanner" }}
     </button>
   </div>
@@ -29,27 +51,23 @@ let currentStream: MediaStream | null = null;
 
 const emit = defineEmits(["code-scanned"]);
 
-// Detect if the user is on a mobile device
 const isMobile = ref<boolean>(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
 
-// Camera selection
 const videoDevices = ref<MediaDeviceInfo[]>([]);
 const selectedDeviceId = ref<string | null>(null);
 let deviceIndex = 1;
 
-// Fetch available cameras
 const getVideoDevices = async () => {
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     videoDevices.value = devices.filter(device => device.kind === "videoinput");
 
-    // If not mobile, allow the user to select a camera
     if (!isMobile.value) {
       const savedDeviceId = localStorage.getItem("preferredCamera");
       if (savedDeviceId && videoDevices.value.some(device => device.deviceId === savedDeviceId)) {
         selectedDeviceId.value = savedDeviceId;
       } else if (videoDevices.value.length > 0) {
-        selectedDeviceId.value = videoDevices.value[0].deviceId; // Default to first camera
+        selectedDeviceId.value = videoDevices.value[0].deviceId;
       }
     }
   } catch (err) {
@@ -58,7 +76,6 @@ const getVideoDevices = async () => {
   }
 };
 
-// Save camera preference to localStorage
 const saveCameraPreference = () => {
   if (selectedDeviceId.value) {
     localStorage.setItem("preferredCamera", selectedDeviceId.value);
@@ -66,17 +83,10 @@ const saveCameraPreference = () => {
   restartScanner();
 };
 
-// Function to get constraints for camera selection
 const getCameraConstraints = () => {
-  if (isMobile.value) {
-    return { video: { facingMode: "environment" } }; // Always use back camera on mobile
-  } else {
-    return {
-      video: {
-        deviceId: selectedDeviceId.value ? { exact: selectedDeviceId.value } : undefined
-      }
-    };
-  }
+  return isMobile.value
+      ? { video: { facingMode: "environment" } }
+      : { video: { deviceId: selectedDeviceId.value ? { exact: selectedDeviceId.value } : undefined } };
 };
 
 const startScanner = async () => {
@@ -84,17 +94,14 @@ const startScanner = async () => {
   error.value = null;
 
   try {
-    // Get the correct camera constraints
     const constraints = getCameraConstraints();
-
-    // Start QR code scanning with selected device
     scannerControls = await codeReader.decodeFromVideoDevice(
         selectedDeviceId.value || undefined,
         videoElement.value!,
         (result, err) => {
           if (result) {
             emit("code-scanned", result.getText());
-            stopScanner(); // Stop after successful scan
+            stopScanner();
           }
           if (err) {
             error.value = "Error reading QR code";
@@ -102,10 +109,8 @@ const startScanner = async () => {
         }
     );
 
-    // Store the active stream
     currentStream = await navigator.mediaDevices.getUserMedia(constraints);
 
-    // Assign stream to video element
     if (videoElement.value) {
       videoElement.value.srcObject = currentStream;
     }
@@ -120,25 +125,21 @@ const stopScanner = () => {
   isScanning.value = false;
   error.value = null;
 
-  // Stop QR scanner
   if (scannerControls) {
     scannerControls.stop();
     scannerControls = null;
   }
 
-  // Stop video stream
   if (currentStream) {
     currentStream.getTracks().forEach(track => track.stop());
     currentStream = null;
   }
 
-  // Clear video element
   if (videoElement.value) {
     videoElement.value.srcObject = null;
   }
 };
 
-// Restart scanner when switching cameras (Desktop only)
 const restartScanner = () => {
   if (isScanning.value) {
     stopScanner();
@@ -147,56 +148,9 @@ const restartScanner = () => {
 };
 
 const toggleScanner = () => {
-  if (isScanning.value) {
-    stopScanner();
-  } else {
-    startScanner();
-  }
+  isScanning.value ? stopScanner() : startScanner();
 };
 
-// Fetch devices on mount
-onMounted(() => {
-  getVideoDevices();
-});
-
-// Cleanup on unmount
-onUnmounted(() => {
-  stopScanner();
-});
+onMounted(getVideoDevices);
+onUnmounted(stopScanner);
 </script>
-
-<style scoped>
-.scanner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.video-preview {
-  width: 100%;
-  max-width: 400px;
-  height: 400px; /* Make the video element square */
-  border: 2px solid black;
-}
-.error {
-  color: red;
-  margin-top: 10px;
-}
-.scanner-btn {
-  margin-top: 10px;
-  padding: 8px 12px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.scanner-btn:hover {
-  background-color: #0056b3;
-}
-select {
-  margin: 10px 0;
-  padding: 5px;
-  font-size: 14px;
-}
-</style>

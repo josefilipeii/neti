@@ -8,7 +8,7 @@ import ErrorPage from "../views/ErrorPage.vue";
 
 
 const routes = [
-    {path: '/', component: CompetitionDashboard, meta: { requiresAuth: true }},
+    {path: '/', redirect: '/heats'},
     {path: '/heats', component: CompetitionDashboard, meta: { requiresAuth: true , role: 'dashboard'}},
     {path: '/admin', component: AdminDashboard, meta: { requiresAuth: true , role: 'admin'}},
     {path: '/login', component: Login},
@@ -37,7 +37,6 @@ router.beforeEach(async (to) => {
         try {
             const tokenResult = await currentUser.getIdTokenResult();
             let claimRoles = tokenResult.claims.roles as string[];
-            console.log(claimRoles, to.meta.role)
             if (!claimRoles || !claimRoles.includes(to.meta.role as string)) {
                 console.warn("⚠ No custom claims found, redirecting to error page.");
                 return {

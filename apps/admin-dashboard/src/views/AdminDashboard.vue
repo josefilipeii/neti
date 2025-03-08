@@ -2,20 +2,21 @@
   <div class="sticky top-0 min-h-screen w-full grid grid-rows-[auto_1fr] bg-[#242424] text-white">
     <!-- Top Navbar -->
     <competition-selector
-        :competitions="store.competitions"
-        @update:selectedCompetitionId="updateSelectedCompetition"
+        :store="store"
     />
 
     <div class="grid grid-cols-[250px_1fr] gap-6 p-6 h-full overflow-y-auto">
       <heats-selector
-          :heats="store.getHeatsByCompetitionId(selectedCompetition!)"
-          @update:selectedHeatIds="updateSelectedHeat"
+          :heats="store.heatsForSelection"
+          @update:selectedHeatIds="store.updateSelectedHeat"
       />
 
       <main class="flex flex-col items-center justify-center p-6 w-full">
-        <HeatWrapper :selectedHeat="heat" :registrationsAvailable="registrations">
-          <template  v-if="heat && registrations" #heatTable>
-            <AdminTable :heat="heat" :registrations="registrations" :competitionId="selectedCompetition!"/>
+        <HeatWrapper :selectedHeat="store.selectedHeat" :registrationsAvailable="store.registrationsForSelection">
+          <template v-if="store.selectedHeat && store.registrationsForSelection" #heatTable>
+            <AdminTable :heat="store.selectedHeat"
+                        :registrations="store.registrationsForSelection"
+                        :competitionId="store.selectedCompetitionId!"/>
           </template>
         </HeatWrapper>
       </main>
@@ -26,47 +27,12 @@
 <script setup lang="ts">
 import {useCompetitionStore} from "../data/competitions.ts";
 import CompetitionSelector from "../components/CompetitionSelector.vue";
-import {computed, ref, watch} from "vue";
 import HeatsSelector from "../components/HeatsSelector.vue";
-import type {Maybe} from "../model";
 import HeatWrapper from "../components/HeatWrapper.vue";
 import AdminTable from "../components/AdminTable.vue";
 
 
 const store = useCompetitionStore();
-const selectedCompetition = ref<Maybe<string>>(null);
-const selectedHeat = ref<Maybe<string>>(null);
-
-
-
-const heat = computed(() => selectedCompetition.value && selectedHeat.value ?
-    store.getHeatById(selectedCompetition.value!!, selectedHeat.value!!)
-    : null);
-
-const registrations = computed(() => selectedCompetition.value && selectedHeat.value ?
-    store.getRegistrationsByHeatId(selectedCompetition.value!!, selectedHeat.value!!)
-    : null);
-
-
-const updateSelectedCompetition = async (competition: string) => {
-  selectedCompetition.value = competition;
-}
-const updateSelectedHeat = async (heat: string) => {
-  selectedHeat.value = heat;
-}
-
-
-watch(selectedCompetition, async (competition) => {
-  if (competition) {
-    await store.fetchHeats(competition);
-  }
-});
-
-watch(selectedHeat, async () => {
-  if (selectedCompetition.value && selectedHeat.value) {
-    await store.fetchRegistrations(selectedCompetition.value, selectedHeat.value);
-  }
-});
 
 
 </script>

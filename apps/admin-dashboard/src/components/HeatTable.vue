@@ -1,6 +1,6 @@
 <template>
   <h3 class="text-lg font-semibold text-center mb-4 text-[#F7B63B]">
-    Heat: {{ props?.heat?.name }}
+    Heat: {{ store.selectedHeat?.name }}
   </h3>
   <div class="overflow-x-auto">
     <table class="w-full text-left bg-gray-800 rounded-lg overflow-hidden">
@@ -16,11 +16,11 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="registration in registrations" :key="registration.id" class="border-b border-gray-600">
+      <tr v-for="registration in store.registrationsForSelection" :key="registration.id" class="border-b border-gray-600">
         <td class="px-4 py-6">{{registration.category?.name}}</td>
         <td class="px-4 py-6">{{ registration.id }}</td>
-        <td class="px-4 py-6">{{ heat?.day }}</td>
-        <td class="px-4 py-6">{{ heat?.time }}</td>
+        <td class="px-4 py-6">{{ store.selectedHeat?.day }}</td>
+        <td class="px-4 py-6">{{ store.selectedHeat?.time }}</td>
         <td class="px-4 py-6"><span v-for="participant in registration.participants">
                       {{ participant.name }}<br>
                     </span></td>
@@ -30,8 +30,8 @@
         <td class="px-4 py-6">
           <CheckinInfo :checkin="registration.checkin!"
                        :registration="registration.id!"
-                        :heat="heat?.id!"
-                       :competition="competitionId"
+                        :heat="store.selectedHeat?.id!"
+                       :competition="store.selectedCompetitionId!"
           ></CheckinInfo>
         </td>
       </tr>
@@ -40,9 +40,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import type {Heat, Registration} from "shared";
 import CheckinInfo from "../components/CheckinInfo.vue";
-const props = defineProps<{ heat?: Heat, registrations:Registration[] , competitionId: string}>()
+import {useCompetitionStore} from "../data/competitions.ts";
+const store = useCompetitionStore();
 
 
 </script>
