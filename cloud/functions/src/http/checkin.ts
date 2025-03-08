@@ -83,8 +83,10 @@ function triggerEmail(
       ref: token,
       params: {
         heat: qrDocument.registration?.heat?.name,
+        heatId: qrDocument.registration?.heat?.id,
         checkinTime: checkInTime.toDate(),
         competition: qrDocument.competition?.name,
+        competitionId: qrDocument.competition?.id,
         time: qrDocument.registration?.time,
         day: new Date(qrDocument.registration?.day)?.toLocaleDateString("en-GB"),
         dorsal: qrDocument.registration?.dorsal,
@@ -99,8 +101,10 @@ function triggerEmail(
     logger.info(`✅ Email job written to Firestore (Queued): ${docRef.id}`);
 
     logger.info(`✅ Email job published to Pub/Sub for ${recipients.length} recipients.`);
+    return docRef;
   } catch (error) {
     logger.error("❌ Failed to publish email job to Pub/Sub:", error);
+    throw error;
   }
 }
 
@@ -122,17 +126,12 @@ async function processCheckin(
       `/competitions/${competition.id}/heats/${registration.heat.id}/registrations/${registration.dorsal}`
     );
 
-    const checkinRef = db.doc(
-      `/competitions/${competition.id}/heats/${registration.heat.id}/checkins/${registration.dorsal}`
-    );
-    console.log(`/competitions/${competition.id}/heats/${registration.heat.id}/checkins/${registration.dorsal}`)
+    // **Trigger Email via Pub/Sub**
+    const emailRef = triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
 
     transaction.set(qrCodeRef, { redeemed: redemption }, { merge: true });
-    transaction.set(registrationRef, { checkin: redemption }, { merge: true });
-    transaction.set(checkinRef, { checkin: redemption }, { merge: true });
+    transaction.set(registrationRef, { checkin: {...redemption, email: emailRef.id} }, { merge: true });
 
-    // **Trigger Email via Pub/Sub**
-    triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
     logger.info(`✅ Check-in propagated for dorsal ${registration.dorsal} in competition ${competition.name}`);
   } catch (error) {
     logger.error("❌ Error processing check-in:", error);

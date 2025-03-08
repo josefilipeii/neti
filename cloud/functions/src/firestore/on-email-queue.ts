@@ -2,9 +2,9 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { PubSub } from "@google-cloud/pubsub";
 import { logger } from "firebase-functions";
 import {FIRESTORE_REGION} from "../constants";
+import {PUBSUB_EMAIL_TOPIC} from "../firebase";
 
-const pubsub = new PubSub();
-const PUBSUB_TOPIC = "send-email";
+export const pubsub = new PubSub();
 
 export const handleEmailQueue = onDocumentCreated(
   { document: "email-queue/{docId}", region: FIRESTORE_REGION },
@@ -23,7 +23,7 @@ export const handleEmailQueue = onDocumentCreated(
     try {
       // **Publish only the Firestore docId to Pub/Sub**
       const messageBuffer = Buffer.from(JSON.stringify({ docId }));
-      await pubsub.topic(PUBSUB_TOPIC).publishMessage({ data: messageBuffer });
+      await pubsub.topic(PUBSUB_EMAIL_TOPIC).publishMessage({ data: messageBuffer });
 
       // Update Firestore status to "processing"
       await docRef.update({ status: "processing" });

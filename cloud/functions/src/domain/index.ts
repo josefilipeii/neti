@@ -18,3 +18,20 @@ export interface Email{
     params: Record<string, unknown | undefined>;
     sentAt?: Date;
 }
+
+
+export interface CheckinEmail extends Email{
+    type: "checkin";
+    params: {
+        heat: string;
+        heatId: string;
+        checkinTime: Date;
+        competition: string;
+        competitionId: string;
+        time?: string;
+        day?: string;
+        dorsal: string;
+        category: string;
+        type: string;
+    };
+}
