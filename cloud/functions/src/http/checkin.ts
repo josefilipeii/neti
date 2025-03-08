@@ -30,7 +30,7 @@ function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType | Self
   const origin = request.rawRequest.headers.origin;
 
   if (!origin || !allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
-    console.error(`Blocked request from origin: ${origin}`);
+    console.error(`Blocked request from origin: ${origin} : Expected ${allowedOrigins}`);
     throw new HttpsError("permission-denied", "Unauthorized origin");
   }
 }
