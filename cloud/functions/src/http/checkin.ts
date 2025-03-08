@@ -13,17 +13,8 @@ type SelfCheckinRequestType = CheckinRequestType & { email: string };
 type ResponseType = { success: boolean; message: string };
 
 
-// Get allowed origins from Firebase Config (or use environment variables)
-const ALLOWED_ORIGINS_CHECKIN = process.env.ALLOWED_ORIGINS_CHECKIN?.split(",") || [
-  "https://heimdall-hybrid-day-checkin.web.app",
-  "https://odin-hybrid-day-checkin.web.app",
-  "http://localhost:5173"
-];
 
-const ALLOWED_ORIGINS_SELFCHECKIN = process.env.ALLOWED_ORIGINS_SELFCHECKIN?.split(",") || [
-  "https://heimdall-hybrid-day-checkin.web.app",
-  "http://localhost:5173"
-];
+
 
 // Function to check allowed origins dynamically
 function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType | SelfCheckinRequestType>, allowedOrigins: string[]) {
@@ -40,6 +31,12 @@ function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType | Self
 export const checkInUser = onCall(
   { region: FIRESTORE_REGION, enforceAppCheck: true },
   async (request: CallableRequest<CheckinRequestType>) => {
+
+    const ALLOWED_ORIGINS_CHECKIN = process.env.ALLOWED_ORIGINS_CHECKIN?.split(",") || [
+      "https://heimdall-hybrid-day-checkin.web.app",
+      "https://odin-hybrid-day-checkin.web.app",
+      "http://localhost:5173"
+    ];
     enforceAllowedOrigin(request, ALLOWED_ORIGINS_CHECKIN); // ✅ Allow only Heimdall domains
 
     if (!request.auth) {
@@ -58,6 +55,12 @@ export const checkInUser = onCall(
 export const selfCheckin = onCall(
   { region: FIRESTORE_REGION, enforceAppCheck: true },
   async (request: CallableRequest<SelfCheckinRequestType>) => {
+    const ALLOWED_ORIGINS_SELFCHECKIN = process.env.ALLOWED_ORIGINS_SELFCHECKIN?.split(",") || [
+      "https://heimdall-hybrid-day-checkin.web.app",
+      "http://localhost:5173"
+    ];
+
+
     enforceAllowedOrigin(request, ALLOWED_ORIGINS_SELFCHECKIN); // ✅ Allow only Self domains
 
     return handleCheckin(request, "self");
