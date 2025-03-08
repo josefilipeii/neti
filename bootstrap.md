@@ -69,6 +69,9 @@ gcloud projects add-iam-policy-binding hybrid-day-checkin \
   --role="roles/pubsub.admin"
 
 
+gcloud projects add-iam-policy-binding "$" 
+--member="serviceAccount:serviceAccount:cicd-deploy@$.iam.gserviceaccount.com"
+ --role="roles/firebase.admin" --quiet
 ```
 
 

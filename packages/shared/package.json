@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",
-    "install": "^0.13.0",
     "typescript": "^5.8.2"
   }
 }

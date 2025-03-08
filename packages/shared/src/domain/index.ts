@@ -14,13 +14,22 @@ export interface Category {
     type: string;
 }
 
+export interface Heat {
+    id: string;
+    name: string;
+    day: string;
+    time: string;
+}
+
 
 export interface Registration {
     id?: string; //dorsal
-    category: string;
+    category: Category;
     day?: string;
     time?: string;
     participants: RegistrationParticipant[];
+    checkin?: Redemption;
+    qrId?: string;
 }
 
 export interface RegistrationParticipant{
@@ -69,7 +78,7 @@ export interface QRDocument {
     id: string;
     createdAt: string;
     type: "registration" | "addon";
-    redeemed?: QRRedemption;
+    redeemed?: Redemption;
     redeemableBy: string[];
 }
 
@@ -78,7 +87,7 @@ export interface QRRegistrationDocument extends QRDocument {
     registration: QRegistration;
 }
 
-export interface QRRedemption {
+export interface Redemption {
     at: Timestamp;
     how: string;
     by: string;

@@ -4,7 +4,7 @@ import { db } from "../firebase";
 import { Timestamp, Transaction } from "firebase-admin/firestore";
 import { DocumentReference } from "firebase-admin/firestore";
 import { CallableRequest, HttpsError, onCall } from "firebase-functions/v2/https";
-import { QRRedemption, QRRegistrationDocument } from "../../../../packages/shared";
+import { Redemption, QRRegistrationDocument } from "../../../../packages/shared";
 import { Email, Recipient } from "../domain";
 
 
@@ -76,6 +76,7 @@ function triggerEmail(
       type: "checkin",
       ref: token,
       params: {
+        heat: qrDocument.registration?.heat,
         checkinTime: checkInTime.toDate(),
         competition: qrDocument.competition?.name,
         time: qrDocument.registration?.time,
@@ -101,7 +102,7 @@ async function processCheckin(
   transaction: Transaction,
   qrDocument: QRRegistrationDocument,
   qrCodeRef: DocumentReference,
-  redemption: QRRedemption,
+  redemption: Redemption,
   token: string
 ) {
   try {
@@ -115,8 +116,13 @@ async function processCheckin(
       `/competitions/${competition.id}/heats/${registration.heat}/registrations/${registration.dorsal}`
     );
 
+    const checkinRef = db.doc(
+      `/competitions/${competition.id}/heats/${registration.heat}/checkins/${registration.dorsal}`
+    );
+
     transaction.set(qrCodeRef, { redeemed: redemption }, { merge: true });
     transaction.set(registrationRef, { checkin: redemption }, { merge: true });
+    transaction.set(checkinRef, { checkin: redemption }, { merge: true });
 
     // **Trigger Email via Pub/Sub**
     triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
@@ -156,7 +162,7 @@ async function handleCheckin(
       return { success: false, message: "QR code has already been redeemed." };
     }
     if (type === "self") validateInputSelfCheckin(email, qrDocument);
-    const redemption: QRRedemption = { at: checkInTime, by: email, how: type };
+    const redemption: Redemption = { at: checkInTime, by: email, how: type };
     await processCheckin(transaction, qrDocument, qrCodeRef, redemption, token);
     return { success: true, message: "User checked in successfully!" };
   });

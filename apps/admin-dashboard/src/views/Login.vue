@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+  <div class="flex flex-col items-center justify-center bg-gray-100 p-4">
     <div class="w-full max-w-sm">
       <LoginForm></LoginForm>
     </div>

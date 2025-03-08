@@ -26,12 +26,12 @@ const loginWithGoogle = async () => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded shadow-md w-full max-w-sm">
+  <div class="flex flex-col items-center justify-center  bg-[#242424]">
+    <div class=" p-8 rounded shadow-md w-full ">
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
       <button
           @click="loginWithGoogle"
-          class="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-300"
+          class="w-full px-4 py-2 text-left rounded transition duration-200 bg-[#F7B63B] text-black hover:bg-gray-500"
       >
         Login with Google
       </button>

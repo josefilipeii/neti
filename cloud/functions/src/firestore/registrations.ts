@@ -38,6 +38,22 @@ const ensureEvent = async (eventId: string, transaction: Transaction): Promise<C
   return eventSnap.data() as Competition;
 }
 
+/**
+ * Ensures the heat exists in Firestore.
+ */
+const ensureHeat = async (eventId: string, heatId: string, heatName: string, heatDay: string, heatTime: string, transaction: Transaction): Promise<void> => {
+  const heatRef = db.collection(`competitions/${eventId}/heats`).doc(heatId);
+  const heatSnap = await transaction.get(heatRef);
+  if (!heatSnap.exists) {
+    transaction.set(heatRef, {
+      name: heatName,
+      day: heatDay,
+      time: heatTime,
+    });
+    logger.log(`✅ Heat '${heatName}' created.`);
+  }
+};
+
 export const processRegistrations = onDocumentCreated(
   {
     region: FIRESTORE_REGION,
@@ -52,7 +68,7 @@ export const processRegistrations = onDocumentCreated(
     const data = snap.data();
     if (!data || data.status !== "pending") return;
 
-    const {eventId, heatId, heatDay, heatTime,  dorsal, category, participants} = data;
+    const {eventId, heatId, heatName, heatDay, heatTime,  dorsal, category, participants} = data;
     const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
     if (!selfCheckinSecret) {
       logger.error("❌ Secret key missing.");
@@ -85,13 +101,14 @@ export const processRegistrations = onDocumentCreated(
         return;
       }
 
+      await ensureHeat(eventId, heatId, heatName, heatDay, heatTime, transaction);
+
+
       transaction.set(registrationRef, {
         qrId,
         status: "processed",
         category: {id: categoryDoc.id, name: category},
         processedAt: new Date(),
-        time: heatTime,
-        day: heatDay,
         participants,
       });
 
@@ -101,7 +118,7 @@ export const processRegistrations = onDocumentCreated(
         competition: {id: eventId, name: eventDoc.name},
         redeemableBy: participants.map((p: Participant) => p.email),
         registration: {
-          heat: heatId,
+          heat: heatName,
           time: heatTime,
           day: heatDay,
           dorsal,

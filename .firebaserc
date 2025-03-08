@@ -16,6 +16,12 @@
         ],
         "self-hybrid-day-checkin": [
           "self-hybrid-day-checkin"
+        ],
+        "abc-hybrid-day-checkin": [
+          "abc-hybrid-day-checkin"
+        ],
+        "abcd-hybrid-day-checkin": [
+          "abcd-hybrid-day-checkin"
         ]
       }
     }
