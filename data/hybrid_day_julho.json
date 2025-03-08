@@ -2,6 +2,7 @@
   "competitions": [
     {
       "id": "hybrid_day_julho_leiria",
+      "short_id": "julholeiria",
       "name": "Hybrid Day By Crossfit Viana do Castelo@Leiria",
       "location": "Viana do Castelo",
       "days": ["2025-07-26"],

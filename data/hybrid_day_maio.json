@@ -2,6 +2,7 @@
   "competitions": [
     {
       "id": "hybrid_day_maio_viana",
+      "short_id": "maioviana",
       "name": "Hybrid Day By Crossfit Viana do Castelo and XLife",
       "location": "Viana do Castelo",
       "days": ["2025-05-23", "2025-05-24", "2025-05-25"],

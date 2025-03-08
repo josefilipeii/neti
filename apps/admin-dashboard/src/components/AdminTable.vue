@@ -18,7 +18,9 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="registration in store.registrationsForSelection" :key="registration.id" class="border-b border-gray-600">
+      <tr v-for="registration in store.registrationsForSelection"
+          :key="registration.id"
+          :class="{'text-green-500 font-bold': registration?.checkin?.at, 'border-b border-gray-600': true}">
         <td class="px-4 py-6">{{ registration.category?.name }}</td>
         <td class="px-4 py-6">{{ registration.id }}</td>
         <td class="px-4 py-6">{{ store.selectedHeat?.day }}</td>

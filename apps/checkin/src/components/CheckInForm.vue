@@ -21,7 +21,7 @@ const qrSource = computed(() =>
     paramData.token ? doc(collection(db, 'qrCodes'), paramData.token) : null
 );
 
-const { data: qrData, error: qrError } = useDocument(qrSource, { once: true });
+const { data: qrData, error: qrError, pending: qrPending } = useDocument(qrSource, { once: true });
 
 const data = computed(() => {
   if (!qrData.value) return null;
@@ -42,11 +42,14 @@ const reload = () => {
 
 const handleCheckin = async () => {
   try {
+    loading.value = true;
     await checkinFunction({ token: paramData.token });
     message.value = `Checkin realizado para ${data?.value?.registration?.dorsal}`;
     reload();
   } catch (err) {
     error.value = `Erro: ${err.message}`;
+  }finally {
+    loading.value = false;
   }
 };
 
@@ -59,17 +62,29 @@ const clearContext = () => {
 
 // Watch for data arrival and open the modal automatically
 watch(data, (newData) => {
-  console.log('Data arrived, opening modal', newData);
   if (newData) {
     isModalOpen.value = true;
   }
 });
+
+
+watch(qrPending, (newPending) => {
+  if (!newPending && !qrData.value) {
+    error.value = 'QR Code inválido';
+    setTimeout(() => {
+      error.value = '';
+    }, 5000);
+  }
+});
+
 </script>
 
 <template>
   <div>
     <QRScanner @code-scanned="changeTokenValue" />
-
+    <div v-if="message" class="mb-4 p-4 bg-green-50 text-green-700 rounded-md">
+      {{ message }}
+    </div>
     <div v-if="error || qrError" class="bg-gray-50 rounded-lg shadow-md p-6 mt-6">
       <div v-if="error" class="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
         {{ error }}
@@ -78,14 +93,9 @@ watch(data, (newData) => {
         {{ qrError }}
       </div>
     </div>
-
-    <div v-if="message" class="bg-gray-50 rounded-lg shadow-md p-6 mt-6">
-      <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-md">
-        {{ message }}
-      </div>
-    </div>
     <CheckinModal
         v-if="isModalOpen && data"
+        :inAction="loading || qrPending"
         :data="data"
         @checkin="handleCheckin"
         @close="clearContext"

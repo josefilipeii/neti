@@ -17,6 +17,7 @@
         </ul>
 
         <button
+            :disabled="!props.inAction"
             @click="emit('checkin')"
             v-if="!data.redeemed"
             class="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none">
@@ -40,10 +41,6 @@
 import { defineProps, defineEmits } from 'vue';
 import type {QRRegistrationDocument} from "shared";
 import {Maybe} from "../domain";
-
-const props = defineProps<{ data: Maybe<QRRegistrationDocument>}>()
-
-
-
+const props = defineProps<{ inAction: boolean, data: Maybe<QRRegistrationDocument>}>()
 const emit = defineEmits(['checkin', 'close']);
 </script>

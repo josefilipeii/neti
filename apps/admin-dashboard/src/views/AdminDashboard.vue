@@ -14,9 +14,7 @@
       <main class="flex flex-col items-center justify-center p-6 w-full">
         <HeatWrapper :selectedHeat="store.selectedHeat" :registrationsAvailable="store.registrationsForSelection">
           <template v-if="store.selectedHeat && store.registrationsForSelection" #heatTable>
-            <AdminTable :heat="store.selectedHeat"
-                        :registrations="store.registrationsForSelection"
-                        :competitionId="store.selectedCompetitionId!"/>
+            <AdminTable></AdminTable>
           </template>
         </HeatWrapper>
       </main>
