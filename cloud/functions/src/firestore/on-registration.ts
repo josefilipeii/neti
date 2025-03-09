@@ -100,7 +100,7 @@ export const processRegistrations = onDocumentCreated(
       await ensureHeat(eventId, heatId, heatName, heatDay, heatTime, transaction);
 
 
-      const qrShortCode = `RG${eventId}-${heatId}-${dorsal}`
+      const qrShortCode = `RG:${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
 
       transaction.set(registrationRef, {
         qrId,

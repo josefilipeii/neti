@@ -1,12 +1,12 @@
-import { FIRESTORE_REGION, QR_BUCKET_NAME } from "../constants";
-import { logger } from "firebase-functions";
-import { QRDocument, QRRegistrationDocument } from "../../../../packages/shared";
-import { Bucket, File } from "@google-cloud/storage";
-import { db, PUBSUB_QR_FILES_TOPIC, storage } from "../firebase";
+import {FIRESTORE_REGION, QR_BUCKET_NAME} from "../constants";
+import {logger} from "firebase-functions";
+import {QRDocument, QRRegistrationDocument} from "../../../../packages/shared";
+import {Bucket, File} from "@google-cloud/storage";
+import {db, PUBSUB_QR_FILES_TOPIC, storage} from "../firebase";
 import QRCode from "qrcode";
 import bwipjs from "bwip-js";
-import { onMessagePublished } from "firebase-functions/v2/pubsub";
-import { PubSub } from "@google-cloud/pubsub";
+import {onMessagePublished} from "firebase-functions/v2/pubsub";
+import {PubSub} from "@google-cloud/pubsub";
 
 const pubsub = new PubSub();
 
@@ -23,7 +23,7 @@ export const processQrCodes = onMessagePublished(
       return;
     }
 
-    const { docId, retryCount = 0 } = JSON.parse(
+    const {docId, retryCount = 0} = JSON.parse(
       Buffer.from(message.data, "base64").toString("utf8")
     );
 
@@ -64,8 +64,12 @@ export const processQrCodes = onMessagePublished(
 
       try {
         // Generate QR Code
-        const qrCodeBuffer: Buffer = await QRCode.toBuffer(docId);
-        await qrFile.save(qrCodeBuffer, { contentType: "image/png" });
+        const qrCodeBuffer: Buffer = await QRCode.toBuffer(docId, {
+          errorCorrectionLevel: "H",
+          width: 500,
+          margin: 2
+        });
+        await qrFile.save(qrCodeBuffer, {contentType: "image/png"});
 
         // Generate Barcode
         const barCodeBuffer = await bwipjs.toBuffer({
@@ -76,11 +80,11 @@ export const processQrCodes = onMessagePublished(
           includetext: true,
           textxalign: "center",
         });
-        await barCodeFile.save(barCodeBuffer, { contentType: "image/png" });
+        await barCodeFile.save(barCodeBuffer, {contentType: "image/png"});
 
         // Generate public URLs
-        const [qrUrl] = await qrFile.getSignedUrl({ action: "read", expires: "01-01-2030" });
-        const [barCodeUrl] = await barCodeFile.getSignedUrl({ action: "read", expires: "01-01-2030" });
+        const [qrUrl] = await qrFile.getSignedUrl({action: "read", expires: "01-01-2030"});
+        const [barCodeUrl] = await barCodeFile.getSignedUrl({action: "read", expires: "01-01-2030"});
 
         // 🔹 Update Firestore **without a transaction**
         await docRef.update({
@@ -103,8 +107,8 @@ export const processQrCodes = onMessagePublished(
         logger.warn(`🔁 Retrying processing for ${docId} in ${delay / 1000} seconds (attempt ${newRetryCount}/3)`);
 
         setTimeout(async () => {
-          const messageBuffer = Buffer.from(JSON.stringify({ docId, retryCount: newRetryCount }));
-          await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({ data: messageBuffer });
+          const messageBuffer = Buffer.from(JSON.stringify({docId, retryCount: newRetryCount}));
+          await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({data: messageBuffer});
         }, delay);
       } else {
         logger.error(`🚨 Max retries reached for ${docId}. Processing failed permanently.`);
