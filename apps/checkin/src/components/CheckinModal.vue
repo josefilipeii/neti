@@ -15,7 +15,6 @@
             {{ participant.name }}
           </li>
         </ul>
-
         <button
             :disabled="!props.inAction"
             @click="emit('checkin')"

@@ -11,7 +11,7 @@ import {QRDocument, QRRegistrationDocument} from "shared";
 const checkinFunction = httpsCallable(functions, "handleCheckin");
 const db = useFirestore();
 
-const loading = ref(false);
+const enableCheckinButton = ref(false);
 const error = ref('');
 const message = ref('');
 const paramData = reactive<{ token: string }>({ token: '' });
@@ -42,14 +42,15 @@ const reload = () => {
 
 const handleCheckin = async () => {
   try {
-    loading.value = true;
+    console.log('Checkin', paramData.token);
+    enableCheckinButton.value = true;
     await checkinFunction({ token: paramData.token });
     message.value = `Checkin realizado para ${data?.value?.registration?.dorsal}`;
     reload();
   } catch (err) {
     error.value = `Erro: ${err.message}`;
   }finally {
-    loading.value = false;
+    enableCheckinButton.value = false;
   }
 };
 
@@ -69,6 +70,14 @@ watch(data, (newData) => {
 
 
 watch(qrPending, (newPending) => {
+  if (newPending) {
+    message.value = 'A carregar dados...';
+    enableCheckinButton.value = false;
+  }else if(!newPending) {
+    message.value = '';
+    enableCheckinButton.value = true;
+  }
+
   if (!newPending && !qrData.value) {
     error.value = `Código inválido ${paramData.token}`;
     setTimeout(() => {
@@ -95,7 +104,7 @@ watch(qrPending, (newPending) => {
     </div>
     <CheckinModal
         v-if="isModalOpen && data"
-        :inAction="loading || qrPending"
+        :inAction="enableCheckinButton"
         :data="data"
         @checkin="handleCheckin"
         @close="clearContext"

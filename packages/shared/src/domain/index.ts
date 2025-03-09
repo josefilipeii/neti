@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 
 export interface Competition {
     id: string;
+    shortId: string;
     name: string;
     location?: string;
     days: string[];

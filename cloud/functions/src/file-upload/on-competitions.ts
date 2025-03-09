@@ -35,12 +35,12 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
     // ✅ Process competitions with Firestore transactions
     await Promise.all(
       jsonData.competitions.map(async (competition: Competition) => {
-        if (!competition.id || !competition.name || !competition.days) {
+        if (!competition.shortId || !competition.id || !competition.name || !competition.days) {
           logger.warn("⚠️ Skipping invalid competition:", competition);
           return;
         }
 
-        const competitionId = competition.id;
+        const competitionId = competition.shortId;
         const competitionRef = db.collection("competitions").doc(competitionId);
 
         await db.runTransaction(async (transaction) => {
@@ -48,6 +48,7 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
 
           if (!competitionSnap.exists) {
             transaction.set(competitionRef, {
+              code: competition.id,
               name: competition.name,
               location: competition.location,
               days: competition.days,
