@@ -55,7 +55,7 @@ jobs:
           echo "BREVO_API_KEY=${{ vars.BREVO_API_KEY }}" >> cloud/functions/.env
           echo "BREVO_CHECKIN_TEMPLATE_ID=${{ vars.BREVO_CHECKIN_TEMPLATE_ID }}" >> cloud/functions/.env
           echo "ALLOWED_ORIGINS_CHECKIN=${{ vars.ALLOWED_ORIGINS_CHECKIN }}" >> cloud/functions/.env
-          echo "ALLOWED_ORIGINS_SELFCHECKIN=${{ vars.ALLOWED_ORIGINS_SELFCHECKIN }}" >> cloud/functions/.env
+          echo "ALLOWED_ORIGINS_ADMIN=${{ vars.ALLOWED_ORIGINS_ADMIN }}" >> cloud/functions/.env
 
 
       - name: Deploy Firebase

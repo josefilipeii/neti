@@ -1,12 +1,13 @@
-import { defineStore } from 'pinia';
-import { useCollection } from 'vuefire';
-import { collection, getFirestore, CollectionReference } from 'firebase/firestore';
-import type { Competition, Heat, Registration } from "shared";
-import type { ComputedRef } from "vue";
-import { computed, shallowRef, watch, ref } from "vue";
-import type { Maybe } from "../model";
+import {defineStore} from 'pinia';
+import {useCollection, useFirestore} from 'vuefire';
+import {collection, CollectionReference} from 'firebase/firestore';
+import type {Competition, Heat, Registration} from "shared";
+import type {ComputedRef} from "vue";
+import {computed, ref, shallowRef, watch} from "vue";
+import type {Maybe} from "../model";
 
 export const useCompetitionStore = defineStore('competitionStore', () => {
+    const db = useFirestore();
     const selectedCompetitionId = shallowRef<Maybe<string>>(null);
     const selectedHeatId = shallowRef<Maybe<string>>(null);
 
@@ -34,12 +35,13 @@ export const useCompetitionStore = defineStore('competitionStore', () => {
 
     const heatsForSelection: ComputedRef<Maybe<Heat[]>> = computed(() => selectedCompetitionId.value ? getHeatsByCompetitionId(selectedCompetitionId.value!!) : null);
 
+    const heatsSrc = computed(() => selectedCompetitionId.value ? collection(db, `competitions/${selectedCompetitionId.value}/heats`) : null);
+    const registrationsSrc = computed(() => selectedCompetitionId.value && selectedHeatId.value ? collection(db, `competitions/${selectedCompetitionId.value}/heats/${selectedHeatId.value}/registrations`) : null);
+
     watch(selectedCompetitionId, async (competitionId) => {
         if (competitionId) {
             if (!heats.value.has(competitionId)) {
-                heats.value.set(competitionId, useCollection<Heat>(
-                    collection(getFirestore(), `competitions/${competitionId}/heats`) as CollectionReference<Heat>
-                ));
+                heats.value.set(competitionId, useCollection<Heat>(heatsSrc.value as CollectionReference<Heat>));
             }
         }
     });
@@ -57,9 +59,7 @@ export const useCompetitionStore = defineStore('competitionStore', () => {
                 registrations.value.set(competitionId, new Map());
             }
             if (!registrations.value.get(competitionId)?.has(heatId)) {
-                registrations.value.get(competitionId)?.set(heatId, useCollection<Registration>(
-                    collection(getFirestore(), `competitions/${competitionId}/heats/${heatId}/registrations`) as CollectionReference<Registration>
-                ));
+                registrations.value.get(competitionId)?.set(heatId, useCollection<Registration>(registrationsSrc.value as CollectionReference<Registration>));
             }
 
         }
@@ -67,7 +67,7 @@ export const useCompetitionStore = defineStore('competitionStore', () => {
 
     // VueFire's useCollection automatically syncs with Firestore inside setup()
     const competitions = useCollection<Competition>(
-        collection(getFirestore(), 'competitions') as CollectionReference<Competition>
+        collection(db, 'competitions') as CollectionReference<Competition>
     );
 
 

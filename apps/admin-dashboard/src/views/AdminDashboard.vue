@@ -5,7 +5,7 @@
         :store="store"
     />
 
-    <div class="grid grid-cols-[250px_1fr] gap-6 p-6 h-full overflow-y-auto">
+    <div class="-z-100 grid grid-cols-[250px_1fr] gap-6 p-6 h-full overflow-y-scroll">
       <heats-selector
           :heats="store.heatsForSelection"
           @update:selectedHeatIds="store.updateSelectedHeat"

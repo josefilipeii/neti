@@ -1,9 +1,10 @@
 <template>
+  <QrModal v-if="showQrModal" @close="closeQrModal"></QrModal>
   <h3 class="text-lg font-semibold text-center mb-4 text-[#F7B63B]">
     Heat: {{ store.selectedHeat?.name }}
   </h3>
   <div class="overflow-x-auto">
-    <table class="w-full text-left bg-gray-800 rounded-lg overflow-hidden">
+    <table class="w-full text-left bg-gray-800 rounded-lg">
       <thead>
       <tr class="bg-[#F7B63B] text-black">
         <th class="px-4 py-6">Categoria</th>
@@ -46,7 +47,9 @@
                           :qrId="registration?.qrId!"
           ></CheckinActions>
         </td>
-        <td class="px-4 py-6">{{ registration.qrId }}</td>
+        <td class="px-4 py-6 hover:cursor-pointer"
+            @click="openQrModal(registration.qrId)"><span>{{ registration.qrId }}</span>
+        </td>
       </tr>
       </tbody>
     </table>
@@ -56,8 +59,26 @@
 import CheckinInfo from "../components/CheckinInfo.vue";
 import CheckinActions from "../components/CheckinActions.vue";
 import {useCompetitionStore} from "../data/competitions.ts";
+import QrModal from "../components/QrModal.vue";
+import {ref} from "vue";
+import {useQrStore} from "../data/qr-codes.ts";
 
 const store = useCompetitionStore();
+const qrStore = useQrStore();
+const showQrModal = ref(false);
+
+
+const openQrModal = async (qr?: string) => {
+  if(qr) {
+    qrStore.setSelectedQrId(qr)
+    showQrModal.value = true;
+  }
+};
+
+const closeQrModal = () => {
+  showQrModal.value = false;
+};
+
 
 
 </script>

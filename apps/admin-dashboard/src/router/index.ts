@@ -5,12 +5,14 @@ import CompetitionDashboard from "../views/CompetitionDashboard.vue";
 import AdminDashboard from "../views/AdminDashboard.vue";
 import NotAllowed from "../views/NotAllowed.vue";
 import ErrorPage from "../views/ErrorPage.vue";
+import ManualActions from "../views/ManualActions.vue";
 
 
 const routes = [
     {path: '/', redirect: '/heats'},
     {path: '/heats', component: CompetitionDashboard, meta: { requiresAuth: true , role: 'dashboard'}},
     {path: '/admin', component: AdminDashboard, meta: { requiresAuth: true , role: 'admin'}},
+    {path: '/manual-actions', component: ManualActions, meta: { requiresAuth: true , role: 'admin'}},
     {path: '/login', component: Login},
     {path: '/not-allowed', component: NotAllowed},
     {path: "/:pathMatch(.*)*", component: ErrorPage},

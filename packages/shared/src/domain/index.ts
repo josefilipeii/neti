@@ -82,10 +82,18 @@ interface QRParticipant {
 
 export interface QRDocument {
     id: string;
+    code: string;
     createdAt: string;
     type: "registration" | "addon";
     redeemed?: Redemption;
     redeemableBy: string[];
+    files: QRFiles;
+}
+
+
+export interface QRFiles {
+    qr: string;
+    barcode: string;
 }
 
 export interface QRRegistrationDocument extends QRDocument {

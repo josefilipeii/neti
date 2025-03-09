@@ -7,7 +7,10 @@
 
           <div class="flex space-x-2 md:space-x-4 mt-4 md:mt-0">
             <router-link  to="/admin" class="text-white hover:text-[#F7B63B] transition-colors px-4 py-2 rounded-md bg-gray-700 hover:bg-[#F7B63B] shadow">
-              Admin
+              Admin Dashboard
+            </router-link >
+            <router-link to="/manual-actions" class="text-white hover:text-[#F7B63B] transition-colors px-4 py-2 rounded-md bg-gray-700 hover:bg-[#F7B63B] shadow">
+              Manual Actions
             </router-link>
             <router-link to="/heats" class="text-white hover:text-[#F7B63B] transition-colors px-4 py-2 rounded-md bg-gray-700 hover:bg-[#F7B63B] shadow">
               Heats

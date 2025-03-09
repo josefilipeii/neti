@@ -1,14 +1,15 @@
 import {Category, Competition, Participant} from "../../../../packages/shared";
-import {db, storage} from "../firebase";
-import QRCode from "qrcode";
+import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
 import crypto from "crypto";
 import bs58 from "bs58";
-import {FIRESTORE_REGION, QR_BUCKET_NAME} from "./../constants";
-import {Bucket, File} from "@google-cloud/storage";
+import {FIRESTORE_REGION} from "./../constants";
 import {Transaction} from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {qrCollectionPath, registrationCollectionPath} from "../domain/collections";
+import {PubSub} from "@google-cloud/pubsub";
+
+const pubsub = new PubSub();
 
 /** Generates a secure QR ID */
 function generateQrId(competitionId: string, heatId: string, dorsal: string, secretKey?: string): string {
@@ -68,7 +69,7 @@ export const processRegistrations = onDocumentCreated(
     const data = snap.data();
     if (!data || data.status !== "pending") return;
 
-    const {eventId, heatId, heatName, heatDay, heatTime,  dorsal, category, participants} = data;
+    const {eventId, heatId, heatName, heatDay, heatTime, dorsal, category, participants} = data;
     const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
     if (!selfCheckinSecret) {
       logger.error("❌ Secret key missing.");
@@ -76,11 +77,6 @@ export const processRegistrations = onDocumentCreated(
     }
 
     const qrId: string = generateQrId(eventId, heatId, dorsal, selfCheckinSecret);
-    const qrBucket: Bucket = storage.bucket(QR_BUCKET_NAME);
-    const qrCodeBuffer: Buffer = await QRCode.toBuffer(qrId);
-    const qrFilePath: string = `qr_codes/${eventId}/registrations/${heatId}/${dorsal}.png`;
-    const qrFile: File = qrBucket.file(qrFilePath);
-    await qrFile.save(qrCodeBuffer, {contentType: "image/png"});
 
     await db.runTransaction(async (transaction) => {
 
@@ -90,7 +86,7 @@ export const processRegistrations = onDocumentCreated(
       const qrRef = db.collection(qrCollectionPath).doc(qrId);
 
       const eventDoc = await ensureEvent(eventId, transaction);
-      if(!eventDoc) {
+      if (!eventDoc) {
         logger.warn(`❌ Event with ID ${eventId} does not exist.`);
         return;
       }
@@ -104,6 +100,8 @@ export const processRegistrations = onDocumentCreated(
       await ensureHeat(eventId, heatId, heatName, heatDay, heatTime, transaction);
 
 
+      const qrShortCode = `RG${eventId}-${heatId}-${dorsal}`
+
       transaction.set(registrationRef, {
         qrId,
         status: "processed",
@@ -113,6 +111,7 @@ export const processRegistrations = onDocumentCreated(
       });
 
       transaction.set(qrRef, {
+        code: qrShortCode,
         createdAt: new Date(),
         type: "registration",
         competition: {id: eventId, name: eventDoc.name},
@@ -133,6 +132,11 @@ export const processRegistrations = onDocumentCreated(
 
       transaction.update(tempRef, {status: "processed"});
 
+
+
+    }).then(async () => {
+      const messageBuffer = Buffer.from(JSON.stringify({ docId: qrId }));
+      await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({ data: messageBuffer });
     });
 
 
