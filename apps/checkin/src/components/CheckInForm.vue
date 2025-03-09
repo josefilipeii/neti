@@ -70,7 +70,7 @@ watch(data, (newData) => {
 
 watch(qrPending, (newPending) => {
   if (!newPending && !qrData.value) {
-    error.value = 'QR Code inválido';
+    error.value = `Código inválido ${paramData.token}`;
     setTimeout(() => {
       error.value = '';
     }, 5000);

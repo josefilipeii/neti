@@ -24,8 +24,8 @@
     </div>
 
     <!-- Error Message -->
-    <p v-if="error" class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-lg shadow">
-      {{ error }}
+    <p v-if="message && isScanning" class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-lg shadow">
+      {{ message }}
     </p>
 
     <!-- Scanner Toggle Button -->
@@ -40,11 +40,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { BrowserMultiFormatReader, IScannerControls } from "@zxing/browser";
+import { BrowserMultiFormatReader, IScannerControls, BrowserCodeReader } from "@zxing/browser";
 
 const videoElement = ref<HTMLVideoElement | null>(null);
 const isScanning = ref(false);
-const error = ref<string | null>(null);
+const message = ref<string | null>(null);
 const codeReader = new BrowserMultiFormatReader();
 let scannerControls: IScannerControls | null = null;
 let currentStream: MediaStream | null = null;
@@ -59,20 +59,19 @@ let deviceIndex = 1;
 
 const getVideoDevices = async () => {
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    videoDevices.value = devices.filter(device => device.kind === "videoinput");
 
+    const videoInputDevices = await BrowserCodeReader.listVideoInputDevices();
     if (!isMobile.value) {
       const savedDeviceId = localStorage.getItem("preferredCamera");
       if (savedDeviceId && videoDevices.value.some(device => device.deviceId === savedDeviceId)) {
         selectedDeviceId.value = savedDeviceId;
       } else if (videoDevices.value.length > 0) {
-        selectedDeviceId.value = videoDevices.value[0].deviceId;
+        selectedDeviceId.value = videoInputDevices[0].deviceId
       }
     }
   } catch (err) {
     console.error("Error getting cameras:", err);
-    error.value = "Unable to access cameras";
+    message.value = "Unable to access cameras";
   }
 };
 
@@ -91,7 +90,6 @@ const getCameraConstraints = () => {
 
 const startScanner = async () => {
   isScanning.value = true;
-  error.value = null;
 
   try {
     const constraints = getCameraConstraints();
@@ -100,11 +98,12 @@ const startScanner = async () => {
         videoElement.value!,
         (result, err) => {
           if (result) {
+            console.log("Scanned code:", result.getText());
             emit("code-scanned", result.getText());
             stopScanner();
           }
           if (err) {
-            error.value = "Error reading QR code";
+            message.value = "Wating for QR code...";
           }
         }
     );
@@ -116,14 +115,14 @@ const startScanner = async () => {
     }
   } catch (err) {
     console.error("Scanner Error:", err);
-    error.value = "Could not access the camera";
+    message.value = "Could not access the camera";
     isScanning.value = false;
   }
 };
 
 const stopScanner = () => {
   isScanning.value = false;
-  error.value = null;
+  message.value = null;
 
   if (scannerControls) {
     scannerControls.stop();
