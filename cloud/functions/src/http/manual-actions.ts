@@ -41,8 +41,7 @@ export const retryQrCodes = onCall(
 
       // Fetch all documents from Firestore that contain the "files" object
       const snapshot = await db.collection("qrCodes")
-        .where("files.qr", "==", null) // Missing QR Code
-        .where("files.barcode", "==", null) // Missing Barcode
+        .where("status", "==", "init")
         .get();
 
       if (snapshot.empty) {

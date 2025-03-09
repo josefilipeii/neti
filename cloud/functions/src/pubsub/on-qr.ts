@@ -88,6 +88,7 @@ export const processQrCodes = onMessagePublished(
 
         // 🔹 Update Firestore **without a transaction**
         await docRef.update({
+          "status": "ready",
           "files.qr": qrUrl,
           "files.barcode": barCodeUrl,
         });

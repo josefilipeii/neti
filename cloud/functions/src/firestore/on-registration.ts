@@ -116,6 +116,7 @@ export const processRegistrations = onDocumentCreated(
         type: "registration",
         competition: {id: eventId, name: eventDoc.name},
         redeemableBy: participants.map((p: Participant) => p.email),
+        status: "init",
         registration: {
           heat: {
             id: heatId,

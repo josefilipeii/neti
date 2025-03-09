@@ -23,6 +23,10 @@ ROLES=(
   "roles/cloudbuild.builds.editor"
   "roles/artifactregistry.admin"
   "roles/run.admin"
+  "roles/pubsub.admin"
+  "roles/pubsub.publisher"
+  "roles/pubsub.editor"
+  "roles/pubsub.subscriber"
 )
 
 # Assign each role to the service account
