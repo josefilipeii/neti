@@ -41,7 +41,7 @@ import {ref} from 'vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import {functions} from "../firebase.ts";
 import {httpsCallable} from "firebase/functions";
-import type {HttpsCallable} from "@firebase/functions";
+import type {HttpsCallable} from "firebase/functions";
 
 const showModal = ref<boolean>(false);
 const error = ref<string>('');
