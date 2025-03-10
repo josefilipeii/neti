@@ -8,7 +8,7 @@
             class="w-full text-left px-4 py-2 rounded"
             @click="toggleHeatSelection(heat.id)"
         >
-          {{ heat.name }}
+          {{ heat.name }} ({{heat.day}})
         </button>
       </div>
     </div>

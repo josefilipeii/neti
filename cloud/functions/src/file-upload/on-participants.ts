@@ -6,8 +6,12 @@ import { logger } from "firebase-functions";
 import { tempCollectionPath } from "../domain/collections";
 import { firestore } from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
+import {generateQrId} from "../lib/qr";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
+
+
+
 
 /** Uploads raw participant data to a temporary Firestore collection */
 export const processParticipants: StorageHandler = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
@@ -35,16 +39,31 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
         .pipe(csvParser)
         .on("data", (row: Record<string, string>) => {
           try {
-            const { heatName, heatDay, heatTime, dorsal, category, name, email, contact } = row;
-            if (!heatName || !heatDay || !heatTime || !dorsal || !category || !email || !name || !contact) {
+            const { external_id ,  provider, internal_id,  heatName, heatDay, heatTime, dorsal, category, name, email, contact } = row;
+            const idProvided = internal_id || external_id;
+            if (!idProvided || !heatName || !heatDay || !heatTime || !dorsal || !category || !email || !name || !contact) {
               logger.warn("⚠️ Skipping invalid row:", row);
               return;
             }
 
-            const heatId: string = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
-            const tempRef = db.collection(tempCollectionPath).doc();
+            if(external_id && !provider){
+              logger.warn("⚠️ Registrations with external_id must define a provider");
+              return;
+            }
 
-            batch.set(tempRef, {
+            //GF = Google Form
+            //TT = Ticket Taylor
+            const registrationProvider =  provider ?  provider : "GF"
+            const registrationId = external_id ? `${provider}-` : generateQrId("GF-RG", internal_id);
+            const heatId: string = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+
+
+            const registrationRef = db.collection(tempCollectionPath).doc(registrationId);
+
+
+            batch.set(registrationRef, {
+              provider: registrationProvider,
               eventId,
               heatId,
               heatName,

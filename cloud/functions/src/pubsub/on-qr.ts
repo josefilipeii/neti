@@ -48,9 +48,8 @@ export const processQrCodes = onMessagePublished(
       if (data.type === "registration") {
         const registrationData = data as QRRegistrationDocument;
         const competition = registrationData.competition;
-        const heatId = registrationData.registration.heat.id;
-        const dorsal = registrationData.registration.dorsal;
-        const directory = `qr_codes/${competition.id}/registrations/${heatId}/${dorsal}`;
+        const provider = registrationData.provider;
+        const directory = `qr_codes/${competition.id}/registrations/${provider}/${docId}`;
         barCodePath = `${directory}/barcode.png`;
         qrPath = `${directory}/qr_code.png`;
       } else {

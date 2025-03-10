@@ -1,4 +1,4 @@
-import {Category, Competition, Participant} from "../../../../packages/shared";
+import {Category, Competition, RegistrationParticipant} from "../../../../packages/shared";
 import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
 import {FIRESTORE_REGION} from "./../constants";
 import {Transaction} from "firebase-admin/firestore";
@@ -6,21 +6,8 @@ import {logger} from "firebase-functions";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {qrCollectionPath, registrationCollectionPath} from "../domain/collections";
 import {PubSub} from "@google-cloud/pubsub";
-import { createHash } from "crypto";
 
 const pubsub = new PubSub();
-
-/** Generates a secure QR ID */
-function generateQrId(prefix: string, code:string): string {
-  if (!code) {
-    throw new Error("Secret key not set in Firebase Functions Config.");
-  }
-  const hash = createHash("md5").update(code).digest("hex").substring(0, 12);
-  const shortId = BigInt("0x" + hash).toString(36).toUpperCase();
-  const controlDigit = (BigInt("0x" + hash) % BigInt(36)).toString(36).toUpperCase();
-  return `${prefix}${shortId}${controlDigit}`;
-
-}
 
 const ensureCategory = async (eventId: string, categoryName: string, transaction: Transaction): Promise<Category | null> => {
   const categoriesCollection = db.collection(`competitions/${eventId}/categories`);
@@ -62,6 +49,7 @@ export const processRegistrations = onDocumentCreated(
   },
   async (event) => {
     const snap = event.data;
+    const {docId} = event.params;
     if (!snap?.exists) {
       logger.warn("⚠️ No valid snapshot found, skipping registration processing.");
       return;
@@ -69,25 +57,16 @@ export const processRegistrations = onDocumentCreated(
     const data = snap.data();
     if (!data || data.status !== "pending") return;
 
-    const {eventId, heatId, heatName, heatDay, heatTime, dorsal, category, participants} = data;
-    const selfCheckinSecret = process.env.QR_CODE_SECRET_KEY;
-    if (!selfCheckinSecret) {
-      logger.error("❌ Secret key missing.");
-      return;
-    }
+    const {eventId, provider, heatId, heatName, heatDay, heatTime, dorsal, category, participants} = data;
+    const indexedCode = `${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
 
-    const qrShortCode = `${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
-
-    const prefix = "RG";
-    const qrId: string = generateQrId(prefix,qrShortCode);
-    const indexedCode = `${prefix}:${qrShortCode}`;
 
     await db.runTransaction(async (transaction) => {
 
       const tempRef = snap.ref;
 
       const registrationRef = db.collection(registrationCollectionPath(eventId, heatId)).doc(dorsal);
-      const qrRef = db.collection(qrCollectionPath).doc(qrId);
+      const qrRef = db.collection(qrCollectionPath).doc(docId);
 
       const eventDoc = await ensureEvent(eventId, transaction);
       if (!eventDoc) {
@@ -106,8 +85,7 @@ export const processRegistrations = onDocumentCreated(
 
 
       transaction.set(registrationRef, {
-        qrId,
-        status: "processed",
+        qrId: docId,
         category: {id: categoryDoc.id, name: category},
         processedAt: new Date(),
         participants,
@@ -118,8 +96,9 @@ export const processRegistrations = onDocumentCreated(
         createdAt: new Date(),
         type: "registration",
         competition: {id: eventId, name: eventDoc.name},
-        redeemableBy: participants.map((p: Participant) => p.email),
+        redeemableBy: participants.map((p: RegistrationParticipant) => p.email),
         status: "init",
+        sent: false,
         registration: {
           heat: {
             id: heatId,
@@ -129,9 +108,10 @@ export const processRegistrations = onDocumentCreated(
           day: heatDay,
           dorsal,
           category: {id: categoryDoc.id, name: category},
-          participants,
+          participants
         },
-        self: qrId,
+        provider,
+        self: docId,
       });
 
       transaction.update(tempRef, {status: "processed"});
@@ -139,11 +119,11 @@ export const processRegistrations = onDocumentCreated(
 
 
     }).then(async () => {
-      const messageBuffer = Buffer.from(JSON.stringify({ docId: qrId }));
+      const messageBuffer = Buffer.from(JSON.stringify({ docId: docId }));
       await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({ data: messageBuffer });
     });
 
 
-    logger.log(`✅ QR Code ${qrId} generated and registration completed.`);
+    logger.log(`✅ QR Code ${docId} generated and registration completed.`);
   }
 );

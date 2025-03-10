@@ -88,6 +88,8 @@ export interface QRDocument {
     redeemed?: Redemption;
     redeemableBy: string[];
     files: QRFiles;
+    provider: string;
+    sent: boolean;
 }
 
 
