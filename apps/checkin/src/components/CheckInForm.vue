@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import {computed, getCurrentInstance, reactive, ref, watch} from 'vue';
 import QRScanner from './QRScanner.vue';
 import CheckinModal from './CheckinModal.vue';
 import { useDocument, useFirestore } from "vuefire";
@@ -7,6 +7,7 @@ import { collection, doc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from "../firebase";
 import {QRDocument, QRRegistrationDocument} from "shared";
+import CheckinSearch from "./CheckinSearch.vue";
 
 const checkinFunction = httpsCallable(functions, "handleCheckin");
 const db = useFirestore();
@@ -15,7 +16,8 @@ const enableCheckinButton = ref(false);
 const error = ref('');
 const message = ref('');
 const paramData = reactive<{ token: string }>({ token: '' });
-const isModalOpen = ref(false);
+const isCheckinModalOpen = ref(false);
+const isSearchModalOpen = ref(false);
 
 const qrSource = computed(() =>
     paramData.token ? doc(collection(db, 'qrCodes'), paramData.token) : null
@@ -42,7 +44,6 @@ const reload = () => {
 
 const handleCheckin = async () => {
   try {
-    console.log('Checkin', paramData.token);
     enableCheckinButton.value = true;
     await checkinFunction({ token: paramData.token });
     message.value = `Checkin realizado para ${data?.value?.registration?.dorsal}`;
@@ -51,6 +52,7 @@ const handleCheckin = async () => {
     error.value = `Erro: ${err.message}`;
   }finally {
     enableCheckinButton.value = false;
+    isSearchModalOpen.value = false;
   }
 };
 
@@ -58,13 +60,13 @@ const clearContext = () => {
   paramData.token = '';
   message.value = '';
   error.value = '';
-  isModalOpen.value = false;
+  isCheckinModalOpen.value = false;
 };
 
 // Watch for data arrival and open the modal automatically
 watch(data, (newData) => {
   if (newData) {
-    isModalOpen.value = true;
+    isCheckinModalOpen.value = true;
   }
 });
 
@@ -80,11 +82,16 @@ watch(qrPending, (newPending) => {
 
   if (!newPending && !qrData.value) {
     error.value = `Código inválido ${paramData.token}`;
+    (getCurrentInstance()?.refs.manualCheckin as any)?.reset();
     setTimeout(() => {
       error.value = '';
     }, 5000);
   }
 });
+
+const toggleManualSearch = () => {
+  isSearchModalOpen.value = !isSearchModalOpen.value;
+};
 
 </script>
 
@@ -102,8 +109,21 @@ watch(qrPending, (newPending) => {
         {{ qrError }}
       </div>
     </div>
+    <button
+        @click="toggleManualSearch"
+        class="mt-4 w-full max-w-sm bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-300"
+    >
+      Pesquisa Manual
+    </button>
+    <CheckinSearch
+        v-if="isSearchModalOpen"
+        ref="manualCheckin"
+        @registration:selected="changeTokenValue"
+        @close="toggleManualSearch"
+    >
+    </CheckinSearch>
     <CheckinModal
-        v-if="isModalOpen && data"
+        v-if="isCheckinModalOpen && data"
         :inAction="enableCheckinButton"
         :data="data"
         @checkin="handleCheckin"
