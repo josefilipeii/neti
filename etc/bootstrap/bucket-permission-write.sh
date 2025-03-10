@@ -3,9 +3,8 @@
 PROJECT_ID="$1"
 
 PROJECT_NUMBER=$(gcloud projects describe hybrid-day-checkin --format="value(projectNumber)")
-SERVICE_ACCOUNT="serviceAccount:$PROJECT_ID@appspot.gserviceaccount.com"
-
-
+SERVICE_ACCOUNT="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
+echo "$PROJECT_ID:$PROJECT_NUMBER"
 
 ROLES=(
  "roles/iam.serviceAccountTokenCreator"
@@ -20,6 +19,7 @@ for ROLE in "${ROLES[@]}"; do
     --condition=None\
     --quiet
 done
+
 
 
 gcloud storage buckets add-iam-policy-binding "gs://qr-data-$PROJECT_ID" \

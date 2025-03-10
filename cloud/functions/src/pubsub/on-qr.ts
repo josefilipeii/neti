@@ -75,10 +75,15 @@ export const processQrCodes = onMessagePublished(
         const barCodeBuffer = await bwipjs.toBuffer({
           bcid: "code128",
           text: docId,
-          scale: 3,
-          height: 10,
-          includetext: true,
-          textxalign: "center",
+          scale: 2,
+          height: 20,
+          backgroundcolor: "FFFFFF", // Ensure a pure white background
+          paddingwidth: 10,      // Add padding to avoid edges blending
+          paddingheight: 10,
+          includetext: true,     // Show human-readable text
+          textsize: 10,          // Font size for human-readable text
+          textyoffset: 10,       // Adjust text vertical position
+          rotate: "L"            // Set barcode rotation
         });
         await barCodeFile.save(barCodeBuffer, {contentType: "image/png"});
 

@@ -1,26 +1,26 @@
 import {Category, Competition, Participant} from "../../../../packages/shared";
 import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
-import crypto from "crypto";
-import bs58 from "bs58";
 import {FIRESTORE_REGION} from "./../constants";
 import {Transaction} from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {qrCollectionPath, registrationCollectionPath} from "../domain/collections";
 import {PubSub} from "@google-cloud/pubsub";
+import { createHash } from "crypto";
 
 const pubsub = new PubSub();
 
 /** Generates a secure QR ID */
-function generateQrId(competitionId: string, heatId: string, dorsal: string, secretKey?: string): string {
-  if (!secretKey) {
+function generateQrId(prefix: string, code:string): string {
+  if (!code) {
     throw new Error("Secret key not set in Firebase Functions Config.");
   }
-  const rawString = `${competitionId}-${heatId}-${dorsal}`;
-  const hash = crypto.createHmac("sha256", secretKey).update(rawString).digest();
-  return bs58.encode(hash.subarray(0, 20));
-}
+  const hash = createHash("md5").update(code).digest("hex").substring(0, 12);
+  const shortId = BigInt("0x" + hash).toString(36).toUpperCase();
+  const controlDigit = (BigInt("0x" + hash) % BigInt(36)).toString(36).toUpperCase();
+  return `${prefix}${shortId}${controlDigit}`;
 
+}
 
 const ensureCategory = async (eventId: string, categoryName: string, transaction: Transaction): Promise<Category | null> => {
   const categoriesCollection = db.collection(`competitions/${eventId}/categories`);
@@ -76,7 +76,11 @@ export const processRegistrations = onDocumentCreated(
       return;
     }
 
-    const qrId: string = generateQrId(eventId, heatId, dorsal, selfCheckinSecret);
+    const qrShortCode = `${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
+
+    const prefix = "RG";
+    const qrId: string = generateQrId(prefix,qrShortCode);
+    const indexedCode = `${prefix}:${qrShortCode}`;
 
     await db.runTransaction(async (transaction) => {
 
@@ -100,7 +104,6 @@ export const processRegistrations = onDocumentCreated(
       await ensureHeat(eventId, heatId, heatName, heatDay, heatTime, transaction);
 
 
-      const qrShortCode = `RG:${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
 
       transaction.set(registrationRef, {
         qrId,
@@ -111,7 +114,7 @@ export const processRegistrations = onDocumentCreated(
       });
 
       transaction.set(qrRef, {
-        code: qrShortCode,
+        code: indexedCode,
         createdAt: new Date(),
         type: "registration",
         competition: {id: eventId, name: eventDoc.name},
