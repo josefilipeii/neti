@@ -32,7 +32,7 @@ export const processTshirts = onDocumentCreated(
       transaction.set(qrRef, {
         createdAt: new Date(),
         type: "addon",
-        x: "tshirt",
+        addonType: "tshirt",
         competition: tshirt.competition,
         name: tshirt.name,
         email: tshirt.email,
