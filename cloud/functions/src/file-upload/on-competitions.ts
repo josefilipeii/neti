@@ -78,12 +78,12 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
  */
 async function initEventFolders(competitionId: string, bucket: Bucket) {
   const participantsFile = bucket.file(`${participantsDirectory(competitionId)}/.init`);
-  const addonsFile = bucket.file(`${addonsDirectory(competitionId)}/.init`);
+  const tshirtsFile = bucket.file(`${addonsDirectory(competitionId)}/tshirts/.init`);
 
   // Ensure folders exist by creating empty marker files
   await Promise.all([
     participantsFile.save(""),
-    addonsFile.save("")
+    tshirtsFile.save("")
   ]);
 }
 

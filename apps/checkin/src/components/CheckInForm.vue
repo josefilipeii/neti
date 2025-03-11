@@ -6,10 +6,11 @@ import { useDocument, useFirestore } from "vuefire";
 import { collection, doc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from "../firebase";
-import {QRDocument, QRRegistrationDocument} from "shared";
+import {QRDocument, QRRegistrationDocument, QRTShirtDocument} from "shared";
 import CheckinSearch from "./CheckinSearch.vue";
 
 const checkinFunction = httpsCallable(functions, "handleCheckin");
+const addonRedemption = httpsCallable(functions, "handleAddonRedemption");
 const db = useFirestore();
 
 const enableCheckinButton = ref(false);
@@ -27,9 +28,7 @@ const { data: qrData, error: qrError, pending: qrPending } = useDocument(qrSourc
 
 const data = computed(() => {
   if (!qrData.value) return null;
-  const qrDocument = qrData.value as QRDocument;
-  return qrDocument.type === "registration" ? qrData.value as QRRegistrationDocument
-      : null;
+  return  qrData.value as QRDocument;
 });
 
 const changeTokenValue = (code: string | null) => {
@@ -44,9 +43,14 @@ const reload = () => {
 
 const handleCheckin = async () => {
   try {
+    if(!data.value.type || data.value.type !== 'registration') {
+      error.value = 'Erro: Dados inválidos';
+      return;
+    }
+    const registration = data.value as QRRegistrationDocument;
     enableCheckinButton.value = true;
     await checkinFunction({ token: paramData.token });
-    message.value = `Checkin realizado para ${data?.value?.registration?.dorsal}`;
+    message.value = `Checkin realizado para ${registration?.registration?.dorsal}`;
     reload();
   } catch (err) {
     error.value = `Erro: ${err.message}`;
@@ -55,6 +59,28 @@ const handleCheckin = async () => {
     isSearchModalOpen.value = false;
   }
 };
+
+const handleAddonRedemption = async () => {
+  try {
+    console.log('redeem', data.value);
+    if(!data.value.type || data.value.type !== 'addon') {
+      error.value = 'Erro: Dados inválidos';
+      return;
+    }
+    const tshirt = data.value as QRTShirtDocument;
+    enableCheckinButton.value = true;
+    await addonRedemption({ token: paramData.token });
+    message.value = `T-shirt resgatada para ${tshirt?.name}`;
+    reload();
+  } catch (err) {
+    error.value = `Erro: ${err.message}`;
+  }finally {
+    enableCheckinButton.value = false;
+    isSearchModalOpen.value = false;
+  }
+};
+
+
 
 const clearContext = () => {
   paramData.token = '';
@@ -72,6 +98,7 @@ watch(data, (newData) => {
 
 
 watch(qrPending, (newPending) => {
+  console.log('pending', newPending);
   if (newPending) {
     message.value = 'A carregar dados...';
     enableCheckinButton.value = false;
@@ -126,6 +153,7 @@ const toggleManualSearch = () => {
         v-if="isCheckinModalOpen && data"
         :inAction="enableCheckinButton"
         :data="data"
+        @redeem:tshirt="handleAddonRedemption"
         @checkin="handleCheckin"
         @close="clearContext"
     />

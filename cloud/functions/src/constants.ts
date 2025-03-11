@@ -1,7 +1,7 @@
 
 
 export const participantsDirectory = (event: string) => `participants/${event}`;
-export const addonsDirectory = (event: string) => `participants/${event}`;
+export const addonsDirectory = (event: string) => `addons/${event}`;
 export const FIRESTORE_REGION = "europe-southwest1";
 export const STORAGE_REGION = "europe-west1";
 

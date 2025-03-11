@@ -44,7 +44,7 @@ export const checkInUser = onCall(
     }
 
     const roles = request.auth.token.roles|| [];
-    if (!roles?.includes("lobby") && !roles?.includes("admin")) {
+    if (!roles?.includes("lobby") && !roles?.includes("admin")&& !roles?.includes("dashboard")) {
       throw new HttpsError("permission-denied", `You dont have permissions to do it. ${roles}`);
     }
     return handleCheckin(request, "lobby");

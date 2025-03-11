@@ -9,6 +9,9 @@ import {handleEmailQueue} from "./firestore/on-email-queue";
 import {userImportHandler} from "./file-upload/on-users";
 import {processQrCodes} from "./pubsub/on-qr";
 import {retryQrCodes} from "./http/manual-actions";
+import {processAddons} from "./file-upload/on-addons";
+import {processTshirts} from "./firestore/on-tshirt";
+import {redeemAddon} from "./http/addons";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -19,6 +22,10 @@ import {retryQrCodes} from "./http/manual-actions";
 // });
 
 
+export const onAddons = functions.storage
+  .onObjectFinalized({region: STORAGE_REGION}, async (object) => {
+    processAddons(object);
+  });
 
 
 
@@ -40,6 +47,7 @@ export const onUsers = functions.storage
 
 export const handleCheckin = checkInUser;
 export const handleSelfCheckin = selfCheckin;
+export const handleAddonRedemption = redeemAddon;
 
 export const triggerRetryQrCodeFile = retryQrCodes;
 
@@ -47,3 +55,4 @@ export const triggerEmail = handleEmailQueue;
 export const sendQueueEmail = processEmailQueue;
 export const onParticipantsCreate = processRegistrations
 export const onQrCodes = processQrCodes
+export const onTshirts = processTshirts

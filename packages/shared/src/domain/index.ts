@@ -96,6 +96,8 @@ export interface QRDocument {
 export interface QRFiles {
     qr: string;
     barcode: string;
+    name: string;
+    email: string;
 }
 
 export interface QRRegistrationDocument extends QRDocument {
@@ -103,8 +105,32 @@ export interface QRRegistrationDocument extends QRDocument {
     registration: QRegistration;
 }
 
+export interface QRAddonDocument extends QRDocument {
+    type: "addon";
+    addonType: "tshirt";
+    name: string;
+    competition: string;
+}
+
+export interface QRTShirtDocument extends QRAddonDocument{
+    addonType: "tshirt";
+    sizes: Record<string, string>;
+}
+
 export interface Redemption {
     at: Timestamp;
     how: string;
     by: string;
+}
+
+
+export interface TshirtAddon{
+    competition: string;
+    provider: string;
+    referenceId: string;
+    name: string;
+    email: string;
+    sizes: Record<string, string>;
+    status: "pending" | "init" | "processed";
+    createdAt: Timestamp;
 }

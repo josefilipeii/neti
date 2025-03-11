@@ -1,6 +1,6 @@
 import {FIRESTORE_REGION, QR_BUCKET_NAME} from "../constants";
 import {logger} from "firebase-functions";
-import {QRDocument, QRRegistrationDocument} from "../../../../packages/shared";
+import {QRAddonDocument, QRDocument, QRRegistrationDocument, QRTShirtDocument} from "../../../../packages/shared";
 import {Bucket, File} from "@google-cloud/storage";
 import {db, PUBSUB_QR_FILES_TOPIC, storage} from "../firebase";
 import QRCode from "qrcode";
@@ -52,8 +52,14 @@ export const processQrCodes = onMessagePublished(
         const directory = `qr_codes/${competition.id}/registrations/${provider}/${docId}`;
         barCodePath = `${directory}/barcode.png`;
         qrPath = `${directory}/qr_code.png`;
-      } else {
-        logger.warn(`⚠️ Invalid type ${data.type} for ${docId}`);
+      } else if(data.type === "addon" && (data as QRAddonDocument).addonType === "tshirt"){
+        const tshirtData = data as QRTShirtDocument;
+        const competition = tshirtData.competition;
+        const directory = `qr_codes/${competition}/addons/tshirt/${docId}`;
+        barCodePath = `${directory}/barcode.png`;
+        qrPath = `${directory}/qr_code.png`;
+      }else {
+        logger.warn(`⚠️ Invalid type ${data.type} for ${data}`);
         return;
       }
 
