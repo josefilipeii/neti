@@ -27,32 +27,6 @@
       ]
     },
     {
-      "target": "self-hybrid-day-checkin",
-      "public": "apps/self-checkin/dist",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ],
-      "headers": [
-        {
-          "source": "**/*.@(js|css|woff|woff2|ttf|otf)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "max-age=31536000, immutable"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "target": "heimdall-hybrid-day-checkin",
       "public": "apps/checkin/dist",
       "ignore": [
