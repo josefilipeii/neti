@@ -10,7 +10,7 @@
           <div v-if="!competitionsStore.selectedCompetitionId" class="text-center text-red-400 mt-4">
             Selecione uma competição.
           </div>
-          <div v-else-if="store.tshirtsForSelection" class="mt-6 mb-12 space-y-8 overflow-y-clip">
+          <div v-else-if="store.tshirts[store.selectedCompetitionId!]" class="mt-6 mb-12 space-y-8 overflow-y-clip">
             <h2 class="text-xl font-semibold text-center mb-6 text-[#F7B63B]">
               T-shirts
             </h2>

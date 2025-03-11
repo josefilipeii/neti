@@ -1,8 +1,8 @@
 <template>
   <QrModal v-if="showQrModal" @close="closeQrModal"></QrModal>
   <div>
-    <div class="bg-gray-800 rounded-lg">
-      <table class="text-left">
+    <div class="bg-gray-800 rounded-lg overflow-x-auto">
+      <table class="text-left w-full">
         <thead>
         <tr class="bg-[#F7B63B] text-black">
           <th class="px-4 py-4">QRCode</th>
@@ -13,11 +13,12 @@
           <th class="px-6 py-4">Levantamento</th>
         </tr>
         </thead>
-        <tbody v-if="tshirts">
+        <tbody v-if="tshirts.length">
         <tr
             v-for="tshirt in tshirts"
             :key="tshirt.id"
-            :class="{ 'text-green-500 font-bold': tshirt?.redeemed?.at, 'border-b border-gray-600': true }">
+            :class="{ 'text-green-500 font-bold': tshirt?.redeemed?.at, 'border-b border-gray-600': true }"
+        >
           <td class="px-4 py-4 cursor-pointer" @click="openQrModal(tshirt.referenceId)">
             <span>{{ tshirt.id }}</span>
           </td>
@@ -36,7 +37,8 @@
             <button
                 v-if="!tshirt.redeemed?.at"
                 class="px-4 py-2 bg-gray-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                @click="openRedemptionModal(tshirt.id)">
+                @click="openRedemptionModal(tshirt.id!)"
+            >
               Levantar
             </button>
           </td>
@@ -44,8 +46,18 @@
         </tbody>
       </table>
     </div>
-  </div>
 
+    <!-- Load More Button -->
+    <div v-if="hasMore" class="flex justify-center my-4">
+      <button
+          class="px-4 py-2 bg-[#F7B63B] text-black rounded"
+          :disabled="isLoading"
+          @click="store.loadMoreTshirts"
+      >
+        {{ isLoading ? "Loading..." : "Load More" }}
+      </button>
+    </div>
+  </div>
   <ConfirmModal v-if="showConfirmationModal">
     <template #header>
       <h3 class="text-lg font-semibold text-center text-[#F7B63B]">Confirm Action</h3>
@@ -63,26 +75,35 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from "vue";
+import { computed, ref, onMounted } from "vue";
 import QrModal from "../components/QrModal.vue";
-import ConfirmModal from "../components/ConfirmModal.vue";
-import {useQrStore} from "../data/qr-codes.ts";
-import {useAddonsStore} from "../data/addons.ts";
-import {functions} from "../firebase.ts";
+import { useQrStore } from "../data/qr-codes.ts";
+import { useAddonsStore } from "../data/addons.ts";
 import {httpsCallable} from "firebase/functions";
+import ConfirmModal from "../components/ConfirmModal.vue";
+import {functions} from "../firebase.ts";
 
 const store = useAddonsStore();
 const qrStore = useQrStore();
 const showQrModal = ref(false);
 const showConfirmationModal = ref(false);
-
 const addonRedemption = httpsCallable(functions, "handleAddonRedemption");
 const error = ref<string>("");
 const message = ref<string>("");
 const selectedAddon = ref<string>("");
 
-const tshirts = computed(() => store.tshirtsForSelection?.value);
 
+// Computed Properties
+const tshirts = computed(() => store.tshirts[store.selectedCompetitionId!] || []);
+const isLoading = computed(() => store.isLoading);
+const hasMore = computed(() => store.lastVisible[store.selectedCompetitionId!] !== null);
+
+// Load Data on Mount
+onMounted(async () => {
+  await store.loadTshirts();
+});
+
+// Open QR Modal
 const openQrModal = (qr?: string) => {
   if (qr) {
     qrStore.setSelectedQrId(qr);
