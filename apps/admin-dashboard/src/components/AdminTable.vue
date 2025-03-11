@@ -1,84 +1,158 @@
 <template>
-  <QrModal v-if="showQrModal" @close="closeQrModal"></QrModal>
+  <QrModal v-if="showQrModal" @close="showQrModal = false"></QrModal>
+
   <h3 class="text-lg font-semibold text-center mb-4 text-[#F7B63B]">
     Heat: {{ store.selectedHeat?.name }}
   </h3>
+
   <div class="overflow-x-auto">
-    <table class="w-full text-left bg-gray-800 rounded-lg">
+    <table class="w-full text-left bg-gray-800 rounded-lg hidden md:table">
       <thead>
       <tr class="bg-[#F7B63B] text-black">
-        <th class="px-4 py-6">Categoria</th>
-        <th class="px-4 py-6">Dorsal</th>
-        <th class="px-4 py-6">Dia</th>
-        <th class="px-4 py-6">Hora</th>
-        <th class="px-4 py-6">Nome</th>
-        <th class="px-4 py-6">Email</th>
-        <th class="px-4 py-6">Contacto</th>
-        <th class="px-6 py-6">Checkin</th>
-        <th class="px-4 py-6">Qr</th>
+        <th class="px-4 py-3">Categoria</th>
+        <th class="px-4 py-3">Dorsal</th>
+        <th class="px-4 py-3">Dia</th>
+        <th class="px-4 py-3">Hora</th>
+        <th class="px-4 py-3">Nome</th>
+        <th class="px-4 py-3">Email</th>
+        <th class="px-4 py-3">Contacto</th>
+        <th class="px-6 py-3">Check-in</th>
+        <th class="px-4 py-3">QR</th>
       </tr>
       </thead>
       <tbody>
-      <tr v-for="registration in store.registrationsForSelection"
+      <tr
+          v-for="registration in store.registrationsForSelection"
           :key="registration.id"
-          :class="{'text-green-500 font-bold': registration?.checkin?.at, 'border-b border-gray-600': true}">
-        <td class="px-4 py-6">{{ registration.category?.name }}</td>
-        <td class="px-4 py-6">{{ registration.id }}</td>
-        <td class="px-4 py-6">{{ store.selectedHeat?.day }}</td>
-        <td class="px-4 py-6">{{ store.selectedHeat?.time }}</td>
-        <td class="px-4 py-6"><span v-for="participant in registration.participants">
-                      {{ participant.name }}<br>
-                    </span></td>
-        <td class="px-4 py-6"><span v-for="participant in registration.participants">
-                      {{ participant.email }}<br>
-                    </span></td>
-        <td class="px-4 py-6"><span v-for="participant in registration.participants">
-                      {{ participant.contact }}<br>
-                    </span></td>
-        <td class="px-6 py-6">
-          <CheckinInfo :checkin="registration.checkin!"
-                       :registration="registration.id!"
-                       :heat="store.selectedHeat?.id!"
-                       :competition="store.selectedCompetitionId!"
-          ></CheckinInfo>
-          <CheckinActions :competition="store.selectedCompetitionId!"
-                          :heat="store.selectedHeat?.id!"
-                          :registration="registration?.id!"
-                          :qrId="registration?.qrId!"
-          ></CheckinActions>
+          class="border-b border-gray-600"
+      >
+        <td class="px-4 py-3">{{ registration.category?.name }}</td>
+        <td class="px-4 py-3">{{ registration.id }}</td>
+        <td class="px-4 py-3">{{ store.selectedHeat?.day }}</td>
+        <td class="px-4 py-3">{{ store.selectedHeat?.time }}</td>
+        <td class="px-4 py-3">
+            <span v-for="participant in registration.participants">
+              {{ participant.name }}<br/>
+            </span>
         </td>
-        <td class="px-4 py-6 hover:cursor-pointer"
-            @click="openQrModal(registration.qrId)"><span>{{ registration.qrId }}</span>
+        <td class="px-4 py-3">
+            <span v-for="participant in registration.participants">
+              {{ participant.email }}<br/>
+            </span>
+        </td>
+        <td class="px-4 py-3">
+            <span v-for="participant in registration.participants">
+              {{ participant.contact }}<br/>
+            </span>
+        </td>
+        <td class="px-6 py-3">
+          <CheckinInfo
+              :checkin="registration.checkin!"
+              :registration="registration.id!"
+              :heat="store.selectedHeat?.id!"
+              :competition="store.selectedCompetitionId!"
+          />
+          <CheckinActions
+              :competition="competitionsStore.selectedCompetitionId!"
+              :heat="store.selectedHeat?.id!"
+              :registration="registration?.id!"
+              :qrId="registration?.qrId!"
+          />
+        </td>
+        <td class="px-4 py-3 hover:cursor-pointer" @click="openQrModal(registration.qrId)">
+          <span>{{ registration.qrId }}</span>
         </td>
       </tr>
       </tbody>
     </table>
+
+    <!-- Mobile Collapsible List -->
+    <div class="md:hidden space-y-4">
+      <div
+          v-for="registration in store.registrationsForSelection"
+          :key="registration.id"
+          class="bg-gray-800 rounded-lg p-4"
+      >
+        <!-- Collapsible Header (Dorsal) -->
+        <button
+            class="w-full text-left font-semibold text-[#F7B63B] flex justify-between items-center"
+            @click="toggleCollapse(registration.id!!)"
+        >
+          Dorsal: {{ registration.id }}
+          <span>{{ openRows.has(registration.id!!) ? "▲" : "▼" }}</span>
+        </button>
+
+        <!-- Collapsible Content -->
+        <div v-show="openRows.has(registration.id!!)" class="mt-2 transition-all duration-300">
+          <p><span class="font-semibold text-gray-400">Categoria:</span> {{ registration.category?.name }}</p>
+          <p><span class="font-semibold text-gray-400">Dia:</span> {{ store.selectedHeat?.day }}</p>
+          <p><span class="font-semibold text-gray-400">Hora:</span> {{ store.selectedHeat?.time }}</p>
+          <p><span class="font-semibold text-gray-400">Nome:</span>
+            <span v-for="participant in registration.participants" :key="participant.name">
+              {{ participant.name }}<br/>
+            </span>
+          </p>
+          <p><span class="font-semibold text-gray-400">Email:</span>
+            <span v-for="participant in registration.participants" :key="participant.email">
+              {{ participant.email }}<br/>
+            </span>
+          </p>
+          <p><span class="font-semibold text-gray-400">Contacto:</span>
+            <span v-for="participant in registration.participants" :key="participant.contact">
+              {{ participant.contact }}<br/>
+            </span>
+          </p>
+
+          <div class="mt-2 flex justify-between">
+            <button
+                @click="openQrModal(registration.qrId)"
+                class="text-blue-400 underline"
+            >
+              Ver QR
+            </button>
+            <CheckinActions
+                :competition="competitionsStore.selectedCompetitionId!"
+                :heat="store.selectedHeat?.id!"
+                :registration="registration?.id!"
+                :qrId="registration?.qrId!"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
 <script setup lang="ts">
+import {ref} from "vue";
 import CheckinInfo from "../components/CheckinInfo.vue";
 import CheckinActions from "../components/CheckinActions.vue";
 import {useCompetitionStore} from "../data/competitions.ts";
 import QrModal from "../components/QrModal.vue";
-import {ref} from "vue";
 import {useQrStore} from "../data/qr-codes.ts";
+import {useRegistrationsStore} from "../data/registrations.ts";
 
-const store = useCompetitionStore();
+const competitionsStore = useCompetitionStore();
+const store = useRegistrationsStore();
 const qrStore = useQrStore();
 const showQrModal = ref(false);
 
+// Track which rows are open
+const openRows = ref(new Set<string>());
 
-const openQrModal = async (qr?: string) => {
-  if(qr) {
-    qrStore.setSelectedQrId(qr)
-    showQrModal.value = true;
+// Toggle collapsible row
+const toggleCollapse = (id: string) => {
+  if (openRows.value.has(id)) {
+    openRows.value.delete(id);
+  } else {
+    openRows.value.add(id);
   }
 };
 
-const closeQrModal = () => {
-  showQrModal.value = false;
+const openQrModal = (qr?: string) => {
+  if (qr) {
+    qrStore.setSelectedQrId(qr);
+    showQrModal.value = true;
+  }
 };
-
-
-
 </script>

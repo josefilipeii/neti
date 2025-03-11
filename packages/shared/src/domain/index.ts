@@ -125,6 +125,7 @@ export interface Redemption {
 
 
 export interface TshirtAddon{
+    id?: string;
     competition: string;
     provider: string;
     referenceId: string;
@@ -133,4 +134,5 @@ export interface TshirtAddon{
     sizes: Record<string, string>;
     status: "pending" | "init" | "processed";
     createdAt: Timestamp;
+    redeemed?: Redemption;
 }

@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Redemption } from "shared";
+import type {Redemption} from "shared";
 
 const props = defineProps<{
   checkin?: Redemption; // Received from `registrations` collection

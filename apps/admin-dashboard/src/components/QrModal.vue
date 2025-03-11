@@ -2,11 +2,11 @@
   <!-- Modal Overlay (Ensures full-page coverage & high z-index) -->
   <div
       class="absolute z-1000 inset-0 bg-gray-900 bg-opacity-50 flex
-       items-center justify-center z-900 overflow-y-scroll overflow-x-scroll"
+       items-center justify-center z-900 overflow-y-clip overflow-x-scroll"
       @click.self="emit('close')"
   >
     <!-- Modal Content (Scrollable when needed) -->
-    <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full max-h-screen overflow-y-auto z-[10000]">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-h-screen overflow-y-auto z-[10000]">
       <h3 class="text-lg font-medium text-gray-900">Check-in</h3>
       <p class="text-sm text-gray-900 mt-2">QR: {{ qrRegistration?.id || 'N/A' }}</p>
 
@@ -33,7 +33,7 @@
         Check-in efetuado:
         {{
           redeemed?.at?.toDate
-              ? redeemed?.at.toDate().toLocaleString("pt-PT", { timeZone: "Europe/Lisbon" })
+              ? redeemed?.at.toDate().toLocaleString("pt-PT", {timeZone: "Europe/Lisbon"})
               : "Data inválida"
         }}
       </div>
@@ -66,7 +66,7 @@
       <!-- Close Button -->
       <button
           @click="emit('close')"
-          class="mt-4 w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none"
+          class="mt-4 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none"
       >
         Fechar
       </button>

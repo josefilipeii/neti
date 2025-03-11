@@ -1,6 +1,7 @@
 <template>
   <details>
-    <button @click="handleButtonClick" :disabled="buttonDisabled" class="bg-blue-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50">
+    <button @click="handleButtonClick" :disabled="buttonDisabled"
+            class="bg-blue-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50">
       Checkin Manual
     </button>
     <span>{{ message }}</span>
@@ -9,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import {ref} from "vue";
 import {functions} from "../firebase.ts";
-import { httpsCallable } from 'firebase/functions';
+import {httpsCallable} from 'firebase/functions';
 
 const props = defineProps<{
   competition: string;
@@ -49,9 +50,6 @@ const handleCheckin = async () => {
     message.value = '';
   }, 10000);
 };
-
-
-
 
 
 </script>

@@ -1,11 +1,11 @@
 import {createApp} from 'vue';
-import './style.css';
 import App from './App.vue';
 import router from './router';
 import {VueFire, VueFireAppCheck, VueFireAuth, VueFireDatabaseOptionsAPI, VueFireFirestoreOptionsAPI} from "vuefire";
 import {firebaseApp} from "./firebase";
-import { ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import {ReCaptchaEnterpriseProvider} from "firebase/app-check";
 import {createPinia} from "pinia";
+import './style.css'; // Import Tailwind SCSS globally
 
 const app = createApp(App)
 app.use(router)
@@ -28,7 +28,6 @@ app.use(VueFire, {
 
     ],
 })
-
 
 
 app.mount('#app')

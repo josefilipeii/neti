@@ -2,8 +2,8 @@
   <h3 class="text-lg font-semibold text-center mb-4 text-[#F7B63B]">
     Heat: {{ store.selectedHeat?.name }}
   </h3>
-  <div class="overflow-x-auto">
-    <table class="w-full text-left bg-gray-800 rounded-lg overflow-hidden">
+  <div class="overflow-auto">
+    <table class="text-left bg-gray-800 rounded-lg">
       <thead>
       <tr class="bg-[#F7B63B] text-black">
         <th class="px-4 py-6">Categoria</th>
@@ -20,7 +20,7 @@
           :key="registration.id"
           :class="{'text-green-500 font-bold': registration?.checkin?.at, 'border-b border-gray-600': true}"
       >
-        <td class="px-4 py-6">{{registration.category?.name}}</td>
+        <td class="px-4 py-6">{{ registration.category?.name }}</td>
         <td class="px-4 py-6">{{ registration.id }}</td>
         <td class="px-4 py-6">{{ store.selectedHeat?.day }}</td>
         <td class="px-4 py-6">{{ store.selectedHeat?.time }}</td>
@@ -33,7 +33,7 @@
         <td class="px-4 py-6">
           <CheckinInfo :checkin="registration.checkin!"
                        :registration="registration.id!"
-                        :heat="store.selectedHeat?.id!"
+                       :heat="store.selectedHeat?.id!"
                        :competition="store.selectedCompetitionId!"
           ></CheckinInfo>
         </td>
@@ -44,8 +44,9 @@
 </template>
 <script setup lang="ts">
 import CheckinInfo from "../components/CheckinInfo.vue";
-import {useCompetitionStore} from "../data/competitions.ts";
-const store = useCompetitionStore();
+import {useRegistrationsStore} from "../data/registrations.ts";
+
+const store = useRegistrationsStore();
 
 
 </script>

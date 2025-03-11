@@ -3,7 +3,7 @@
     <h2 class="text-lg font-semibold text-center mb-4 text-[#F7B63B]">Actions</h2>
     <div v-for="action in actions || []" :key="action.id">
       <button
-          class="w-full text-left px-4 py-2 rounded"
+          class="text-left px-4 py-2 rounded"
           @click="promptConfirmation(action)"
       >
         {{ action.name }}
@@ -40,8 +40,8 @@
 import {ref} from 'vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import {functions} from "../firebase.ts";
-import {httpsCallable} from "firebase/functions";
 import type {HttpsCallable} from "firebase/functions";
+import {httpsCallable} from "firebase/functions";
 
 const showModal = ref<boolean>(false);
 const error = ref<string>('');
@@ -72,7 +72,7 @@ const triggerCloudFunction = async () => {
 
     // Call your cloud function here
     const action = selectedAction.value;
-    if(!action) {
+    if (!action) {
       console.log('No action selected');
       return;
     }

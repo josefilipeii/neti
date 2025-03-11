@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col justify-center min-h-screen p-4">
-    <div class="w-full">
+    <div class="max-w-md mx-auto">
       <LoginForm></LoginForm>
     </div>
   </div>

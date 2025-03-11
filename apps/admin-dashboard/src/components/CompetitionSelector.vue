@@ -1,5 +1,5 @@
 <template>
-  <nav class="w-full bg-black shadow-lg px-6 py-4 flex items-center justify-between sticky top-0">
+  <nav class="bg-black shadow-lg px-6 py-4 flex items-center justify-between">
     <div class="flex items-center">
       <h2 class="text-lg font-semibold text-[#F7B63B] mr-4">Competições:</h2>
       <select v-model="store.selectedCompetitionId"
@@ -11,6 +11,7 @@
     </div>
   </nav>
 </template>
+
 <script setup lang="ts">
 import {useCompetitionStore} from "../data/competitions.ts";
 
