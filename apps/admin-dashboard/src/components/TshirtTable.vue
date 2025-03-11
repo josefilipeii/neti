@@ -19,7 +19,7 @@
             :key="tshirt.id"
             :class="{ 'text-green-500 font-bold': tshirt?.redeemed?.at, 'border-b border-gray-600': true }"
         >
-          <td class="px-4 py-4 cursor-pointer" @click="openQrModal(tshirt.referenceId)">
+          <td class="px-4 py-4 cursor-pointer" @click="openQrModal(tshirt.id)">
             <span>{{ tshirt.id }}</span>
           </td>
           <td class="px-4 py-4">{{ tshirt.referenceId }}</td>

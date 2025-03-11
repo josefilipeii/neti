@@ -30,7 +30,6 @@ export const useQrStore = defineStore("qr", () => {
 
     // Watch Firestore updates and store in cache
     watch(selectedQrId, async (newVal) => {
-        console.log("Selected QR ID changed", newVal);
         if (newVal && !cache.value.has(newVal)) {
             const document = useDocument<QRDocument>(doc(collection(db, 'qrCodes'), newVal));
             cache.value.set(newVal, document)

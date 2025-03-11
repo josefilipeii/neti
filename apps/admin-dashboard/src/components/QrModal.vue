@@ -7,36 +7,53 @@
   >
     <!-- Modal Content (Scrollable when needed) -->
     <div class="bg-white rounded-lg shadow-lg p-6 max-h-screen overflow-y-auto z-[10000]">
-      <h3 class="text-lg font-medium text-gray-900">Check-in</h3>
-      <p class="text-sm text-gray-900 mt-2">QR: {{ qrRegistration?.id || 'N/A' }}</p>
+     <div v-if="qrRegistration" class="text-center">
+       <h3 class="text-lg font-medium text-gray-900">Check-in</h3>
+       <p class="text-sm text-gray-900 mt-2">QR: {{ qrRegistration?.id || 'N/A' }}</p>
 
-      <!-- QR Code Details -->
-      <div class="mt-4">
-        <p class="text-gray-700 font-medium">ID da Competição: {{ qrRegistration?.competition?.name || 'N/A' }}</p>
-        <p class="text-gray-700">Dorsal: {{ registration?.dorsal || 'N/A' }}</p>
-        <p class="text-gray-700">Categoria: {{ registration?.category?.name || 'N/A' }}</p>
-        <p class="text-gray-700">
-          Data: {{ registration?.day || 'N/A' }} às {{ registration?.time || 'N/A' }}
-        </p>
+       <!-- QR Code Details -->
+       <div class="mt-4">
+         <p class="text-gray-700 font-medium">ID da Competição: {{ qrRegistration?.competition?.name || 'N/A' }}</p>
+         <p class="text-gray-700">Dorsal: {{ registration?.dorsal || 'N/A' }}</p>
+         <p class="text-gray-700">Categoria: {{ registration?.category?.name || 'N/A' }}</p>
+         <p class="text-gray-700">
+           Data: {{ registration?.day || 'N/A' }} às {{ registration?.time || 'N/A' }}
+         </p>
 
-        <!-- Participants List -->
-        <h4 class="mt-4 font-medium text-gray-900">Participantes</h4>
-        <ul class="bg-gray-100 p-3 rounded-md text-gray-900">
-          <li v-for="(participant, index) in registration?.participants" :key="'participant-'+index">
-            {{ participant.name || "Sem nome" }}
-          </li>
-        </ul>
+         <!-- Participants List -->
+         <h4 class="mt-4 font-medium text-gray-900">Participantes</h4>
+         <ul class="bg-gray-100 p-3 rounded-md text-gray-900">
+           <li v-for="(participant, index) in registration?.participants" :key="'participant-'+index">
+             {{ participant.name || "Sem nome" }}
+           </li>
+         </ul>
+       </div>
+
+       <!-- Check-in Confirmation -->
+       <div v-if="redeemed" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg mt-4">
+         Check-in efetuado:
+         {{
+           redeemed?.at?.toDate
+               ? redeemed?.at.toDate().toLocaleString("pt-PT", {timeZone: "Europe/Lisbon"})
+               : "Data inválida"
+         }}
+       </div>
+     </div>
+      <div v-else-if="tshirt">
+        <h3 class="text-lg font-medium text-gray-900">Tshirt</h3>
+        <p class="text-sm text-gray-900 mt-2">QR: {{ tshirt.id || 'N/A' }}</p>
+
+        <!-- Check-in Confirmation -->
+        <div v-if="redeemed" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg mt-4">
+          Levantamento efetuado:
+          {{
+            redeemed?.at?.toDate
+                ? redeemed?.at.toDate().toLocaleString("pt-PT", {timeZone: "Europe/Lisbon"})
+                : "Data inválida"
+          }}
+        </div>
       </div>
 
-      <!-- Check-in Confirmation -->
-      <div v-if="redeemed" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg mt-4">
-        Check-in efetuado:
-        {{
-          redeemed?.at?.toDate
-              ? redeemed?.at.toDate().toLocaleString("pt-PT", {timeZone: "Europe/Lisbon"})
-              : "Data inválida"
-        }}
-      </div>
 
       <!-- QR Code & Barcode Display -->
       <div v-if="qrFiles?.qr || qrFiles?.barcode" class="mt-6 text-center">
@@ -76,12 +93,23 @@
 <script setup lang="ts">
 import {computed, defineEmits} from "vue";
 import {useQrStore} from "../data/qr-codes.ts";
+import type {QRAddonDocument, QRTShirtDocument} from "shared";
 
 const store = useQrStore();
 const emit = defineEmits(["close"]);
 
 const qrRegistration = computed(() => store.selectedRegistration);
 const registration = computed(() => store.selectedRegistration?.registration);
+const tshirt = computed(() => {
+  if(store.selectedQrData?.type !== "addon"){
+    return null;
+  }
+  if((store.selectedQrData as QRAddonDocument).addonType !== "tshirt"){
+    return null;
+  }
+  return store.selectedQrData as QRTShirtDocument;
+
+});
 const qrFiles = computed(() => store.selectedQrData?.files);
 const redeemed = computed(() => store.selectedQrData?.redeemed);
 </script>
