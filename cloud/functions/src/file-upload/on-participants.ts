@@ -80,7 +80,7 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
             batchCounter++;
 
             // Commit batch every 500 writes to avoid memory overflow
-            if (batchCounter >= 500) {
+            if (batchCounter >= 150) {
               await batch.commit();
               batch = db.batch(); // Start a new batch
               batchCounter = 0;
