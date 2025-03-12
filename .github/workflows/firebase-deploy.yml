@@ -22,7 +22,7 @@ jobs:
       - name: Install pnpm and dependencies
         run: |
           npm i -g pnpm
-          pnpm -r install --frozen-lockfile
+          pnpm -r install 
 
       - name: Generate .env for checkin app
         run: |
