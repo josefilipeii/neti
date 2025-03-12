@@ -17,12 +17,7 @@ service cloud.firestore {
       allow read, write: if hasRole("admin") || isCloudFunction();
 
       // Dashboard users can read everywhere but not write
-      allow read: if hasRole("dashboard");
-    }
-
-    // Lobby users can only read QRData
-    match /QRData/{document} {
-      allow read: if hasRole("lobby");
+      allow read: if hasRole("dashboard") || hasRole("lobby");
     }
   }
 }

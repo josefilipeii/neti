@@ -1,0 +1,20 @@
+[
+  {
+    "user": "lobby-1",
+    "pin": "98990",
+    "roles": ["lobby"],
+    "enabled": true
+  },
+  {
+    "user": "lobby-2",
+    "pin": "53789",
+    "roles": ["lobby"],
+    "enabled": true
+  },
+  {
+    "user": "hybrid-1",
+    "pin": "224378",
+    "roles": ["lobby", "dashboard"],
+    "enabled": true
+  }
+]

@@ -35,3 +35,16 @@ export interface CheckinEmail extends Email{
         type: string;
     };
 }
+
+
+export interface User {
+    email: string;
+    roles: string[];
+}
+
+export interface Agent {
+    user: string;
+    pin: string;
+    roles: string[];
+    enabled: boolean;
+}

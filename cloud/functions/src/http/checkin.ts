@@ -7,76 +7,50 @@ import { CallableRequest, HttpsError, onCall } from "firebase-functions/v2/https
 import { Redemption, QRRegistrationDocument } from "../../../../packages/shared";
 import { Email, Recipient } from "../domain";
 
-
 type CheckinRequestType = { token: string };
-type SelfCheckinRequestType = CheckinRequestType & { email: string };
 type ResponseType = { success: boolean; message: string };
 
-
-
-
-
 // Function to check allowed origins dynamically
-function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType | SelfCheckinRequestType>, allowedOrigins: string[]) {
+function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType>, allowedOrigins: string[]) {
   const origin = request.rawRequest.headers.origin;
-
   if (!origin || !allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
     console.error(`Blocked request from origin: ${origin} : Expected ${allowedOrigins}`);
     throw new HttpsError("permission-denied", "Unauthorized origin");
   }
 }
 
-
-// Lobby Check-In Function (Heimdall-based origin)
+// Lobby Check-In Function
 export const checkInUser = onCall(
   { region: FIRESTORE_REGION, enforceAppCheck: true },
   async (request: CallableRequest<CheckinRequestType>) => {
-
     const ALLOWED_ORIGINS_CHECKIN = process.env.ALLOWED_ORIGINS_CHECKIN?.split(",") || [
       "https://heimdall-hybrid-day-checkin.web.app",
       "https://odin-hybrid-day-checkin.web.app",
-      "http://localhost:5173"
+      "http://localhost:5173",
     ];
-    enforceAllowedOrigin(request, ALLOWED_ORIGINS_CHECKIN); // ✅ Allow only Heimdall domains
+    enforceAllowedOrigin(request, ALLOWED_ORIGINS_CHECKIN);
 
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "You must be logged in to check in.");
     }
 
-    const roles = request.auth.token.roles|| [];
-    if (!roles?.includes("lobby") && !roles?.includes("admin")&& !roles?.includes("dashboard")) {
-      throw new HttpsError("permission-denied", `You dont have permissions to do it. ${roles}`);
+    const roles = request.auth.token.roles || [];
+    if (!roles.includes("lobby") && !roles.includes("admin") && !roles.includes("dashboard")) {
+      throw new HttpsError("permission-denied", `You don't have permissions to do this. ${roles}`);
     }
-    return handleCheckin(request, "lobby");
+
+    return handleCheckin(request);
   }
 );
-
-// Self Check-In Function (Self-based origin)
-export const selfCheckin = onCall(
-  { region: FIRESTORE_REGION, enforceAppCheck: true },
-  async (request: CallableRequest<SelfCheckinRequestType>) => {
-    const ALLOWED_ORIGINS_SELFCHECKIN = process.env.ALLOWED_ORIGINS_SELFCHECKIN?.split(",") || [
-      "https://heimdall-hybrid-day-checkin.web.app",
-      "http://localhost:5173"
-    ];
-
-
-    enforceAllowedOrigin(request, ALLOWED_ORIGINS_SELFCHECKIN); // ✅ Allow only Self domains
-
-    return handleCheckin(request, "self");
-  }
-);
-
 
 function triggerEmail(
   qrDocument: QRRegistrationDocument,
   token: string,
   checkInTime: FirebaseFirestore.Timestamp,
-  type: string
-  , transaction: FirebaseFirestore.Transaction) {
+  transaction: FirebaseFirestore.Transaction
+) {
   try {
     const recipients: Recipient[] = qrDocument.registration.participants.map((p) => p as Recipient);
-
     const email: Email = {
       to: recipients,
       type: "checkin",
@@ -91,19 +65,16 @@ function triggerEmail(
         day: new Date(qrDocument.registration?.day)?.toLocaleDateString("en-GB"),
         dorsal: qrDocument.registration?.dorsal,
         category: qrDocument.registration?.category?.name,
-        type,
       },
     };
 
-    // **Write to Firestore (Triggers Firestore Trigger)**
     const docRef = db.collection("email-queue").doc();
     transaction.set(docRef, email);
     logger.info(`✅ Email job written to Firestore (Queued): ${docRef.id}`);
 
-    logger.info(`✅ Email job published to Pub/Sub for ${recipients.length} recipients.`);
     return docRef;
   } catch (error) {
-    logger.error("❌ Failed to publish email job to Pub/Sub:", error);
+    logger.error("❌ Failed to queue email:", error);
     throw error;
   }
 }
@@ -118,6 +89,7 @@ async function processCheckin(
   try {
     const competition = qrDocument.competition;
     const registration = qrDocument.registration;
+
     if (!competition?.id || !registration?.heat || !registration?.dorsal) {
       throw new HttpsError("unknown", "Invalid registration data.");
     }
@@ -126,13 +98,12 @@ async function processCheckin(
       `/competitions/${competition.id}/heats/${registration.heat.id}/registrations/${registration.dorsal}`
     );
 
-    // **Trigger Email via Pub/Sub**
-    const emailRef = triggerEmail(qrDocument, token, redemption.at, redemption.how, transaction);
+    const emailRef = triggerEmail(qrDocument, token, redemption.at, transaction);
 
     transaction.set(qrCodeRef, { redeemed: redemption }, { merge: true });
-    transaction.set(registrationRef, { checkin: {...redemption, email: emailRef.id} }, { merge: true });
+    transaction.set(registrationRef, { checkin: { ...redemption, email: emailRef.id } }, { merge: true });
 
-    logger.info(`✅ Check-in propagated for dorsal ${registration.dorsal} in competition ${competition.name}`);
+    logger.info(`✅ Check-in recorded for dorsal ${registration.dorsal} in competition ${competition.name}`);
   } catch (error) {
     logger.error("❌ Error processing check-in:", error);
     throw new HttpsError("unavailable", "Invalid registration data.");
@@ -147,15 +118,12 @@ async function ensureNewEntry(transaction: Transaction, qrCodeRef: DocumentRefer
   return qrCodeSnap.data() as QRRegistrationDocument;
 }
 
-async function handleCheckin(
-  request: CallableRequest<CheckinRequestType | SelfCheckinRequestType>,
-  type: "lobby" | "self"
-): Promise<ResponseType> {
+async function handleCheckin(request: CallableRequest<CheckinRequestType>): Promise<ResponseType> {
   const { token } = request.data;
-  const email = "email" in request.data ? request.data.email : request.auth?.token.email;
+  const agent = request.auth?.token.email || request.auth?.token.user_id;
 
-  if (!token || !email) {
-    throw new HttpsError("invalid-argument", "Missing token or email parameter.");
+  if (!token) {
+    throw new HttpsError("invalid-argument", "Missing token parameter.");
   }
 
   const checkInTime = Timestamp.now();
@@ -163,24 +131,14 @@ async function handleCheckin(
 
   return await db.runTransaction(async (transaction) => {
     const qrDocument = await ensureNewEntry(transaction, qrCodeRef);
+
     if (qrDocument.redeemed) {
-      logger.log("QR code has already been redeemed. Return success");
+      logger.log("QR code has already been redeemed.");
       return { success: false, message: "QR code has already been redeemed." };
     }
-    if (type === "self") validateInputSelfCheckin(email, qrDocument);
-    const redemption: Redemption = { at: checkInTime, by: email, how: type };
+
+    const redemption: Redemption = { at: checkInTime, by: agent, how: "lobby" };
     await processCheckin(transaction, qrDocument, qrCodeRef, redemption, token);
     return { success: true, message: "User checked in successfully!" };
   });
 }
-
-function validateInputSelfCheckin(userEmail: string, qrDocument: QRRegistrationDocument) {
-  if (
-    !userEmail ||
-      (!qrDocument.redeemableBy?.includes(userEmail) &&
-          !qrDocument.registration?.participants.some((p) => p.email === userEmail))
-  ) {
-    throw new HttpsError("permission-denied", "Email does not match this token.");
-  }
-}
-

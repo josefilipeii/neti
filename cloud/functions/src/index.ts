@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import {STORAGE_REGION} from "./constants";
 import {useCompetitionsHandler} from "./file-upload/on-competitions";
 import {processParticipants} from "./file-upload/on-participants";
-import {checkInUser, selfCheckin} from "./http/checkin";
+import {checkInUser} from "./http/checkin";
 import {processRegistrations} from "./firestore/on-registration";
 import {processEmailQueue} from "./pubsub/on-email";
 import {handleEmailQueue} from "./firestore/on-email-queue";
@@ -12,6 +12,7 @@ import {retryQrCodes} from "./http/manual-actions";
 import {processAddons} from "./file-upload/on-addons";
 import {processTshirts} from "./firestore/on-tshirt";
 import {redeemAddon} from "./http/addons";
+import {authenticateAgent} from "./http/agents";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -46,7 +47,6 @@ export const onUsers = functions.storage
 
 
 export const handleCheckin = checkInUser;
-export const handleSelfCheckin = selfCheckin;
 export const handleAddonRedemption = redeemAddon;
 
 export const triggerRetryQrCodeFile = retryQrCodes;
@@ -56,3 +56,6 @@ export const sendQueueEmail = processEmailQueue;
 export const onParticipantsCreate = processRegistrations
 export const onQrCodes = processQrCodes
 export const onTshirts = processTshirts
+
+
+export const handleAgentAuthentication = authenticateAgent
