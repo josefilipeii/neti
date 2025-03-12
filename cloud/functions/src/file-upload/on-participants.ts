@@ -6,12 +6,9 @@ import { logger } from "firebase-functions";
 import { tempCollectionPath } from "../domain/collections";
 import { firestore } from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
-import {generateQrId} from "../lib/qr";
+import { generateQrId } from "../lib/qr";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
-
-
-
 
 /** Uploads raw participant data to a temporary Firestore collection */
 export const processParticipants: StorageHandler = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
@@ -39,28 +36,41 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
         .pipe(csvParser)
         .on("data", (row: Record<string, string>) => {
           try {
-            const { external_id ,  provider, internal_id,  heatName, heatDay, heatTime, dorsal, category, name, email, contact } = row;
+            const { external_id, provider, internal_id, heatName, heatDay, heatTime, dorsal, category } = row;
             const idProvided = internal_id || external_id;
-            if (!idProvided || !heatName || !heatDay || !heatTime || !dorsal || !category || !email || !name || !contact) {
+            if (!idProvided || !heatName || !heatDay || !heatTime || !dorsal || !category) {
               logger.warn("⚠️ Skipping invalid row:", row);
               return;
             }
 
-            if(external_id && !provider){
+            if (external_id && !provider) {
               logger.warn("⚠️ Registrations with external_id must define a provider");
               return;
             }
 
-            //GF = Google Form
-            //TT = Ticket Taylor
-            const registrationProvider =  provider ?  provider : "GF"
-            const registrationId = external_id ? `${provider}-` : generateQrId("GF-RG", internal_id);
+            // Default provider
+            const registrationProvider = provider ? provider : "GF";
+            const registrationId = external_id ? `${provider}-${external_id}` : generateQrId("GF-RG", internal_id);
             const heatId: string = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
+            // **Extract up to 4 participants dynamically**
+            const participants = [];
+            for (let i = 1; i <= 4; i++) {
+              const name = row[`name${i}`] || row["name"];
+              const email = row[`email${i}`] || row["email"];
+              const contact = row[`contact${i}`] || row["contact"];
 
+              if (name && email && contact) {
+                participants.push({ name, email, contact });
+              }
+            }
+
+            if (participants.length === 0) {
+              logger.warn("⚠️ Skipping row due to missing participant data:", row);
+              return;
+            }
 
             const registrationRef = db.collection(tempCollectionPath).doc(registrationId);
-
 
             batch.set(registrationRef, {
               provider: registrationProvider,
@@ -71,7 +81,7 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               heatTime,
               dorsal,
               category,
-              participants: [{ name, email, contact }],
+              participants,
               status: "pending",
               createdAt: Timestamp.now(),
             });
