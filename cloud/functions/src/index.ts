@@ -29,14 +29,19 @@ export const onAddons = functions.storage
   });
 
 
-
 export const onCompetitions = functions.storage
   .onObjectFinalized({region: STORAGE_REGION}, async (object) => {
     useCompetitionsHandler(object);
   });
 
-export const onParticipants = functions.storage
-  .onObjectFinalized({region: STORAGE_REGION}, async (object) => {
+export const onParticipants = functions
+  .storage
+  .onObjectFinalized({
+    region: STORAGE_REGION,
+    timeoutSeconds: 300,
+    memory: "256MiB"
+  },
+  async (object) => {
     processParticipants(object);
   });
 

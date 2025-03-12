@@ -12,8 +12,7 @@ const csvParser: NodeJS.ReadWriteStream = csv();
 
 /** Uploads raw participant data to a temporary Firestore collection */
 export const processParticipants: StorageHandler = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
-  const bucketName: string = object.data.bucket;
-  const filePath: string = object.data.name;
+  const { bucket: bucketName, name: filePath } = object.data;
 
   if (!filePath || !filePath.startsWith("participants/") || !filePath.endsWith(".csv")) {
     logger.log(`❌ Skipping file: ${filePath}`);
@@ -22,19 +21,15 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
 
   const bucket: Bucket = storage.bucket(bucketName);
   const file: File = bucket.file(filePath);
-  const pathParts: string[] = filePath.split("/");
-  const eventId: string = pathParts[1];
-
-  const firestoreWrites: Promise<firestore.WriteResult[]>[] = []; // Collect Firestore writes
+  const eventId: string = filePath.split("/")[1];
 
   try {
-    let batch = db.batch();
-    let batchCount = 0;
+    const firestoreWrites: Promise<firestore.WriteResult>[] = [];
 
     await new Promise<void>((resolve, reject) => {
       file.createReadStream()
         .pipe(csvParser)
-        .on("data", (row: Record<string, string>) => {
+        .on("data", async (row: Record<string, string>) => {
           try {
             const { external_id, provider, internal_id, heatName, heatDay, heatTime, dorsal, category } = row;
             const idProvided = internal_id || external_id;
@@ -48,19 +43,16 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               return;
             }
 
-            // Default provider
-            const registrationProvider = provider ? provider : "GF";
+            const registrationProvider = provider || "GF";
             const registrationId = external_id ? `${provider}-${external_id}` : generateQrId("GF-RG", internal_id);
-            const heatId: string = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
+            const heatId = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
-            // **Extract up to 4 participants dynamically**
             const participants = [];
             for (let i = 1; i <= 4; i++) {
               const name = row[`name${i}`] || row["name"];
               const email = row[`email${i}`] || row["email"];
               const contact = row[`contact${i}`] || row["contact"];
-
-              if (name && email && contact) {
+              if (i === 1 && name && email && contact) {
                 participants.push({ name, email, contact });
               }
             }
@@ -71,39 +63,28 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
             }
 
             const registrationRef = db.collection(tempCollectionPath).doc(registrationId);
+            firestoreWrites.push(
+              registrationRef.set({
+                provider: registrationProvider,
+                eventId,
+                heatId,
+                heatName,
+                heatDay,
+                heatTime,
+                dorsal,
+                category,
+                participants,
+                status: "pending",
+                createdAt: Timestamp.now(),
+              })
+            );
 
-            batch.set(registrationRef, {
-              provider: registrationProvider,
-              eventId,
-              heatId,
-              heatName,
-              heatDay,
-              heatTime,
-              dorsal,
-              category,
-              participants,
-              status: "pending",
-              createdAt: Timestamp.now(),
-            });
-
-            batchCount++;
-
-            // Commit batch every 500 writes
-            if (batchCount >= 500) {
-              firestoreWrites.push(batch.commit());
-              batch = db.batch(); // Start a new batch
-              batchCount = 0;
-            }
           } catch (error) {
             logger.error("❌ Error processing row:", error);
           }
         })
         .on("end", async () => {
           try {
-            if (batchCount > 0) {
-              firestoreWrites.push(batch.commit());
-            }
-
             await Promise.all(firestoreWrites);
             logger.log("🚀 CSV processing complete.");
             resolve();
