@@ -1,33 +1,80 @@
-import { StorageHandler } from "../domain";
-import { db, storage } from "../firebase";
+import {db, PUBSUB_QR_FILES_TOPIC, storage} from "../firebase";
+import {logger} from "firebase-functions";
+import {PubSub} from "@google-cloud/pubsub";
 import csv from "csv-parser";
-import { Bucket, File } from "@google-cloud/storage";
-import { logger } from "firebase-functions";
-import { tempCollectionPath } from "../domain/collections";
-import { Timestamp } from "firebase-admin/firestore";
-import { generateQrId } from "../lib/qr";
+import {Bucket, File} from "@google-cloud/storage";
+import {Timestamp} from "firebase-admin/firestore";
+import {qrCollectionPath, registrationCollectionPath} from "../domain/collections";
+import {generateQrId} from "../lib/qr";
 
-const csvParser: NodeJS.ReadWriteStream = csv();
-
-interface Registration {
+interface Row {
   id: string;
-  provider: string;
   eventId: string;
   heatId: string;
   heatName: string;
   heatDay: string;
   heatTime: string;
+  externalId?: string;
+  provider: string;
+  internalId?: string;
   dorsal: string;
   category: string;
-  participants: Array<{ name: string; email: string; contact: string }>;
-  status: string;
-  createdAt: FirebaseFirestore.Timestamp;
+  participants: {name: string; email: string; contact: string}[];
+  createdAt: Timestamp;
 }
 
+interface HeatData{
+  eventId: string;
+  heatId: string;
+  heatName: string;
+  heatDay: string;
+  heatTime: string;
+}
 
-/** Uploads raw participant data to a temporary Firestore collection */
-export const processParticipants: StorageHandler = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
-  const { bucket: bucketName, name: filePath } = object.data;
+const pubsub = new PubSub();
+
+/**
+ * Extracts unique heats and writes them in batches.
+ */
+async function processHeats(rows: HeatData[]) {
+  const uniqueHeats = new Map();
+
+  for (const row of rows) {
+    const {eventId, heatId, heatName, heatDay, heatTime} = row;
+    const key = `${eventId}_${heatId}`;
+    if (!uniqueHeats.has(key)) {
+      uniqueHeats.set(key, {eventId, heatId, heatName, heatDay, heatTime});
+    }
+  }
+
+  const heatEntries = Array.from(uniqueHeats.values());
+  const batchSize = 150;
+
+  for (let i = 0; i < heatEntries.length; i += batchSize) {
+    const batch = db.batch();
+    const chunk = heatEntries.slice(i, i + batchSize);
+
+    for (const heat of chunk) {
+      const heatRef = db.collection(`competitions/${heat.eventId}/heats`).doc(heat.heatId);
+      batch.set(heatRef, {
+        name: heat.heatName,
+        day: heat.heatDay,
+        time: heat.heatTime,
+      });
+    }
+
+    await batch.commit();
+    logger.log(`✅ Committed ${chunk.length} heats.`);
+  }
+
+  logger.log("🔥 Heats written to Firestore.");
+}
+
+/**
+ * Handles CSV upload, Firestore registration processing, and QR code generation in batches.
+ */
+export const processParticipants = async (object: { data: { bucket: string; name: string } }) => {
+  const {bucket: bucketName, name: filePath} = object.data;
 
   if (!filePath || !filePath.startsWith("participants/") || !filePath.endsWith(".csv")) {
     logger.log(`❌ Skipping file: ${filePath}`);
@@ -36,30 +83,25 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
 
   const bucket: Bucket = storage.bucket(bucketName);
   const file: File = bucket.file(filePath);
-  const eventId: string = filePath.split("/")[1];
+  const eventId = filePath.split("/")[1];
 
   try {
-    const rows: Registration[] = [];
+    const rows: Row[] = [];
 
     await new Promise<void>((resolve, reject) => {
       file.createReadStream()
-        .pipe(csvParser)
-        .on("data", (row: Record<string, string>) => {
+        .pipe(csv())
+        .on("data", (row) => {
           try {
-            const { external_id, provider, internalId, heatName, heatDay, heatTime, dorsal, category } = row;
-            const idProvided = internalId || external_id;
+            const {external_id: externalId, provider, internalId, heatName, heatDay, heatTime, dorsal, category} = row;
+            const idProvided = internalId || externalId;
             if (!idProvided || !heatName || !heatDay || !heatTime || !dorsal || !category) {
               logger.warn("⚠️ Skipping invalid row:", row);
               return;
             }
 
-            if (external_id && !provider) {
-              logger.warn("⚠️ Registrations with external_id must define a provider");
-              return;
-            }
-
             const registrationProvider = provider || "GF";
-            const registrationId = external_id ? `${provider}-${external_id}` : generateQrId("GF-RG", internalId);
+            const registrationId = externalId ? `${provider}-${externalId}` : generateQrId("GF-RG", internalId);
             const heatId = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
             const participants = [];
@@ -68,7 +110,7 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               const email = row[`email${i}`] || row["email"];
               const contact = row[`contact${i}`] || row["contact"];
               if (name && email && contact) {
-                participants.push({ name, email, contact });
+                participants.push({name, email, contact});
               }
             }
 
@@ -88,7 +130,6 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               dorsal,
               category,
               participants,
-              status: "pending",
               createdAt: Timestamp.now(),
             });
 
@@ -97,16 +138,12 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
           }
         })
         .on("end", async () => {
-          try {
-            if (rows.length > 0) {
-              await processInBatches(rows);
-            }
-            logger.log("🚀 CSV processing complete.");
-            resolve();
-          } catch (error) {
-            logger.error("❌ Error committing Firestore writes:", error);
-            reject(error);
+          if (rows.length > 0) {
+            await processHeats(rows); // ✅ Step 1: Write heats in batches
+            await processRegistrations(rows); // ✅ Step 2 & 3: Write registrations & QR codes
           }
+          logger.log("🚀 CSV processing complete.");
+          resolve();
         })
         .on("error", (error) => {
           logger.error("❌ Error processing file:", error);
@@ -119,21 +156,65 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
 };
 
 /**
- * Writes data to Firestore in batches of 150.
- * @param {Array} rows - Array of registration objects.
+ * Processes registrations in Firestore batch writes.
  */
-async function processInBatches(rows: Registration[]) {
+async function processRegistrations(rows: Row[]) {
   const batchSize = 150;
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = db.batch();
     const chunk = rows.slice(i, i + batchSize);
+    const pubsubMessages = [];
 
-    chunk.forEach((data) => {
-      const registrationRef = db.collection(tempCollectionPath).doc(data.id);
-      batch.set(registrationRef, data);
-    });
+    for (const data of chunk) {
+      const {eventId, heatId, heatName, heatDay, heatTime, dorsal, category, participants} = data;
+      const indexedCode = `${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
 
-    await batch.commit();
-    logger.log(`✅ Committed ${chunk.length} records`);
+      const registrationRef = db.collection(registrationCollectionPath(eventId, heatId)).doc(dorsal);
+      const qrRef = db.collection(qrCollectionPath).doc(data.id);
+
+      batch.set(registrationRef, {
+        qrId: data.id,
+        category: {name: category},
+        processedAt: new Date(),
+        participants,
+      });
+
+      batch.set(qrRef, {
+        code: indexedCode,
+        createdAt: new Date(),
+        type: "registration",
+        competition: {id: eventId},
+        redeemableBy: participants.map((p) => p.email),
+        status: "init",
+        sent: false,
+        registration: {
+          heat: {id: heatId, name: heatName},
+          time: heatTime,
+          day: heatDay,
+          dorsal,
+          category: {name: category},
+          participants,
+        },
+        provider: data.provider,
+        self: data.id,
+      });
+
+      pubsubMessages.push({docId: data.id});
+    }
+
+    try {
+      await batch.commit();
+      logger.log(`✅ Committed ${chunk.length} registrations.`);
+    } catch (error) {
+      logger.error("❌ Firestore batch commit failed:", error);
+    }
+
+    // Publish all QR codes to Pub/Sub after committing
+    for (const message of pubsubMessages) {
+      const messageBuffer = Buffer.from(JSON.stringify(message));
+      await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({data: messageBuffer});
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Avoid Firestore rate limits
   }
 }
