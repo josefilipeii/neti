@@ -4,7 +4,6 @@ import csv from "csv-parser";
 import { Bucket, File } from "@google-cloud/storage";
 import { logger } from "firebase-functions";
 import { tempCollectionPath } from "../domain/collections";
-import { firestore } from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { generateQrId } from "../lib/qr";
 
@@ -24,7 +23,8 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
   const eventId: string = filePath.split("/")[1];
 
   try {
-    const firestoreWrites: Promise<firestore.WriteResult>[] = [];
+    let batch = db.batch();
+    let batchCounter = 0;
 
     await new Promise<void>((resolve, reject) => {
       file.createReadStream()
@@ -52,7 +52,7 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               const name = row[`name${i}`] || row["name"];
               const email = row[`email${i}`] || row["email"];
               const contact = row[`contact${i}`] || row["contact"];
-              if (i === 1 && name && email && contact) {
+              if (name && email && contact) {
                 participants.push({ name, email, contact });
               }
             }
@@ -63,29 +63,38 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
             }
 
             const registrationRef = db.collection(tempCollectionPath).doc(registrationId);
-            firestoreWrites.push(
-              registrationRef.set({
-                provider: registrationProvider,
-                eventId,
-                heatId,
-                heatName,
-                heatDay,
-                heatTime,
-                dorsal,
-                category,
-                participants,
-                status: "pending",
-                createdAt: Timestamp.now(),
-              })
-            );
+            batch.set(registrationRef, {
+              provider: registrationProvider,
+              eventId,
+              heatId,
+              heatName,
+              heatDay,
+              heatTime,
+              dorsal,
+              category,
+              participants,
+              status: "pending",
+              createdAt: Timestamp.now(),
+            });
 
+            batchCounter++;
+
+            // Commit batch every 500 writes to avoid memory overflow
+            if (batchCounter >= 500) {
+              await batch.commit();
+              batch = db.batch(); // Start a new batch
+              batchCounter = 0;
+            }
           } catch (error) {
             logger.error("❌ Error processing row:", error);
           }
         })
         .on("end", async () => {
           try {
-            await Promise.all(firestoreWrites);
+            // Commit remaining writes
+            if (batchCounter > 0) {
+              await batch.commit();
+            }
             logger.log("🚀 CSV processing complete.");
             resolve();
           } catch (error) {
