@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-[#242424] text-white flex flex-col">
+  <div class="min-h-screen bg-[#242424] text-white flex flex-col w-full">
     <!-- Header (No More Sticky) -->
     <header class="relative bg-[#1E1E1E] text-white shadow-md w-full">
-      <div class="w-full px-4 md:px-6">
+      <div class="max-w-screen-lg w-full mx-auto px-4 md:px-6">
         <div class="flex flex-col md:flex-row items-center justify-between py-4">
           <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-[#F7B63B] text-center md:text-left">
             {{ title }}
@@ -22,14 +22,14 @@
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center bg-[#1E1E1E] w-full px-4 md:px-6">
-      <router-view/>
+    <main>
+      <router-view />
     </main>
+
 
     <!-- Footer -->
     <footer class="bg-[#1E1E1E] text-center py-6 w-full">
-      <div class="w-full px-4 md:px-6">
+      <div class="max-w-screen-lg w-full mx-auto px-4 md:px-6">
         <p class="text-gray-400">&nbsp;</p>
       </div>
     </footer>
@@ -37,10 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from "vue";
-import {useFirebaseAuth} from "vuefire";
-import {signOut} from "firebase/auth";
-import {useRouter} from "vue-router";
+import { ref } from "vue";
+import { useFirebaseAuth } from "vuefire";
+import { signOut } from "firebase/auth";
+import { useRouter } from "vue-router";
 
 const title = ref("Consola de Gestão");
 const auth = useFirebaseAuth();
@@ -57,7 +57,6 @@ const logout = async () => {
 </script>
 
 <style scoped>
-
 @reference "./style.css";
 
 /* Navigation Button */
@@ -69,5 +68,4 @@ const logout = async () => {
 .btn-logout {
   @apply px-4 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg shadow-sm hover:shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-[#1E1E1E];
 }
-
 </style>
