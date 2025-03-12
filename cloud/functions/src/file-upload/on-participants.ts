@@ -9,6 +9,22 @@ import { generateQrId } from "../lib/qr";
 
 const csvParser: NodeJS.ReadWriteStream = csv();
 
+interface Registration {
+  id: string;
+  provider: string;
+  eventId: string;
+  heatId: string;
+  heatName: string;
+  heatDay: string;
+  heatTime: string;
+  dorsal: string;
+  category: string;
+  participants: Array<{ name: string; email: string; contact: string }>;
+  status: string;
+  createdAt: FirebaseFirestore.Timestamp;
+}
+
+
 /** Uploads raw participant data to a temporary Firestore collection */
 export const processParticipants: StorageHandler = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
   const { bucket: bucketName, name: filePath } = object.data;
@@ -23,16 +39,15 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
   const eventId: string = filePath.split("/")[1];
 
   try {
-    let batch = db.batch();
-    let batchCounter = 0;
+    const rows: Registration[] = [];
 
     await new Promise<void>((resolve, reject) => {
       file.createReadStream()
         .pipe(csvParser)
-        .on("data", async (row: Record<string, string>) => {
+        .on("data", (row: Record<string, string>) => {
           try {
-            const { external_id, provider, internal_id, heatName, heatDay, heatTime, dorsal, category } = row;
-            const idProvided = internal_id || external_id;
+            const { external_id, provider, internalId, heatName, heatDay, heatTime, dorsal, category } = row;
+            const idProvided = internalId || external_id;
             if (!idProvided || !heatName || !heatDay || !heatTime || !dorsal || !category) {
               logger.warn("⚠️ Skipping invalid row:", row);
               return;
@@ -44,7 +59,7 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
             }
 
             const registrationProvider = provider || "GF";
-            const registrationId = external_id ? `${provider}-${external_id}` : generateQrId("GF-RG", internal_id);
+            const registrationId = external_id ? `${provider}-${external_id}` : generateQrId("GF-RG", internalId);
             const heatId = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
             const participants = [];
@@ -62,8 +77,8 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               return;
             }
 
-            const registrationRef = db.collection(tempCollectionPath).doc(registrationId);
-            batch.set(registrationRef, {
+            rows.push({
+              id: registrationId,
               provider: registrationProvider,
               eventId,
               heatId,
@@ -77,23 +92,14 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
               createdAt: Timestamp.now(),
             });
 
-            batchCounter++;
-
-            // Commit batch every 500 writes to avoid memory overflow
-            if (batchCounter >= 150) {
-              await batch.commit();
-              batch = db.batch(); // Start a new batch
-              batchCounter = 0;
-            }
           } catch (error) {
             logger.error("❌ Error processing row:", error);
           }
         })
         .on("end", async () => {
           try {
-            // Commit remaining writes
-            if (batchCounter > 0) {
-              await batch.commit();
+            if (rows.length > 0) {
+              await processInBatches(rows);
             }
             logger.log("🚀 CSV processing complete.");
             resolve();
@@ -111,3 +117,23 @@ export const processParticipants: StorageHandler = async (object: { data: { buck
     logger.error("❌ Error processing file:", error);
   }
 };
+
+/**
+ * Writes data to Firestore in batches of 150.
+ * @param {Array} rows - Array of registration objects.
+ */
+async function processInBatches(rows: Registration[]) {
+  const batchSize = 150;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = db.batch();
+    const chunk = rows.slice(i, i + batchSize);
+
+    chunk.forEach((data) => {
+      const registrationRef = db.collection(tempCollectionPath).doc(data.id);
+      batch.set(registrationRef, data);
+    });
+
+    await batch.commit();
+    logger.log(`✅ Committed ${chunk.length} records`);
+  }
+}

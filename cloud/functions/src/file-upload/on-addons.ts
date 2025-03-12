@@ -49,8 +49,8 @@ export const processAddons: StorageHandler = async (object: { data: { bucket: st
             try {
               const {
                 provider,
-                internal_id,
-                external_id,
+                internalId,
+                externalId,
                 name,
                 email,
                 sizeS
@@ -65,19 +65,19 @@ export const processAddons: StorageHandler = async (object: { data: { bucket: st
                 return;
               }
 
-              const idProvided = internal_id || external_id;
+              const idProvided = internalId || externalId;
               if (!idProvided || !name || !email) {
                 logger.warn("⚠️ Skipping invalid row:", row);
                 return;
               }
 
-              if(external_id && !provider){
+              if(externalId && !provider){
                 logger.warn("⚠️ Registrations with external_id must define a provider");
                 return;
               }
 
               const tshirtProvider = provider ? provider : "GF";
-              const tshirtId = generateQrId("GF-AT", internal_id);
+              const tshirtId = generateQrId("GF-AT", internalId);
 
 
               const tshirtRef = db.collection(`/competitions/${eventId}/addons/types/tshirts`).doc(tshirtId);
@@ -94,7 +94,7 @@ export const processAddons: StorageHandler = async (object: { data: { bucket: st
               batch.set(tshirtRef, {
                 competition: eventId,
                 provider: tshirtProvider,
-                referenceId: internal_id,
+                referenceId: internalId,
                 name,
                 email,
                 sizes,
