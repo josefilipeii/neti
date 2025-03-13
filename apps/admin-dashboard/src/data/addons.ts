@@ -1,17 +1,20 @@
 import { defineStore } from 'pinia';
 import { useFirestore } from 'vuefire';
-import { collection, CollectionReference, query, orderBy, limit, startAfter, onSnapshot, getDocs, updateDoc, doc, DocumentSnapshot } from 'firebase/firestore';
+import {
+    collection, CollectionReference, query, orderBy, limit, startAfter,
+    onSnapshot, getDocs, updateDoc, doc, DocumentSnapshot, where
+} from 'firebase/firestore';
 import type { TshirtAddon } from "shared";
 import { computed, ref, watch } from "vue";
 import { useCompetitionStore } from "../data/competitions.ts";
-import  {Timestamp} from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 
 export const useAddonsStore = defineStore('addons', () => {
     const db = useFirestore();
     const competitionStore = useCompetitionStore();
     const selectedCompetitionId = computed(() => competitionStore.selectedCompetitionId);
 
-    const tshirts = ref<Record<string, TshirtAddon[]>>({}); // Store as reactive object
+    const tshirts = ref<Record<string, TshirtAddon[]>>({}); // Store T-shirts per competition
     const lastVisible = ref<Record<string, DocumentSnapshot | null>>({}); // Last document per competition
     const isLoading = ref(false);
     const pageSize = 10; // Number of items per page
@@ -35,12 +38,14 @@ export const useAddonsStore = defineStore('addons', () => {
         if (!snapshot.empty) {
             tshirts.value[selectedCompetitionId.value] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             lastVisible.value[selectedCompetitionId.value] = snapshot.docs[snapshot.docs.length - 1];
+
+            // 🔥 Subscribe to already loaded items
+            subscribeToLoadedTshirts();
         } else {
             lastVisible.value[selectedCompetitionId.value] = null;
         }
 
         isLoading.value = false;
-        subscribeToTshirts(); // Listen only for displayed T-shirts
     };
 
     // Load More Data (Pagination)
@@ -63,6 +68,9 @@ export const useAddonsStore = defineStore('addons', () => {
                 ...snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
             ];
             lastVisible.value[competitionId] = snapshot.docs[snapshot.docs.length - 1];
+
+            // 🔥 Subscribe only to newly loaded items
+            subscribeToLoadedTshirts();
         } else {
             lastVisible.value[competitionId] = null;
         }
@@ -70,23 +78,37 @@ export const useAddonsStore = defineStore('addons', () => {
         isLoading.value = false;
     };
 
-    // Subscribe to Real-Time Updates for Displayed Items
-    const subscribeToTshirts = () => {
+    // Subscribe to Real-Time Updates for Already Loaded T-shirts
+    const subscribeToLoadedTshirts = () => {
         if (!selectedCompetitionId.value || !tshirtsSrc.value) return;
 
         if (unsubscribeListener) unsubscribeListener(); // Remove previous listener
 
-        // Listen only for T-shirts currently displayed
-        unsubscribeListener = onSnapshot(
-            query(tshirtsSrc.value, orderBy("createdAt"), limit(pageSize)),
-            (snapshot) => {
-                const updatedTshirts = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                tshirts.value[selectedCompetitionId.value!] = updatedTshirts; // Update only displayed items
-            }
-        );
+        const competitionId = selectedCompetitionId.value!;
+        const loadedTshirtIds = (tshirts.value[competitionId] || []).map(t => t.id);
+
+        if (loadedTshirtIds.length === 0) return; // No need to subscribe if no items are loaded
+
+        // Firestore query to listen only for loaded T-shirts
+        const q = query(tshirtsSrc.value, where("__name__", "in", loadedTshirtIds));
+
+        unsubscribeListener = onSnapshot(q, (snapshot) => {
+            snapshot.docs.forEach((docSnap) => {
+                const updatedTshirt = { id: docSnap.id, ...docSnap.data() } as TshirtAddon;
+
+                // Find and update the T-shirt in local state
+                const existingList = tshirts.value[competitionId] || [];
+                const index = existingList.findIndex(t => t.id === updatedTshirt.id);
+
+                if (index !== -1) {
+                    existingList[index] = updatedTshirt;
+                } else {
+                    existingList.push(updatedTshirt);
+                }
+
+                tshirts.value[competitionId] = [...existingList]; // Trigger reactivity
+            });
+        });
     };
 
     // Update a T-shirt in Firestore & Locally

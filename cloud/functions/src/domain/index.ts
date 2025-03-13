@@ -79,3 +79,18 @@ export interface Chunk {
     data: Row[];
     chunkHeats: string[];
 }
+
+
+export  interface AddonRow {
+    provider: string;
+    referenceId?: string;
+    internalId?: string;
+    externalId?: string;
+    name: string;
+    email: string;
+    sizeS?: string;
+    sizeM?: string;
+    sizeL?: string;
+    sizeXL?: string;
+    sizeXXL?: string;
+}

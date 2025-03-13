@@ -1,16 +1,15 @@
-import { StorageHandler } from "../domain";
-import {db, storage} from "../firebase";
-import {Bucket, File} from "@google-cloud/storage";
-import {logger} from "firebase-functions";
+import { db, storage } from "../firebase";
+import { Bucket, File } from "@google-cloud/storage";
+import { logger } from "firebase-functions";
 import csv from "csv-parser";
-import {firestore} from "firebase-admin";
-import {generateQrId} from "../lib/qr";
-import  {Timestamp} from "firebase-admin/firestore";
 
+// 🔹 Constants
+const CHUNK_SIZE = 150; // Max items per chunk
 
-const csvParser: NodeJS.ReadWriteStream = csv();
-
-export const processAddons: StorageHandler = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
+/**
+ * 🔥 Step 1: Cloud Function to Process CSV → Convert to JSON Chunks → Store in Firestore
+ */
+export const processAddonsCsv = async (object: { data: { bucket: string; name: string } }): Promise<void> => {
   const bucketName: string = object.data.bucket;
   const filePath: string = object.data.name;
 
@@ -25,115 +24,108 @@ export const processAddons: StorageHandler = async (object: { data: { bucket: st
   const eventId: string = pathParts[1];
   const type: string = pathParts[2];
 
-  if(!type && !eventId){
-    console.log("❌ Missing type or eventId in file path");
+  if (!eventId || !type) {
+    logger.error("❌ Missing eventId or type in file path");
     return;
   }
 
-  if(type !== "tshirts"){
-    console.log(`❌ Invalid type ${type}`);
+  if (type !== "tshirts") {
+    logger.error(`❌ Invalid type: ${type}`);
     return;
   }
-
-  const firestoreWrites: Promise<firestore.WriteResult[]>[] = []; // Collect Firestore writes
 
   try {
-    let batch = db.batch();
-    let batchCount = 0;
+    const rows: Record<string, string>[] = [];
 
     await new Promise<void>((resolve, reject) => {
       file.createReadStream()
-        .pipe(csvParser)
-        .on("data",
-          (row: Record<string, string>) => {
-            try {
-              const {
-                provider,
-                internalId,
-                externalId,
-                name,
-                email,
-                sizeS
-                , sizeM,
-                sizeL,
-                sizeXL,
-                sizeXXL
-              } = row;
-
-              if(!(sizeS || sizeM || sizeL || sizeXL || sizeXXL)){
-                logger.warn("⚠️ Skipping invalid row:", row);
-                return;
-              }
-
-              const idProvided = internalId || externalId;
-              if (!idProvided || !name || !email) {
-                logger.warn("⚠️ Skipping invalid row:", row);
-                return;
-              }
-
-              if(externalId && !provider){
-                logger.warn("⚠️ Registrations with external_id must define a provider");
-                return;
-              }
-
-              const tshirtProvider = provider ? provider : "GF";
-              const tshirtId = generateQrId("GF-AT", internalId);
-
-
-              const tshirtRef = db.collection(`/competitions/${eventId}/addons/types/tshirts`).doc(tshirtId);
-
-              const sizes =
-                  {
-                    s: sizeS || "",
-                    m: sizeM || "",
-                    l: sizeL || "",
-                    xl: sizeXL || "",
-                    xxl: sizeXXL || ""
-                  }
-
-              batch.set(tshirtRef, {
-                competition: eventId,
-                provider: tshirtProvider,
-                referenceId: internalId,
-                name,
-                email,
-                sizes,
-                status: "pending",
-                createdAt: Timestamp.now(),
-              });
-
-              batchCount++;
-
-              // Commit batch every 500 writes
-              if (batchCount >= 100) {
-                firestoreWrites.push(batch.commit());
-                batch = db.batch(); // Start a new batch
-                batchCount = 0;
-              }
-            } catch (error) {
-              logger.error("❌ Error processing row:", error);
-            }
-          })
-        .on("end", async () => {
+        .pipe(csv())
+        .on("data", (row: Record<string, string>) => {
           try {
-            if (batchCount > 0) {
-              firestoreWrites.push(batch.commit());
+            const {
+              provider,
+              internalId,
+              externalId,
+              name,
+              email,
+              sizeS, sizeM, sizeL, sizeXL, sizeXXL
+            } = row;
+
+            if (!(sizeS || sizeM || sizeL || sizeXL || sizeXXL)) {
+              logger.warn("⚠️ Skipping row due to missing size information:", row);
+              return;
             }
 
-            await Promise.all(firestoreWrites);
-            logger.log("🚀 CSV processing complete.");
-            resolve();
+            if (!internalId && !externalId) {
+              logger.warn("⚠️ Skipping row due to missing ID:", row);
+              return;
+            }
+
+            if (!name || !email) {
+              logger.warn("⚠️ Skipping row due to missing name or email:", row);
+              return;
+            }
+
+            if (externalId && !provider) {
+              logger.warn("⚠️ Registrations with external_id must define a provider");
+              return;
+            }
+
+            rows.push(row);
           } catch (error) {
-            logger.error("❌ Error committing Firestore writes:", error);
-            reject(error);
+            logger.error("❌ Error processing row:", error);
           }
+        })
+        .on("end", async () => {
+          await chunkAddonsData(rows, eventId);
+          logger.log("🚀 CSV processing complete.");
+          resolve();
         })
         .on("error", (error) => {
           logger.error("❌ Error processing file:", error);
           reject(error);
         });
-    })
+    });
   } catch (error) {
     logger.error("❌ Error processing file:", error);
   }
 };
+
+/**
+ * 🔥 Step 2: Store JSON Chunks in Firestore
+ */
+async function chunkAddonsData(rows: Record<string, string>[], eventId: string) {
+  let chunkIndex = 0;
+  let currentChunk: Record<string, string>[] = [];
+
+
+  for (const row of rows) {
+    currentChunk.push(row);
+
+    if (currentChunk.length === CHUNK_SIZE) {
+      await saveChunk(currentChunk, eventId, chunkIndex);
+      currentChunk = [];
+      chunkIndex++;
+    }
+  }
+
+  if (currentChunk.length > 0) {
+    await saveChunk(currentChunk, eventId, chunkIndex);
+  }
+
+  logger.log(`✅ Stored ${rows.length} addon registrations in ${chunkIndex + 1} chunks.`);
+}
+
+async function saveChunk(rows: Record<string, string>[], eventId: string, index: number) {
+  await db.collection("addon_import_tasks").doc(`${eventId}-chunk-${index}`).set({
+    chunkIndex: index,
+    eventId,
+    totalRecords: rows.length,
+    processed: false,
+    retryCount: 0,
+    status: "pending",
+    data: rows,
+  });
+}
+
+

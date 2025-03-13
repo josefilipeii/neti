@@ -8,12 +8,13 @@ import {handleEmailQueue} from "./firestore/on-email-queue";
 import {userImportHandler} from "./file-upload/on-users";
 import {processQrCodes} from "./pubsub/on-qr";
 import {retryQrCodes} from "./http/manual-actions";
-import {processAddons} from "./file-upload/on-addons";
+import {processAddonsCsv} from "./file-upload/on-addons";
 import {processTshirts} from "./firestore/on-tshirt";
 import {redeemAddon} from "./http/addons";
 import {authenticateAgent} from "./http/agents";
 import {processChunk} from "./firestore/on-chunck";
 import {handleRegistrationCreate, handleRegistrationDelete} from "./firestore/on-registration";
+import {processAddonChunks} from "./firestore/on-addon-chunks";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -26,7 +27,7 @@ import {handleRegistrationCreate, handleRegistrationDelete} from "./firestore/on
 
 export const onAddons = functions.storage
   .onObjectFinalized({region: STORAGE_REGION}, async (object) => {
-    processAddons(object);
+    processAddonsCsv(object);
   });
 
 
@@ -61,6 +62,8 @@ export const triggerEmail = handleEmailQueue;
 export const sendQueueEmail = processEmailQueue;
 export const onQrCodes = processQrCodes
 export const onTshirts = processTshirts
+
+export const onAddonChunks = processAddonChunks
 
 
 export const handleAgentAuthentication = authenticateAgent

@@ -1,4 +1,4 @@
-internal_id,email,name,sizeS,sizeM,sizeL,sizeXL,sizeXXL
+internalId,email,name,sizeS,sizeM,sizeL,sizeXL,sizeXXL
 AT00001,jose.filipe.chavarria+2@gmail.com,Name of 2,,1,,,
 AT00002,jose.filipe.chavarria+3@gmail.com,Name of 3,,,,1,
 AT00003,jose.filipe.chavarria+4@gmail.com,Name of 4,,2,2,,
