@@ -6,6 +6,8 @@ import {Bucket, File} from "@google-cloud/storage";
 import {Timestamp} from "firebase-admin/firestore";
 import {qrCollectionPath, registrationCollectionPath} from "../domain/collections";
 import {generateQrId} from "../lib/qr";
+import {firestore} from "firebase-admin";
+import WriteResult = firestore.WriteResult;
 
 interface Row {
   id: string;
@@ -160,13 +162,15 @@ export const processParticipants = async (object: { data: { bucket: string; name
  */
 async function processRegistrations(rows: Row[]) {
   const batchSize = 150;
+  const batchPromises = [];
+  const pubsubMessages = [];
+
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = db.batch();
     const chunk = rows.slice(i, i + batchSize);
-    const pubsubMessages = [];
 
     for (const data of chunk) {
-      const {eventId, heatId, heatName, heatDay, heatTime, dorsal, category, participants} = data;
+      const { eventId, heatId, heatName, heatDay, heatTime, dorsal, category, participants } = data;
       const indexedCode = `${eventId}:${heatId}:${dorsal}`.replace(/[_-]/g, "").toUpperCase();
 
       const registrationRef = db.collection(registrationCollectionPath(eventId, heatId)).doc(dorsal);
@@ -174,7 +178,7 @@ async function processRegistrations(rows: Row[]) {
 
       batch.set(registrationRef, {
         qrId: data.id,
-        category: {name: category},
+        category: { name: category },
         processedAt: new Date(),
         participants,
       });
@@ -183,38 +187,53 @@ async function processRegistrations(rows: Row[]) {
         code: indexedCode,
         createdAt: new Date(),
         type: "registration",
-        competition: {id: eventId},
+        competition: { id: eventId },
         redeemableBy: participants.map((p) => p.email),
         status: "init",
         sent: false,
         registration: {
-          heat: {id: heatId, name: heatName},
+          heat: { id: heatId, name: heatName },
           time: heatTime,
           day: heatDay,
           dorsal,
-          category: {name: category},
+          category: { name: category },
           participants,
         },
         provider: data.provider,
         self: data.id,
       });
 
-      pubsubMessages.push({docId: data.id});
+      pubsubMessages.push({ docId: data.id });
     }
 
-    try {
-      await batch.commit();
-      logger.log(`✅ Committed ${chunk.length} registrations.`);
-    } catch (error) {
-      logger.error("❌ Firestore batch commit failed:", error);
-    }
+    batchPromises.push(retryWithBackoff(() => batch.commit())); // ✅ Run all batch commits in parallel
+  }
 
-    // Publish all QR codes to Pub/Sub after committing
-    for (const message of pubsubMessages) {
-      const messageBuffer = Buffer.from(JSON.stringify(message));
-      await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({data: messageBuffer});
-    }
+  try {
+    await Promise.all(batchPromises); // ✅ Wait for all batches to complete
+    logger.log(`✅ Committed ${rows.length} registrations.`);
+  } catch (error) {
+    logger.error("❌ Firestore batch commit failed:", error);
+  }
 
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Avoid Firestore rate limits
+  // ✅ Publish all QR codes to Pub/Sub in parallel
+  const pubsubPromises = pubsubMessages.map((message) => {
+    const messageBuffer = Buffer.from(JSON.stringify(message));
+    return pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({ data: messageBuffer });
+  });
+
+  await Promise.all(pubsubPromises);
+  logger.log(`✅ Published ${pubsubMessages.length} QR messages to Pub/Sub.`);
+}
+
+
+async function retryWithBackoff(func: () => Promise<WriteResult[]>, retries = 5, delay = 100) {
+  try {
+    return await func();
+  } catch (error) {
+    if (retries === 0) throw error;
+    logger.warn(`⏳ Retrying after ${delay}ms due to Firestore error...`);
+    await new Promise(res => setTimeout(res, delay));
+    return retryWithBackoff(func, retries - 1, delay * 2);
   }
 }
