@@ -12,6 +12,8 @@ import {processAddons} from "./file-upload/on-addons";
 import {processTshirts} from "./firestore/on-tshirt";
 import {redeemAddon} from "./http/addons";
 import {authenticateAgent} from "./http/agents";
+import {processChunk} from "./firestore/on-chunck";
+import {handleRegistrationCreate, handleRegistrationDelete} from "./firestore/on-registration";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -62,3 +64,9 @@ export const onTshirts = processTshirts
 
 
 export const handleAgentAuthentication = authenticateAgent
+
+
+export const onChunk = processChunk;
+
+export const onRegistration = handleRegistrationCreate
+export const onDeletedRegistration = handleRegistrationDelete

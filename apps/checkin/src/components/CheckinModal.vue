@@ -32,9 +32,9 @@
       </div>
       <div v-else-if="registration" class="mt-4">
         <h2 class="text-lg font-medium text-gray-900">Checkin</h2>
-        <p class="text-gray-700 font-medium">ID da Competição: {{ registration.competition.name }}</p>
+        <p class="text-gray-700 font-medium">ID da Competição: {{ registration.competition }}</p>
         <p class="text-gray-700">Dorsal: {{ registration.registration.dorsal || 'N/A' }}</p>
-        <p class="text-gray-700">Categoria: {{ registration.registration.category?.name || 'N/A' }}</p>
+        <p class="text-gray-700">Categoria: {{ registration.registration.category || 'N/A' }}</p>
         <p class="text-gray-700">Data: {{ registration.registration.day }} às {{ registration.registration?.time }}</p>
 
         <h4 class="mt-4 font-medium text-gray-900">Participantes</h4>

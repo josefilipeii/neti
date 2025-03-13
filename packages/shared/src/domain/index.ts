@@ -25,12 +25,14 @@ export interface Heat {
 
 export interface Registration {
     id?: string; //dorsal
-    category: Category;
+    category: string;
     day?: string;
     time?: string;
     participants: RegistrationParticipant[];
     checkin?: Redemption;
     qrId?: string;
+    provider: string;
+    providerId: string;
 }
 
 export interface RegistrationParticipant{
@@ -55,11 +57,11 @@ export interface QRCompetition {
 
 
 export interface QRegistration {
-    heat: QRHeat;
+    heat: string;
     day: string;
     time: string;
     dorsal: string;
-    category: QRCategory;
+    category: string;
     participants: QRParticipant[];
 }
 
@@ -87,9 +89,10 @@ export interface QRDocument {
     type: "registration" | "addon";
     redeemed?: Redemption;
     redeemableBy: string[];
-    files: QRFiles;
+    files?: QRFiles;
     provider: string;
     sent: boolean;
+    status: "init" | "processed";
 }
 
 
@@ -101,7 +104,7 @@ export interface QRFiles {
 }
 
 export interface QRRegistrationDocument extends QRDocument {
-    competition: QRCompetition;
+    competition: string;
     registration: QRegistration;
 }
 

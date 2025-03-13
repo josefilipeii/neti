@@ -50,7 +50,7 @@ export const processTshirts = onDocumentCreated(
 
 
     }).then(async () => {
-      const messageBuffer = Buffer.from(JSON.stringify({ docId: docId }));
+      const messageBuffer = Buffer.from(JSON.stringify({ docIds: [docId] }));
       await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({ data: messageBuffer });
     });
 

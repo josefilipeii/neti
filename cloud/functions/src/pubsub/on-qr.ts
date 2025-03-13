@@ -1,14 +1,16 @@
-import {FIRESTORE_REGION, QR_BUCKET_NAME} from "../constants";
-import {logger} from "firebase-functions";
-import {QRAddonDocument, QRDocument, QRRegistrationDocument, QRTShirtDocument} from "../../../../packages/shared";
-import {Bucket, File} from "@google-cloud/storage";
-import {db, PUBSUB_QR_FILES_TOPIC, storage} from "../firebase";
+import { FIRESTORE_REGION, QR_BUCKET_NAME } from "../constants";
+import { logger } from "firebase-functions";
+import { QRAddonDocument, QRDocument, QRRegistrationDocument, QRTShirtDocument } from "../../../../packages/shared";
+import { db, PUBSUB_QR_FILES_TOPIC, storage } from "../firebase";
 import QRCode from "qrcode";
 import bwipjs from "bwip-js";
-import {onMessagePublished} from "firebase-functions/v2/pubsub";
-import {PubSub} from "@google-cloud/pubsub";
+import { onMessagePublished } from "firebase-functions/v2/pubsub";
+import { PubSub } from "@google-cloud/pubsub";
+import { Bucket, File } from "@google-cloud/storage";
 
 const pubsub = new PubSub();
+const MAX_RETRIES = 3;
+const BATCH_SIZE = 50; // Adjustable batch size
 
 export const processQrCodes = onMessagePublished(
   {
@@ -23,107 +25,129 @@ export const processQrCodes = onMessagePublished(
       return;
     }
 
-    const {docId, retryCount = 0} = JSON.parse(
+    const { docIds, retryCount = 0 } = JSON.parse(
       Buffer.from(message.data, "base64").toString("utf8")
     );
 
-    if (!docId) {
-      logger.error("❌ No document ID received from Pub/Sub.");
+    if (!docIds || !Array.isArray(docIds) || docIds.length === 0) {
+      logger.error("❌ No valid document IDs received from Pub/Sub.");
       return;
     }
 
-    try {
-      const docRef = db.collection("qrCodes").doc(docId);
-      const docSnapshot = await docRef.get();
+    // Process in smaller batches if needed
+    const chunks = chunkArray(docIds, BATCH_SIZE);
 
+    for (const batch of chunks) {
+      await processBatch(batch, retryCount);
+    }
+  }
+);
+
+/**
+ * Splits an array into smaller chunks.
+ */
+function chunkArray(arr: string[], size: number): string[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+}
+
+/**
+ * Processes a batch of QR codes.
+ */
+async function processBatch(docIds: string[], retryCount: number) {
+  try {
+    // Fetch all documents in one batch
+    const snapshots = await db.getAll(...docIds.map((id) => db.collection("qrCodes").doc(id)));
+
+    const tasks = snapshots.map(async (docSnapshot) => {
       if (!docSnapshot.exists) {
-        logger.error(`❌ Firestore document ${docId} not found.`);
+        logger.warn(`⚠️ QR Code document ${docSnapshot.id} not found.`);
         return;
       }
 
       const data = docSnapshot.data() as QRDocument;
+      if (!data) return;
 
-      let qrPath;
-      let barCodePath;
+      let qrPath, barCodePath;
       if (data.type === "registration") {
-        const registrationData = data as QRRegistrationDocument;
-        const competition = registrationData.competition;
-        const provider = registrationData.provider;
-        const directory = `qr_codes/${competition.id}/registrations/${provider}/${docId}`;
+        const { competition, provider } = data as QRRegistrationDocument;
+        const directory = `qr_codes/${competition}/registrations/${provider}/${docSnapshot.id}`;
         barCodePath = `${directory}/barcode.png`;
         qrPath = `${directory}/qr_code.png`;
-      } else if(data.type === "addon" && (data as QRAddonDocument).addonType === "tshirt"){
-        const tshirtData = data as QRTShirtDocument;
-        const competition = tshirtData.competition;
-        const directory = `qr_codes/${competition}/addons/tshirt/${docId}`;
+      } else if (data.type === "addon" && (data as QRAddonDocument).addonType === "tshirt") {
+        const { competition } = data as QRTShirtDocument;
+        const directory = `qr_codes/${competition}/addons/tshirt/${docSnapshot.id}`;
         barCodePath = `${directory}/barcode.png`;
         qrPath = `${directory}/qr_code.png`;
-      }else {
-        logger.warn(`⚠️ Invalid type ${data.type} for ${data}`);
+      } else {
+        logger.warn(`⚠️ Invalid type ${data.type} for ${docSnapshot.id}`);
         return;
       }
 
-      const qrBucket: Bucket = storage.bucket(QR_BUCKET_NAME);
-      const qrFile: File = qrBucket.file(qrPath);
-      const barCodeFile: File = qrBucket.file(barCodePath);
+      const bucket: Bucket = storage.bucket(QR_BUCKET_NAME);
+      const qrFile: File = bucket.file(qrPath);
+      const barCodeFile: File = bucket.file(barCodePath);
 
       try {
         // Generate QR Code
-        const qrCodeBuffer: Buffer = await QRCode.toBuffer(docId, {
+        const qrCodeBuffer = await QRCode.toBuffer(docSnapshot.id, {
           errorCorrectionLevel: "H",
           width: 500,
-          margin: 2
+          margin: 2,
         });
-        await qrFile.save(qrCodeBuffer, {contentType: "image/png"});
+        await qrFile.save(qrCodeBuffer, { contentType: "image/png" });
 
         // Generate Barcode
         const barCodeBuffer = await bwipjs.toBuffer({
           bcid: "code128",
-          text: docId,
+          text: docSnapshot.id,
           scale: 2,
           height: 20,
-          backgroundcolor: "FFFFFF", // Ensure a pure white background
-          paddingwidth: 10,      // Add padding to avoid edges blending
+          backgroundcolor: "FFFFFF",
+          paddingwidth: 10,
           paddingheight: 10,
-          includetext: true,     // Show human-readable text
-          textsize: 10,          // Font size for human-readable text
-          textyoffset: 10,       // Adjust text vertical position
-          rotate: "L"            // Set barcode rotation
+          includetext: true,
+          textsize: 10,
+          textyoffset: 10,
+          rotate: "L",
         });
-        await barCodeFile.save(barCodeBuffer, {contentType: "image/png"});
+        await barCodeFile.save(barCodeBuffer, { contentType: "image/png" });
 
         // Generate public URLs
-        const [qrUrl] = await qrFile.getSignedUrl({action: "read", expires: "01-01-2030"});
-        const [barCodeUrl] = await barCodeFile.getSignedUrl({action: "read", expires: "01-01-2030"});
+        const [qrUrl] = await qrFile.getSignedUrl({ action: "read", expires: "01-01-2030" });
+        const [barCodeUrl] = await barCodeFile.getSignedUrl({ action: "read", expires: "01-01-2030" });
 
-        // 🔹 Update Firestore **without a transaction**
-        await docRef.update({
-          "status": "ready",
+        // 🔹 Update Firestore
+        await docSnapshot.ref.update({
+          status: "ready",
           "files.qr": qrUrl,
           "files.barcode": barCodeUrl,
         });
 
-        logger.info(`✅ Successfully generated QR and barcode for ${docId}`);
+        logger.info(`✅ Successfully generated QR & barcode for ${docSnapshot.id}`);
       } catch (error) {
-        logger.error(`❌ Error processing QR for ${docId}:`, error);
+        logger.error(`❌ Error processing QR for ${docSnapshot.id}:`, error);
       }
-    } catch (error) {
-      logger.error(`❌ Processing failed for ${docId}:`, error);
+    });
 
-      // 🔄 Retry Logic with Exponential Backoff
-      if (retryCount < 3) {
-        const newRetryCount = retryCount + 1;
-        const delay = Math.pow(2, newRetryCount) * 1000; // 2s, 4s, 8s
+    await Promise.all(tasks); // Run tasks in parallel within the batch
+  } catch (error) {
+    logger.error("❌ Batch processing failed:", error);
 
-        logger.warn(`🔁 Retrying processing for ${docId} in ${delay / 1000} seconds (attempt ${newRetryCount}/3)`);
+    // 🔄 Retry Logic with Exponential Backoff
+    if (retryCount < MAX_RETRIES) {
+      const newRetryCount = retryCount + 1;
+      const delay = Math.pow(2, newRetryCount) * 1000; // 2s, 4s, 8s
 
-        setTimeout(async () => {
-          const messageBuffer = Buffer.from(JSON.stringify({docId, retryCount: newRetryCount}));
-          await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({data: messageBuffer});
-        }, delay);
-      } else {
-        logger.error(`🚨 Max retries reached for ${docId}. Processing failed permanently.`);
-      }
+      logger.warn(`🔁 Retrying batch in ${delay / 1000} seconds (attempt ${newRetryCount}/${MAX_RETRIES})`);
+
+      setTimeout(async () => {
+        const messageBuffer = Buffer.from(JSON.stringify({ docIds, retryCount: newRetryCount }));
+        await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({ data: messageBuffer });
+      }, delay);
+    } else {
+      logger.error("🚨 Max retries reached. Processing failed permanently.");
     }
   }
-);
+}

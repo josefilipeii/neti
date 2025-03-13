@@ -26,7 +26,7 @@
           :key="registration.id"
           :class="{'text-green-500 font-bold': registration?.checkin?.at, 'border-b border-gray-600': true}"
       >
-        <td class="px-4 py-3">{{ registration.category?.name }}</td>
+        <td class="px-4 py-3">{{ registration.category }}</td>
         <td class="px-4 py-3">{{ registration.id }}</td>
         <td class="px-4 py-3">{{ store.selectedHeat?.day }}</td>
         <td class="px-4 py-3">{{ store.selectedHeat?.time }}</td>
@@ -84,7 +84,7 @@
 
         <!-- Collapsible Content -->
         <div v-show="openRows.has(registration.id!!)" class="mt-2 transition-all duration-300">
-          <p><span class="font-semibold text-gray-400">Categoria:</span> {{ registration.category?.name }}</p>
+          <p><span class="font-semibold text-gray-400">Categoria:</span> {{ registration.category }}</p>
           <p><span class="font-semibold text-gray-400">Dia:</span> {{ store.selectedHeat?.day }}</p>
           <p><span class="font-semibold text-gray-400">Hora:</span> {{ store.selectedHeat?.time }}</p>
           <p><span class="font-semibold text-gray-400">Nome:</span>

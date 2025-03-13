@@ -37,11 +37,13 @@ function generateRegistrations(numParticipants, numDays, emailPrefix = '', email
     const heats = [];
     let participantIndex = 0;
     let currentDate = new Date();
+    let heatCounter = 0;
 
     for (let day = 0; day < numDays; day++) {
         let [startHour, startMinute] = startTime.split(':').map(Number);
         let heatStartTime = new Date(currentDate);
         heatStartTime.setHours(startHour, startMinute, 0, 0);
+
 
         while (participantIndex < numParticipants) {
             // Generate a random group size between 6 and 8
@@ -52,39 +54,37 @@ function generateRegistrations(numParticipants, numDays, emailPrefix = '', email
             const heatName = `${faker.word.adjective()} ${faker.word.noun()}`;
             const heatTime = heatStartTime.toTimeString().split(':').slice(0, 2).join(':');
             const heatDay = heatStartTime.toISOString().split('T')[0];
-            const categoryType = groupSize === 1 ? 'individual' : groupSize === 2 ? 'pair' : 'team_4';
-            const category = faker.helpers.arrayElement(categoryList.filter(category => category.type === categoryType)).name;
-            const internalId = `S1${String(participantIndex).padStart(4, '0')}`;
+            heatCounter = heatCounter + 1;
             const heatParticipants = [];
             for (let i = 0; i < groupSize; i++) {
                 // Randomize the number of participants per registration (1, 2, or 4)
                 const numPerRegistration = faker.helpers.arrayElement([1, 2, 4]);
                 const dorsal = `${heatTime.replaceAll(':', '')}-${i}`;
+                const registrationIdentifier = heatCounter * 1000 + i;
+                const categoryType = numPerRegistration === 1 ? 'individual' : numPerRegistration === 2 ? 'pair' : 'team_4';
+                const category = faker.helpers.arrayElement(categoryList.filter(category => category.type === categoryType)).name;
+                const idQualifier = categoryType === 'individual' ? 'S' : categoryType === 'pair' ? 'P' : 'R';
+                const internalId = `${idQualifier}1${String(registrationIdentifier).padStart(5, '0')}`;
 
 
                 const registrationParticipants = [];
                 for (let j = 0; j < numPerRegistration; j++) {
-                    if (participantIndex >= numParticipants) break;
 
+                    if (participantIndex >= numParticipants) break;
                     const firstName = faker.person.firstName();
                     const lastName = faker.person.lastName();
                     const email = `${emailPrefix}${firstName.toLowerCase()}.${lastName.toLowerCase()}${emailSuffix}`;
 
-                    const participant = {
-                        name: `${firstName} ${lastName}`,
-                        email: email,
-                        contact: faker.phone.number(),
-                    };
-
+                    const participant= {};
+                    participant[`name${j + 1}`] = `${firstName} ${lastName}`;
+                    participant[`email${j + 1}`] = email;
+                    participant[`contact${j + 1}`] = faker.phone.number();
                     registrationParticipants.push(participant);
+
                     participantIndex++;
                 }
 
-                let participants = registrationParticipants.map((participant, index) => ({
-                    [`name${index + 1}`]: participant.name,
-                    [`email${index + 1}`]: participant.email,
-                    [`contact${index + 1}`]: participant.contact,
-                }));
+
                 const registration = {
                     internalId,
                     dorsal,
@@ -94,17 +94,12 @@ function generateRegistrations(numParticipants, numDays, emailPrefix = '', email
                     heatDay: heatDay,
                 };
 
-                if (registrationParticipants.length === 1) {
-                    registration[`name`] = registrationParticipants[0].name;
-                    registration[`email`] = registrationParticipants[0].email;
-                    registration[`contact`] = registrationParticipants[0].contact;
-                }
-
-                registrationParticipants.forEach((participant, index) => {
-                    registration[`name${index + 1}`] = participant.name;
-                    registration[`email${index + 1}`] = participant.email;
-                    registration[`contact${index + 1}`] = participant.contact;
+                registrationParticipants.forEach((participant) => {
+                    Object.entries(participant).forEach(([key, value]) => {
+                        registration[key] = value;
+                    });
                 });
+
 
                 registrations.push(registration);
                 heatParticipants.push(...registrationParticipants);
@@ -133,7 +128,7 @@ function writeCSV(fileName, data) {
     const filePath = path.join(__dirname, fileName);
     const ws = fs.createWriteStream(filePath);
 
-    csvWriter.writeToStream(ws, data, {headers: true})
+    csvWriter.writeToStream(ws, data, {headers: Array.from(new Set(data.flatMap(Object.keys)))})
         .on('finish', () => console.log(`✅ CSV file saved: ${filePath}`));
 }
 
@@ -144,10 +139,7 @@ const emailPrefix = 'jose.filipe.chavarria+';
 const emailSuffix = '@gmail.com.com';
 const startTime = '09:00'; // First heat starts at 9 AM
 
-const {registrations, heats} = generateRegistrations(numParticipants, numDays, emailPrefix, emailSuffix, startTime);
+const {registrations} = generateRegistrations(numParticipants, numDays, emailPrefix, emailSuffix, startTime);
 
-console.log(heats);
-console.log(registrations);
 
 writeCSV('registrations.csv', registrations);
-writeCSV('heats.csv', heats);

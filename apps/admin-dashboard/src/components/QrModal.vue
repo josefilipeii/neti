@@ -13,9 +13,9 @@
 
        <!-- QR Code Details -->
        <div class="mt-4">
-         <p class="text-gray-700 font-medium">ID da Competição: {{ qrRegistration?.competition?.name || 'N/A' }}</p>
+         <p class="text-gray-700 font-medium">ID da Competição: {{ qrRegistration?.competition || 'N/A' }}</p>
          <p class="text-gray-700">Dorsal: {{ registration?.dorsal || 'N/A' }}</p>
-         <p class="text-gray-700">Categoria: {{ registration?.category?.name || 'N/A' }}</p>
+         <p class="text-gray-700">Categoria: {{ registration?.category || 'N/A' }}</p>
          <p class="text-gray-700">
            Data: {{ registration?.day || 'N/A' }} às {{ registration?.time || 'N/A' }}
          </p>
