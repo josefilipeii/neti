@@ -1,7 +1,7 @@
 <template>
   <!-- Modal Overlay (Ensures full-page coverage & high z-index) -->
   <div
-      class="absolute z-1000 inset-0 bg-gray-900 bg-opacity-50 flex
+      class="fixed absolute z-1000 inset-0 bg-gray-900 bg-opacity-50 flex
        items-center justify-center z-900 overflow-y-clip overflow-x-scroll"
       @click.self="emit('close')"
   >

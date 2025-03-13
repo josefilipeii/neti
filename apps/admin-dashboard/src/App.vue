@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#242424] text-white flex flex-col w-full">
     <!-- Header (No More Sticky) -->
-    <header class="relative bg-[#1E1E1E] text-white shadow-md w-full">
+    <header class="sticky top-0 bg-[#1E1E1E] text-white shadow-md w-full z-50">
       <div class="max-w-screen-lg w-full mx-auto px-4 md:px-6">
         <div class="flex flex-col md:flex-row items-center justify-between py-4">
           <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-[#F7B63B] text-center md:text-left">
@@ -22,7 +22,7 @@
       </div>
     </header>
 
-    <main>
+    <main class="flex-1 overflow-y-auto">
       <router-view />
     </main>
 

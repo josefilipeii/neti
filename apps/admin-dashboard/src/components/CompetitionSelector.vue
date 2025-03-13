@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-black shadow-lg px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+  <nav class="sticky bg-black shadow-lg px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-2">
     <div class="w-full md:w-auto flex flex-col md:flex-row items-center">
       <h2 class="text-lg font-semibold text-[#F7B63B] mb-2 md:mb-0 md:mr-4">Competições:</h2>
       <select v-model="store.selectedCompetitionId"

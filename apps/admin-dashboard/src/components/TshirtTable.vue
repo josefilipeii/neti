@@ -1,5 +1,5 @@
 <template>
-  <QrModal v-if="showQrModal" @close="closeQrModal"></QrModal>
+
   <div>
     <div class="bg-gray-800 rounded-lg overflow-x-auto">
       <table class="text-left w-full">
@@ -72,6 +72,7 @@
       </div>
     </template>
   </ConfirmModal>
+  <QrModal v-if="showQrModal" @close="closeQrModal"></QrModal>
 </template>
 
 <script setup lang="ts">
