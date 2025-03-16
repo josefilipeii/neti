@@ -62,11 +62,23 @@ const addImages = async (
   barCodePath: string,
   pdfDoc: PDFDocument
 ) => {
-  const [qrBuffer] = await bucket.file(qrPath).download();
+  const qrBuffer = await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    bucket.file(qrPath).createReadStream()
+      .on("data", (chunk) => chunks.push(chunk))
+      .on("end", () => resolve(Buffer.concat(chunks)))
+      .on("error", reject);
+  });
   const qrImage = await pdfDoc.embedPng(qrBuffer);
 
 
-  const [barCodeBuffer] = await bucket.file(barCodePath).download();
+  const barCodeBuffer = await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    bucket.file(barCodePath).createReadStream()
+      .on("data", (chunk) => chunks.push(chunk))
+      .on("end", () => resolve(Buffer.concat(chunks)))
+      .on("error", reject);
+  });
   const barCodeImage = await pdfDoc.embedPng(barCodeBuffer);
 
 
@@ -82,7 +94,7 @@ const addImages = async (
 
 async function generateFile(bucket: Bucket, pdfDoc: PDFDocument, ticketPath: string) {
   const ticketFile = bucket.file(ticketPath);
-  const writeStream = ticketFile.createWriteStream({ contentType: "application/pdf" });
+  const writeStream = ticketFile.createWriteStream({contentType: "application/pdf"});
 
   try {
     // Save PDF as bytes (still necessary, but we write immediately to Storage)
@@ -99,8 +111,6 @@ async function generateFile(bucket: Bucket, pdfDoc: PDFDocument, ticketPath: str
       writeStream.on("finish", resolve);
       writeStream.on("error", reject);
     });
-
-    console.log(`✅ Successfully uploaded PDF: ${ticketPath}`);
   } catch (error) {
     console.error(`❌ Error uploading PDF ${ticketPath}:`, error);
     throw error;
@@ -153,16 +163,21 @@ const generateTicketPdf = async (details: QRRegistrationDocument,
 
     nextFontSize = 12;
     actualY = actualY - (spacing + nextFontSize);
-    page.drawText(details.registration.category, {x: xStart + spacing, y: actualY, size: nextFontSize, font:fontItalic});
+    page.drawText(details.registration.category, {
+      x: xStart + spacing,
+      y: actualY,
+      size: nextFontSize,
+      font: fontItalic
+    });
 
     nextFontSize = 12;
     actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Horário", {x: xStart, y: actualY, size: nextFontSize, font:fontItalic});
+    page.drawText("Horário", {x: xStart, y: actualY, size: nextFontSize, font: fontItalic});
 
     nextFontSize = 12;
     actualY = actualY - (spacing + nextFontSize);
     const textDateTime = `${details.registration.day} - ${details.registration.time}`;
-    page.drawText(textDateTime, {x: xStart + spacing, y: actualY, size: nextFontSize, font:fontBold});
+    page.drawText(textDateTime, {x: xStart + spacing, y: actualY, size: nextFontSize, font: fontBold});
 
     nextFontSize = 12;
     actualY = actualY - (spacing + nextFontSize);
@@ -171,7 +186,7 @@ const generateTicketPdf = async (details: QRRegistrationDocument,
     nextFontSize = 10;
     actualY = actualY - (spacing + nextFontSize);
     details.registration.participants.forEach((participant) => {
-      const y = actualY - (nextFontSize +5);
+      const y = actualY - (nextFontSize + 5);
       page.drawText(`${participant.name}`, {x: 70, y: y, size: nextFontSize, font: fontItalic});
       actualY = y;
     });
@@ -343,9 +358,7 @@ async function processBatch(docIds: string[], retryCount: number) {
       }
     });
 
-    for (const task of tasks) {
-      await task;
-    }
+    await Promise.all(tasks);
   } catch (error) {
     logger.error("❌ Batch processing failed:", error);
 
