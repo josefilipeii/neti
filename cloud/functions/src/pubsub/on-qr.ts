@@ -11,7 +11,7 @@ import {Bucket} from "@google-cloud/storage";
 
 const pubsub = new PubSub();
 const MAX_RETRIES = 3;
-const BATCH_SIZE = 50; // Adjustable batch size
+const BATCH_SIZE = 10; // Adjustable batch size
 
 export const processQrCodes = onMessagePublished(
   {
