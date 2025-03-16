@@ -8,6 +8,7 @@
         <h2 class="text-base sm:text-lg font-semibold text-[#F7B63B]">Token:</h2>
         <input v-model="token" type="text" placeholder="Digite o token"
                class="mt-2 bg-gray-700 text-white px-4 py-2 rounded w-full">
+        <button @click="searchToken" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none">Pesquisar</button>
         <h2 class="text-base sm:text-lg font-semibold text-[#F7B63B]">Competições:</h2>
         <select v-model="selectedCompetition" class="mt-2 bg-gray-700 text-white px-4 py-2 rounded w-full">
           <option v-for="competition in competitions" :key="competition.id" :value="competition.id">
@@ -53,15 +54,11 @@ import  debounce  from 'lodash.debounce';
 const emit = defineEmits(['registration:selected', 'close']);
 const token = ref('');
 
-const updateDebouncedToken = debounce((value: string) => {
-  if (value.length >= 10) {
-    emit('registration:selected', value);
-  }
-}, 300);
+const searchToken = ()=> {
+  emit('registration:selected', token.value);
+  emit('close');
 
-watch(token, (newVal) => {
-  updateDebouncedToken(newVal);
-});
+}
 
 const selectedCompetition = ref('');
 const selectedHeat = ref('');

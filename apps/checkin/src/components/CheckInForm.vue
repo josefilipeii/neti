@@ -8,7 +8,6 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from "../firebase";
 import {QRDocument, QRRegistrationDocument, QRTShirtDocument} from "shared";
 import CheckinSearch from "./CheckinSearch.vue";
-import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {useLoadingStore} from "../data/loading";
 
 const checkinFunction = httpsCallable(functions, "handleCheckin");

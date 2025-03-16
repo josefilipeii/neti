@@ -324,6 +324,7 @@ async function processBatch(docIds: string[], retryCount: number) {
         });
         await qrFile.save(qrCodeBuffer, {contentType: "image/png"});
 
+
         const barCodeBuffer = await bwipjs.toBuffer({
           bcid: "code128",
           text: docSnapshot.id,
