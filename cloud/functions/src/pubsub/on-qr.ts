@@ -11,7 +11,7 @@ import {Bucket} from "@google-cloud/storage";
 
 const pubsub = new PubSub();
 const MAX_RETRIES = 3;
-const BATCH_SIZE = 10; // Adjustable batch size
+const BATCH_SIZE = 5; // Adjustable batch size
 
 export const processQrCodes = onMessagePublished(
   {
@@ -63,9 +63,12 @@ const addImages = async (
   pdfDoc: PDFDocument
 ) => {
   const [qrBuffer] = await bucket.file(qrPath).download();
-  const [barCodeBuffer] = await bucket.file(barCodePath).download();
   const qrImage = await pdfDoc.embedPng(qrBuffer);
+
+
+  const [barCodeBuffer] = await bucket.file(barCodePath).download();
   const barCodeImage = await pdfDoc.embedPng(barCodeBuffer);
+
 
   const actualY = startingPoint - spacing;
   const imageSquareSide = 200;
@@ -77,15 +80,33 @@ const addImages = async (
   return y;
 }
 
-async function generateFile(bucket: Bucket,
-  pdfDoc: PDFDocument,
-  page: PDFPage,
-  ticketPath: string,) {
-
-  const pdfBytes = await pdfDoc.save();
+async function generateFile(bucket: Bucket, pdfDoc: PDFDocument, ticketPath: string) {
   const ticketFile = bucket.file(ticketPath);
-  return await ticketFile.save(Buffer.from(pdfBytes), {contentType: "application/pdf"});
+  const writeStream = ticketFile.createWriteStream({ contentType: "application/pdf" });
+
+  try {
+    // Save PDF as bytes (still necessary, but we write immediately to Storage)
+    const pdfBytes = await pdfDoc.save();
+
+    // Write chunks to Storage
+    writeStream.write(Buffer.from(pdfBytes));
+
+    // Close stream properly
+    writeStream.end();
+
+    // Wait for upload to finish
+    await new Promise((resolve, reject) => {
+      writeStream.on("finish", resolve);
+      writeStream.on("error", reject);
+    });
+
+    console.log(`✅ Successfully uploaded PDF: ${ticketPath}`);
+  } catch (error) {
+    console.error(`❌ Error uploading PDF ${ticketPath}:`, error);
+    throw error;
+  }
 }
+
 
 /**
  * Generates a ticket PDF and uploads it.
@@ -157,7 +178,7 @@ const generateTicketPdf = async (details: QRRegistrationDocument,
 
     actualY = actualY - spacing;
     drawRectangle(width, spacing, height, actualY, page);
-    return await generateFile(bucket, pdfDoc, page, ticketPath);
+    return await generateFile(bucket, pdfDoc, ticketPath);
   } catch (error) {
     logger.error("❌ Error generating ticket PDF:", error);
     throw error;
@@ -228,7 +249,7 @@ const generateTshirtPdf = async (details: QRTShirtDocument,
 
     actualY = actualY - spacing;
     drawRectangle(width, spacing, height, actualY, page);
-    return await generateFile(bucket, pdfDoc, page, ticketPath);
+    return await generateFile(bucket, pdfDoc, ticketPath);
 
   } catch (error) {
     logger.error("❌ Error generating ticket PDF:", error);
@@ -322,7 +343,9 @@ async function processBatch(docIds: string[], retryCount: number) {
       }
     });
 
-    await Promise.all(tasks);
+    for (const task of tasks) {
+      await task;
+    }
   } catch (error) {
     logger.error("❌ Batch processing failed:", error);
 
@@ -342,3 +365,5 @@ async function processBatch(docIds: string[], retryCount: number) {
     }
   }
 }
+
+

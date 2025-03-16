@@ -12,7 +12,7 @@ import {PubSub} from "@google-cloud/pubsub";
 
 const MAX_RETRIES = 3;
 const pubsub = new PubSub();
-const PUB_SUB_CHUNK_SIZE = 20;
+const PUB_SUB_CHUNK_SIZE = 15;
 
 /**
  * 🔥 Step 3: Process Chunks from Firestore

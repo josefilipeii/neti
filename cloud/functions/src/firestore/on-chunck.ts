@@ -11,7 +11,7 @@ import {Competition, RegistrationParticipant} from "../../../../packages/shared"
 const MAX_RETRIES = 3;
 
 const pubsub = new PubSub();
-const PUB_SUB_CHUNK_SIZE = 20;
+const PUB_SUB_CHUNK_SIZE = 15;
 
 /**
  * Firestore trigger for processing chunked registrations.
