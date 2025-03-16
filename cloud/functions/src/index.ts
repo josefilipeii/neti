@@ -9,11 +9,9 @@ import {userImportHandler} from "./file-upload/on-users";
 import {processQrCodes} from "./pubsub/on-qr";
 import {retryQrCodes} from "./http/manual-actions";
 import {processAddonsCsv} from "./file-upload/on-addons";
-import {processTshirts} from "./firestore/on-tshirt";
 import {redeemAddon} from "./http/addons";
 import {authenticateAgent} from "./http/agents";
 import {processChunk} from "./firestore/on-chunck";
-import {handleRegistrationCreate, handleRegistrationDelete} from "./firestore/on-registration";
 import {processAddonChunks} from "./firestore/on-addon-chunks";
 
 // Start writing functions
@@ -61,7 +59,6 @@ export const triggerRetryQrCodeFile = retryQrCodes;
 export const triggerEmail = handleEmailQueue;
 export const sendQueueEmail = processEmailQueue;
 export const onQrCodes = processQrCodes
-export const onTshirts = processTshirts
 
 export const onAddonChunks = processAddonChunks
 
@@ -71,5 +68,3 @@ export const handleAgentAuthentication = authenticateAgent
 
 export const onChunk = processChunk;
 
-export const onRegistration = handleRegistrationCreate
-export const onDeletedRegistration = handleRegistrationDelete

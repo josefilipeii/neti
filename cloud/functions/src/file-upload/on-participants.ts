@@ -94,7 +94,7 @@ export const processParticipants = async (object: { data: { bucket: string; name
 
             const registrationProvider = provider || "GF";
             const providerId = externalId || internalId;
-            const registrationId = externalId ? `${provider}-${externalId}` : generateQrId("GF-RG", internalId);
+            const registrationId = externalId ? `${provider}-${externalId}` : generateQrId("GF-RG", eventId, internalId);
             const heatId = `${heatDay.replace(/[^a-zA-Z0-9]/g, "_")}-${heatTime.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
             const participants = [];

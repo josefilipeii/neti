@@ -2,6 +2,7 @@ import { db, storage } from "../firebase";
 import { Bucket, File } from "@google-cloud/storage";
 import { logger } from "firebase-functions";
 import csv from "csv-parser";
+import {Timestamp} from "firebase-admin/firestore";
 
 // 🔹 Constants
 const CHUNK_SIZE = 150; // Max items per chunk
@@ -117,7 +118,8 @@ async function chunkAddonsData(rows: Record<string, string>[], eventId: string) 
 }
 
 async function saveChunk(rows: Record<string, string>[], eventId: string, index: number) {
-  await db.collection("addon_import_tasks").doc(`${eventId}-chunk-${index}`).set({
+  const chunkId = `${eventId}-chunk-${index}-${Timestamp.now().toMillis()}`;
+  await db.collection("addon_import_tasks").doc(chunkId).set({
     chunkIndex: index,
     eventId,
     totalRecords: rows.length,

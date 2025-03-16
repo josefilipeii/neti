@@ -79,7 +79,7 @@ async function handleCheckin(request: CallableRequest<CheckinRequestType>): Prom
       }
 
       const registrationRef = db.doc(
-        `/competitions/${competition}/heats/${registration.heat}/registrations/${registration.dorsal}`
+        `/competitions/${competition.id}/heats/${registration.heat}/registrations/${registration.dorsal}`
       );
 
       transaction.set(qrCodeRef, {redeemed: redemption}, {merge: true});

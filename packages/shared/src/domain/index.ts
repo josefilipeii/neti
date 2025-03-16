@@ -23,6 +23,9 @@ export interface Heat {
 }
 
 
+
+
+
 export interface Registration {
     id?: string; //dorsal
     category: string;
@@ -50,7 +53,7 @@ export interface Participant {
 }
 
 
-export interface QRCompetition {
+export interface CompetitionInfo {
     id: string;
     name: string;
 }
@@ -83,6 +86,7 @@ interface QRParticipant {
 }
 
 export interface QRDocument {
+    competition: CompetitionInfo;
     id: string;
     code: string;
     createdAt: string;
@@ -99,12 +103,12 @@ export interface QRDocument {
 export interface QRFiles {
     qr: string;
     barcode: string;
+    ticket: string;
     name: string;
     email: string;
 }
 
 export interface QRRegistrationDocument extends QRDocument {
-    competition: string;
     registration: QRegistration;
 }
 
@@ -112,7 +116,6 @@ export interface QRAddonDocument extends QRDocument {
     type: "addon";
     addonType: "tshirt";
     name: string;
-    competition: string;
 }
 
 export interface QRTShirtDocument extends QRAddonDocument{

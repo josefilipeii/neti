@@ -8,11 +8,14 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from "../firebase";
 import {QRDocument, QRRegistrationDocument, QRTShirtDocument} from "shared";
 import CheckinSearch from "./CheckinSearch.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import {useLoadingStore} from "../data/loading";
 
 const checkinFunction = httpsCallable(functions, "handleCheckin");
 const addonRedemption = httpsCallable(functions, "handleAddonRedemption");
 const db = useFirestore();
 const auth = useFirebaseAuth();
+const loading = useLoadingStore();
 
 const enableCheckinButton = ref(false);
 const error = ref('');
@@ -46,6 +49,7 @@ const reload = () => {
 
 const handleCheckin = async () => {
   try {
+    loading.startLoading()
     if(!data.value.type || data.value.type !== 'registration') {
       error.value = 'Erro: Dados inválidos';
       return;
@@ -58,6 +62,7 @@ const handleCheckin = async () => {
   } catch (err) {
     error.value = `Erro: ${err.message}`;
   }finally {
+    loading.stopLoading();
     enableCheckinButton.value = false;
     isSearchModalOpen.value = false;
   }
@@ -65,7 +70,7 @@ const handleCheckin = async () => {
 
 const handleAddonRedemption = async () => {
   try {
-    console.log('redeem', data.value);
+    loading.startLoading();
     if(!data.value.type || data.value.type !== 'addon') {
       error.value = 'Erro: Dados inválidos';
       return;
@@ -78,6 +83,7 @@ const handleAddonRedemption = async () => {
   } catch (err) {
     error.value = `Erro: ${err.message}`;
   }finally {
+    loading.stopLoading();
     enableCheckinButton.value = false;
     isSearchModalOpen.value = false;
   }
@@ -101,11 +107,12 @@ watch(data, (newData) => {
 
 
 watch(qrPending, (newPending) => {
-  console.log('pending', newPending);
   if (newPending) {
+    loading.startLoading();
     message.value = 'A carregar dados...';
     enableCheckinButton.value = false;
   }else if(!newPending) {
+    loading.stopLoading();
     message.value = '';
     enableCheckinButton.value = true;
   }

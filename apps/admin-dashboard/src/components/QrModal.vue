@@ -13,7 +13,7 @@
 
        <!-- QR Code Details -->
        <div class="mt-4">
-         <p class="text-gray-700 font-medium">ID da Competição: {{ qrRegistration?.competition || 'N/A' }}</p>
+         <p class="text-gray-700 font-medium">ID da Competição: {{ qrRegistration?.competition?.name || 'N/A' }}</p>
          <p class="text-gray-700">Dorsal: {{ registration?.dorsal || 'N/A' }}</p>
          <p class="text-gray-700">Categoria: {{ registration?.category || 'N/A' }}</p>
          <p class="text-gray-700">
@@ -63,7 +63,6 @@
           <!-- QR Code Image -->
           <div v-if="qrFiles.qr" class="flex flex-col items-center">
             <p class="text-sm font-medium text-gray-800 mb-2">QR Code</p>
-            <img :src="qrFiles.qr" alt="QR Code" class="w-40 h-40 border rounded-lg shadow-md">
             <a :href="qrFiles.qr" download class="text-blue-500 hover:underline text-sm mt-2">
               Download QR Code
             </a>
@@ -75,6 +74,12 @@
             <img :src="qrFiles.barcode" alt="Barcode" class="w-40 h-12 border rounded-lg shadow-md">
             <a :href="qrFiles.barcode" download class="text-blue-500 hover:underline text-sm mt-2">
               Download Código de Barras
+            </a>
+          </div>
+          <div v-if="qrFiles.ticket" class="flex flex-col items-center">
+            <p class="text-sm font-medium text-gray-800 mb-2">Bilhete</p>
+            <a :href="qrFiles.ticket" download class="text-blue-500 hover:underline text-sm mt-2">
+              Download Bilhete
             </a>
           </div>
         </div>

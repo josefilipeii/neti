@@ -3,7 +3,7 @@ import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
 import {logger} from "firebase-functions";
 import {Timestamp} from "firebase-admin/firestore";
 import {FIRESTORE_REGION} from "../constants";
-import {Registration, RegistrationParticipant} from "../../../../packages/shared";
+import {Competition, Registration, RegistrationParticipant} from "../../../../packages/shared";
 import {PubSub} from "@google-cloud/pubsub";
 
 const pubsub = new PubSub();
@@ -67,6 +67,20 @@ export const handleRegistrationCreate = onDocumentCreated(
       return;
     }
 
+    const competition = db.collection("competitions").doc(competitionId);
+    const competitionSnap = await competition.get();
+    if(!competitionSnap.exists){
+      logger.warn(`⚠️ Competition ${competitionId} not found.`);
+      return;
+    }
+
+    const competitionData = competitionSnap.data() as Competition;
+    const competitionInfo = {
+      id: competitionId,
+      name: competitionData.name
+    }
+
+
     const qrCodeId = data.qrId as string;
 
 
@@ -74,10 +88,10 @@ export const handleRegistrationCreate = onDocumentCreated(
 
     const qrData = {
       id: qrCodeId,
-      code: `${competitionId}:${heatId}:${data.id}`,
+      code: `${competitionId}:${heatId}:${registrationId}`,
       createdAt: Timestamp.now().toDate().toString(),
       type: "registration",
-      competition: competitionId,
+      competition: competitionInfo,
       registration: {
         dorsal: registrationId,
         category: data.category,

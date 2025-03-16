@@ -11,7 +11,10 @@ import {useRouter} from 'vue-router'
 import {ref} from 'vue'
 import {httpsCallable} from "firebase/functions";
 import {functions} from "../firebase";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import {useLoadingStore} from "../data/loading";
 
+const loading = useLoadingStore();
 const router = useRouter();
 const error = ref('')
 const auth = useFirebaseAuth();
@@ -25,10 +28,13 @@ const authenticateAgent = httpsCallable(functions, "handleAgentAuthentication");
 
 const loginWithGoogle = async () => {
   try {
+    loading.startLoading();
     await signInWithPopup(auth, googleAuthProvider);
     router.push('/'); // Redirect to root after login
   } catch (error) {
     console.error('Login failed:', error);
+  }finally {
+    loading.stopLoading();
   }
 };
 
@@ -37,6 +43,7 @@ const toggleAgentLogin = () => {
 }
 const loginAgent = async () => {
   try {
+    loading.startLoading();
     const response = await authenticateAgent({user: agentUsername.value, pin: agentPin.value}) as {data?: {token: string}};
 
     if (response.data?.token) {
@@ -46,11 +53,14 @@ const loginAgent = async () => {
     }
   } catch (error) {
     console.error("❌ Authentication failed:", error.message);
+  } finally {
+    loading.stopLoading();
   }
 }
 </script>
 
 <template>
+  <LoadingSpinner></LoadingSpinner>
   <div class="flex flex-col items-center justify-center bg-[#242424]">
     <div class="p-8 rounded shadow-md w-full">
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
