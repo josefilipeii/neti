@@ -8,6 +8,7 @@ export interface Competition {
     days: string[];
     categories: Category[];
     address: string[]
+    checkinMinutesBefore: number;
 }
 
 export interface Category {
@@ -57,6 +58,8 @@ export interface Participant {
 export interface CompetitionInfo {
     id: string;
     name: string;
+    address: string[];
+    checkinMinutesBefore: number;
 }
 
 

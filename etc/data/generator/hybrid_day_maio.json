@@ -5,6 +5,7 @@
       "shortId": "maioviana",
       "name": "Hybrid Day By Crossfit Viana do Castelo and XLife",
       "location": "Viana do Castelo",
+      "checkinMinutesBefore": 60,
       "address": [
         "Centro Cultural de Viana do Castelo",
         "Praça Marques Júnior, Rua Manuel Espregueira 269",
