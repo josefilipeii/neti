@@ -1,23 +1,20 @@
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
-import { logger } from "firebase-functions";
-import { firestore } from "firebase-admin";
-import { FIRESTORE_REGION } from "../constants";
-import { Row } from "../domain";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import {db} from "../firebase";
+import {logger} from "firebase-functions";
+import {firestore} from "firebase-admin";
+import {FIRESTORE_REGION} from "../constants";
+import {Row} from "../domain";
 import {Timestamp} from "firebase-admin/firestore";
-import {PubSub} from "@google-cloud/pubsub";
 import {Competition, RegistrationParticipant} from "../../../../packages/shared";
 
 const MAX_RETRIES = 3;
 
-const pubsub = new PubSub();
-const PUB_SUB_CHUNK_SIZE = 15;
 
 /**
  * Firestore trigger for processing chunked registrations.
  */
 export const processChunk = onDocumentCreated(
-  { document: "import_tasks/{chunkId}", region: FIRESTORE_REGION },
+  {document: "import_tasks/{chunkId}", region: FIRESTORE_REGION},
   async (event) => {
     const snap = event.data; // Get the document snapshot after the write
     if (!snap || !snap.exists) {
@@ -30,19 +27,6 @@ export const processChunk = onDocumentCreated(
 );
 
 
-
-const publishQrToGenerate= async (registrationsToQr: string[]) =>  {
-  const chunks = [];
-  for (let i = 0; i < registrationsToQr.length; i += PUB_SUB_CHUNK_SIZE) {
-    chunks.push(registrationsToQr.slice(i, i + PUB_SUB_CHUNK_SIZE));
-  }
-
-  for (const chunk of chunks) {
-    const messageBuffer = Buffer.from(JSON.stringify({docIds: chunk}));
-    await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({data: messageBuffer});
-  }
-}
-
 async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
   const data = snap.data();
   if (!data) {
@@ -50,11 +34,11 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
     return;
   }
 
-  const { eventId, chunkIndex, data: registrations, retryCount = 0, chunkHeats } = data;
+  const {eventId, chunkIndex, data: registrations, retryCount = 0, chunkHeats} = data;
 
   if (!registrations || registrations.length === 0) {
     logger.warn(`⚠️ Empty chunk ${snap.id}, skipping.`);
-    await snap.ref.update({ processed: true, status: "skipped" });
+    await snap.ref.update({processed: true, status: "skipped"});
     return;
   }
 
@@ -66,11 +50,11 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
     }
 
     logger.log(`🚀 Processing chunk ${snap.id} with ${registrations.length} records. Index: ${chunkIndex}`);
-    await snap.ref.update({ status: "processing" });
+    await snap.ref.update({status: "processing"});
 
     const competition = db.collection("competitions").doc(eventId);
     const competitionSnap = await competition.get();
-    if(!competitionSnap.exists){
+    if (!competitionSnap.exists) {
       logger.warn(`⚠️ Competition ${eventId} not found.`);
       return;
     }
@@ -85,11 +69,9 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
     const batchSize = 150; // Firestore batch write limit
     let batch = db.batch();
     let batchCount = 0;
-    let registrationsToQr = [];
 
     for (let i = 0; i < registrations.length; i++) {
       const row: Row = registrations[i];
-      registrationsToQr.push(row.registrationId);
 
       const regRef = db
         .collection(`competitions/${eventId}/heats/${row.heatId}/registrations`)
@@ -142,15 +124,13 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
       if (batchCount >= batchSize || i === registrations.length - 1) {
         await batch.commit();
         logger.log(`✅ Committed batch of ${batchCount} registrations for chunk ${snap.id}`);
-        await publishQrToGenerate(registrationsToQr);
         // Start a new batch
         batch = db.batch();
-        registrationsToQr = [];
         batchCount = 0;
       }
     }
 
-    await snap.ref.update({ processed: true, status: "completed" });
+    await snap.ref.update({processed: true, status: "completed"});
     await updateImportProgress(eventId);
 
     logger.log(`✅ Chunk ${snap.id} fully processed.`);
@@ -158,7 +138,7 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
     logger.error(`❌ Error processing chunk ${snap.id}:`, error);
 
     if (retryCount < MAX_RETRIES) {
-      await snap.ref.update({ retryCount: retryCount + 1, status: "failed" });
+      await snap.ref.update({retryCount: retryCount + 1, status: "failed"});
       logger.warn(`⚠️ Retrying chunk ${snap.id} (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
     } else {
       logger.error(`🛑 Chunk ${snap.id} failed after ${MAX_RETRIES} retries.`);
@@ -169,7 +149,7 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
 /**
  * Deletes existing registrations for a specific heat.
  */
-const  deleteExistingRegistrations = async (eventId: string, heatId: string) => {
+const deleteExistingRegistrations = async (eventId: string, heatId: string) => {
   const registrationsRef = db.collection(`competitions/${eventId}/heats/${heatId}/registrations`);
   const snapshot = await registrationsRef.get();
 
@@ -182,11 +162,10 @@ const  deleteExistingRegistrations = async (eventId: string, heatId: string) => 
 }
 
 
-
-const voidExistingQRS = async (registration: Row[]) =>{
+const voidExistingQRS = async (registration: Row[]) => {
   const qrCodes = db.collection("qrCodes");
   const batch = db.batch();
-  for (const row of registration){
+  for (const row of registration) {
     const qrCode = qrCodes.doc(row.registrationId);
     const qrCodeSnap = await qrCode.get();
     if (qrCodeSnap.exists) {

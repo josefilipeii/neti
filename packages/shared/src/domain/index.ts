@@ -101,6 +101,7 @@ export interface QRDocument {
     provider: string;
     sent: boolean;
     status: "init" | "processed";
+    retryCount?: number;
 }
 
 
