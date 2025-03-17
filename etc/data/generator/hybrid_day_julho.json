@@ -3,9 +3,13 @@
     {
       "id": "hybrid_day_julho_leiria",
       "shortId": "julholeiria",
-      "name": "Hybrid Day By Crossfit Viana do Castelo@Leiria",
+      "name": "Hybrid Day By Crossfit Leiria, Crossfit Viana do Castelo and XLife",
       "location": "Viana do Castelo",
       "days": ["2025-07-26"],
+      "address": [
+        "Estádio Municipal Dr. Magalhães Pessoa",
+        "Arrabalde d'Aquém, 2400-137 Leiria"
+      ],
       "categories": [
         { "id": "hybrid_men", "name": "Hybrid Men", "type": "individual" },
         { "id": "hybrid_women", "name": "Hybrid Women", "type": "individual" },

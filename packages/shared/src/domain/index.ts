@@ -7,6 +7,7 @@ export interface Competition {
     location?: string;
     days: string[];
     categories: Category[];
+    address: string[]
 }
 
 export interface Category {

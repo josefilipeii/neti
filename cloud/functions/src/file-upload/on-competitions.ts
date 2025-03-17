@@ -52,10 +52,14 @@ export const useCompetitionsHandler: StorageHandler = async (object) => {
               name: competition.name,
               location: competition.location,
               days: competition.days,
+              address: competition.address
             });
             logger.log(`✅ Competition '${competition.name}' added.`);
           } else {
-            transaction.update(competitionRef, { days: competition.days });
+            transaction.update(competitionRef,
+              {days: competition.days,
+                address: competition.address,
+                location: competition.location});
             logger.log(`⚠️ Competition '${competition.name}' exists. Updated days.`);
           }
         });

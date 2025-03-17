@@ -5,20 +5,77 @@
       "shortId": "maioviana",
       "name": "Hybrid Day By Crossfit Viana do Castelo and XLife",
       "location": "Viana do Castelo",
-      "days": ["2025-05-23", "2025-05-24", "2025-05-25"],
+      "address": [
+        "Centro Cultural de Viana do Castelo",
+        "Praça Marques Júnior, Rua Manuel Espregueira 269",
+        "4900-344 Viana do Castelo"
+      ],
+      "days": [
+        "2025-05-23",
+        "2025-05-24",
+        "2025-05-25"
+      ],
       "categories": [
-        { "id": "hybrid_men", "name": "Hybrid Men", "type": "individual" },
-        { "id": "hybrid_women", "name": "Hybrid Women", "type": "individual" },
-        { "id": "hybrid_pro_men", "name": "Hybrid Pro Men", "type": "individual" },
-        { "id": "hybrid_pro_women", "name": "Hybrid Pro Women", "type": "individual" },
-        { "id": "hybrid_doubles_men", "name": "Hybrid Doubles Men", "type": "pair" },
-        { "id": "hybrid_doubles_women", "name": "Hybrid Doubles Women", "type": "pair" },
-        { "id": "hybrid_doubles_mixed", "name": "Hybrid Doubles Mixed", "type": "pair" },
-        { "id": "hybrid_pro_doubles_men", "name": "Hybrid Pro Doubles Men", "type": "pair" },
-        { "id": "hybrid_pro_doubles_women", "name": "Hybrid Pro Doubles Women", "type": "pair" },
-        { "id": "hybrid_pro_doubles_mixed", "name": "Hybrid Pro Doubles Mixed", "type": "pair" },
-        { "id": "hybrid_team_relay", "name": "Hybrid Team Relay", "type": "team_4" },
-        { "id": "hybrid_pro_team_relay", "name": "Hybrid Pro Team Relay", "type": "team_4" }
+        {
+          "id": "hybrid_men",
+          "name": "Hybrid Men",
+          "type": "individual"
+        },
+        {
+          "id": "hybrid_women",
+          "name": "Hybrid Women",
+          "type": "individual"
+        },
+        {
+          "id": "hybrid_pro_men",
+          "name": "Hybrid Pro Men",
+          "type": "individual"
+        },
+        {
+          "id": "hybrid_pro_women",
+          "name": "Hybrid Pro Women",
+          "type": "individual"
+        },
+        {
+          "id": "hybrid_doubles_men",
+          "name": "Hybrid Doubles Men",
+          "type": "pair"
+        },
+        {
+          "id": "hybrid_doubles_women",
+          "name": "Hybrid Doubles Women",
+          "type": "pair"
+        },
+        {
+          "id": "hybrid_doubles_mixed",
+          "name": "Hybrid Doubles Mixed",
+          "type": "pair"
+        },
+        {
+          "id": "hybrid_pro_doubles_men",
+          "name": "Hybrid Pro Doubles Men",
+          "type": "pair"
+        },
+        {
+          "id": "hybrid_pro_doubles_women",
+          "name": "Hybrid Pro Doubles Women",
+          "type": "pair"
+        },
+        {
+          "id": "hybrid_pro_doubles_mixed",
+          "name": "Hybrid Pro Doubles Mixed",
+          "type": "pair"
+        },
+        {
+          "id": "hybrid_team_relay",
+          "name": "Hybrid Team Relay",
+          "type": "team_4"
+        },
+        {
+          "id": "hybrid_pro_team_relay",
+          "name": "Hybrid Pro Team Relay",
+          "type": "team_4"
+        }
       ]
     }
   ]
