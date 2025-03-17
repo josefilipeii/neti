@@ -5,9 +5,19 @@ import QRCode from "qrcode";
 import bwipjs from "bwip-js";
 import {onMessagePublished} from "firebase-functions/v2/pubsub";
 import {PubSub} from "@google-cloud/pubsub";
-import {PDFDocument, PDFFont, PDFPage, rgb, StandardFonts} from "pdf-lib";
-import {QRAddonDocument, QRDocument, QRRegistrationDocument, QRTShirtDocument} from "../../../../packages/shared";
+import {
+  Competition,
+  QRAddonDocument,
+  QRDocument,
+  QRRegistrationDocument,
+  QRTShirtDocument
+} from "../../../../packages/shared";
 import {Bucket} from "@google-cloud/storage";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import {TDocumentDefinitions} from "pdfmake/interfaces";
+
+pdfMake.vfs = pdfFonts.vfs;
 
 const pubsub = new PubSub();
 const MAX_RETRIES = 3;
@@ -52,226 +62,168 @@ function chunkArray(arr: string[], size: number) {
   );
 }
 
-const addImages = async (
-  startingPoint: number,
-  spacing: number,
-  font: PDFFont,
-  page: PDFPage,
-  eventDetails: QRDocument,
-  bucket: Bucket,
-  qrPath: string,
-  barCodePath: string,
-  pdfDoc: PDFDocument
-) => {
-  const qrBuffer = await new Promise<Buffer>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    bucket.file(qrPath).createReadStream()
-      .on("data", (chunk) => chunks.push(chunk))
-      .on("end", () => resolve(Buffer.concat(chunks)))
-      .on("error", reject);
-  });
-  const qrImage = await pdfDoc.embedPng(qrBuffer);
-
-
-  const barCodeBuffer = await new Promise<Buffer>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    bucket.file(barCodePath).createReadStream()
-      .on("data", (chunk) => chunks.push(chunk))
-      .on("end", () => resolve(Buffer.concat(chunks)))
-      .on("error", reject);
-  });
-  const barCodeImage = await pdfDoc.embedPng(barCodeBuffer);
-
-
-  const actualY = startingPoint - spacing;
-  const imageSquareSide = 200;
-  const y = actualY - imageSquareSide - 20
-
-  page.drawImage(qrImage, {x: 50, y: y, width: 200, height: imageSquareSide});
-  page.drawImage(barCodeImage, {x: 50 + imageSquareSide + 20, y: y, width: 82, height: imageSquareSide});
-
-  return y;
-}
-
-async function generateFile(bucket: Bucket, pdfDoc: PDFDocument, ticketPath: string) {
-  const ticketFile = bucket.file(ticketPath);
-  const writeStream = ticketFile.createWriteStream({contentType: "application/pdf"});
-
-  try {
-    // Save PDF as bytes (still necessary, but we write immediately to Storage)
-    const pdfBytes = await pdfDoc.save();
-
-    // Write chunks to Storage
-    writeStream.write(Buffer.from(pdfBytes));
-
-    // Close stream properly
-    writeStream.end();
-
-    // Wait for upload to finish
-    await new Promise((resolve, reject) => {
-      writeStream.on("finish", resolve);
-      writeStream.on("error", reject);
-    });
-  } catch (error) {
-    console.error(`❌ Error uploading PDF ${ticketPath}:`, error);
-    throw error;
-  }
-}
-
 
 /**
  * Generates a ticket PDF and uploads it.
  */
-const generateTicketPdf = async (details: QRRegistrationDocument,
+export const generateTicketPdf = async (
+  details: QRRegistrationDocument,
+  competition: Competition,
   qrPath: string,
   barCodePath: string,
   ticketPath: string,
-  bucket: Bucket) => {
+  bucket: Bucket
+) => {
   try {
 
+    const qrImage = await loadImageFromStorage(bucket, qrPath);
+    const barcodeImage = await loadImageFromStorage(bucket, barCodePath);
 
-    const pdfDoc = await PDFDocument.create();
-    // Add a blank page to the document
-    const page = pdfDoc.addPage()
+    const docDefinition: TDocumentDefinitions = {
+      pageSize: { width: 360, height: 800 },
+      content: [
+        {columns: [
+          {image: qrImage, width: 200, margin: [0, 0, 10, 0]}, // Right margin of 10
+          {image: barcodeImage, width: 82, height: 200, margin: [10, 0, 0, 0]}, // Left margin of 10
+        ]},
+        {text: details.code, style: "header"},
 
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-    const {width, height} = page.getSize()
+        {text: "Evento", style: "subheader"},
+        {text: details.competition.name, style: "text"},
 
-    const xStart = 50;
-    const spacing = 10;
-    let nextFontSize = 16;
-    let actualY = height - 4 * nextFontSize;
-    actualY = await addImages(actualY, spacing, font, page, details, bucket, qrPath, barCodePath, pdfDoc);
+        {text: "Categoria", style: "subheader"},
+        {text: details.registration.category, style: "text"},
 
-    nextFontSize = 14;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText(details.code, {x: xStart + 50, y: actualY, size: nextFontSize, font: fontBold});
+        {text: "Horário", style: "subheader"},
+        {text: `${details.registration.day} - ${details.registration.time}`, style: "text"},
 
+        {text: "Participante(s)", style: "subheader"},
+        {
+          ul: details.registration.participants.filter(name => name).map((p) => p.name as string),
+          style: "text",
+        },
+        {text: "Instruções", style: "subheader"},
+        {
+          text: `Deverás efectuar o teu checkin ${competition.checkinMinutesBefore} minutos antes da prova no balão de checkin localizado em:`,
+          style: "text",
+        },
 
-    nextFontSize = 14;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Evento", {x: xStart, y: actualY, size: nextFontSize, font: fontBold});
+        {text: competition.address.join("\n"), style: "text"},
 
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText(details.competition.name, {x: xStart + spacing, y: actualY, size: nextFontSize, font});
+        {canvas: [{type: "rect", x: 5, y: 5, w: 500, h: 0.5}]}, // Bottom separator
+      ],
+      styles: {
+        header: {fontSize: 16, bold: true, alignment: "center", margin: [0, 10]},
+        subheader: {fontSize: 14, bold: true, margin: [0, 10, 0, 5]},
+        text: {fontSize: 12, margin: [0, 0, 0, 5]},
+      },
+      defaultStyle: {font: "Roboto"},
+    };
 
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Categoria", {x: xStart, y: actualY, size: nextFontSize, font: fontBold});
+    // Generate PDF
+    const pdfDoc = pdfMake.createPdf(docDefinition);
 
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText(details.registration.category, {
-      x: xStart + spacing,
-      y: actualY,
-      size: nextFontSize,
-      font: fontItalic
+    return new Promise<void>((resolve, reject) => {
+      pdfDoc.getBuffer(async (buffer) => {
+        try {
+          await bucket.file(ticketPath).save(buffer, {contentType: "application/pdf"});
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
     });
-
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Horário", {x: xStart, y: actualY, size: nextFontSize, font: fontItalic});
-
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    const textDateTime = `${details.registration.day} - ${details.registration.time}`;
-    page.drawText(textDateTime, {x: xStart + spacing, y: actualY, size: nextFontSize, font: fontBold});
-
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Participante(s)", {x: xStart, y: actualY, size: nextFontSize, font: fontBold});
-
-    nextFontSize = 10;
-    actualY = actualY - (spacing + nextFontSize);
-    details.registration.participants.forEach((participant) => {
-      const y = actualY - (nextFontSize + 5);
-      page.drawText(`${participant.name}`, {x: 70, y: y, size: nextFontSize, font: fontItalic});
-      actualY = y;
-    });
-
-    actualY = actualY - spacing;
-    drawRectangle(width, spacing, height, actualY, page);
-    return await generateFile(bucket, pdfDoc, ticketPath);
   } catch (error) {
-    logger.error("❌ Error generating ticket PDF:", error);
+    console.error("❌ Error generating ticket PDF:", error);
     throw error;
   }
-}
+};
 
-function drawRectangle(width: number, spacing: number, height: number, actualY: number, page: PDFPage) {
-  const pageWidth = width - 4 * spacing;
-  const boxWidth = pageWidth - 2 * spacing;
-  const pageHeight = height - actualY - 4 * spacing;
-  const boxHeight = pageHeight - 2 * spacing;
+const generateTshirtPdf = async (
+  details: QRTShirtDocument,
+  competition: Competition,
+  qrPath: string,
+  barCodePath: string,
+  ticketPath: string,
+  bucket: Bucket
+) => {
+  try {
+    // Load images from Storage bucket
+    const qrImage = await loadImageFromStorage(bucket, qrPath);
+    const barcodeImage = await loadImageFromStorage(bucket, barCodePath);
 
-  page.drawRectangle({
-    x: 10,
-    y: actualY,
-    width: boxWidth,
-    height: boxHeight,
-    borderColor: rgb(0, 0, 0),
-    borderWidth: 2,
-    borderDashArray: [5, 5] // Dashed line pattern (5 on, 5 off)
+    const docDefinition: TDocumentDefinitions = {
+      defaultStyle: {font: "Roboto"},
+      pageSize: { width: 360, height: 800 },
+      pageMargins: [40, 60, 40, 60], // Left, Top, Right, Bottom
+      content: [
+        {columns: [
+          {image: qrImage, width: 200, margin: [0, 0, 10, 0]}, // Right margin of 10
+          {image: barcodeImage, width: 82, height: 200, margin: [10, 0, 0, 0]}, // Left margin of 10
+        ]},
+        {text: "Evento", style: "header"},
+        {text: details.competition.name, style: "subheader"},
+
+        {text: "Tshirts", style: "header"},
+        {text: "Tamanhos:", style: "subheader"},
+        {
+          ul: Object.entries(details.sizes)
+            .filter(([, count]) => count)
+            .map(([size, count]) => `${size.toUpperCase()} - ${count}`),
+          margin: [10, 5, 0, 10],
+        },
+
+        {text: "Informação", style: "header"},
+        {
+          text: "Deverás efetuar o levantamento da(s) T-Shirts no balcão de check-in em:",
+          style: "subheader",
+        },
+        {text: competition.address.join("\n"), style: "text"},
+      ],
+      styles: {
+        header: {fontSize: 14, bold: true, margin: [0, 10, 0, 5]},
+        subheader: {fontSize: 12, bold: false, margin: [0, 5, 0, 5]},
+      },
+    };
+
+    // Generate the PDF
+    const pdfDoc = pdfMake.createPdf(docDefinition);
+
+    // Save PDF to storage
+    return await savePdfToStorage(pdfDoc, bucket, ticketPath);
+  } catch (error) {
+    console.error("❌ Error generating ticket PDF:", error);
+    throw error;
+  }
+};
+
+/**
+ * Helper function to load an image from Google Cloud Storage as Base64
+ */
+const loadImageFromStorage = async (bucket: Bucket, filePath: string): Promise<string> => {
+  const file = bucket.file(filePath);
+  const [fileBuffer] = await file.download();
+  return `data:image/png;base64,${fileBuffer.toString("base64")}`;
+};
+
+/**
+ * Helper function to save the PDF to Google Cloud Storage
+ */
+const savePdfToStorage = async (pdfDoc: pdfMake.TCreatedPdf, bucket: Bucket, filePath: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    pdfDoc.getBuffer(async (buffer: Buffer) => {
+      const file = bucket.file(filePath);
+      const stream = file.createWriteStream({
+        metadata: {contentType: "application/pdf"},
+      });
+
+      stream.on("error", reject);
+      stream.on("finish", resolve);
+      stream.end(buffer);
+    });
   });
-}
+};
 
-const generateTshirtPdf = async (details: QRTShirtDocument,
-  qrPath: string,
-  barCodePath: string,
-  ticketPath: string,
-  bucket: Bucket) => {
-  try {
-
-
-    const pdfDoc = await PDFDocument.create();
-    // Add a blank page to the document
-    const page = pdfDoc.addPage()
-
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const {width, height} = page.getSize()
-
-    const spacing = 10;
-    let nextFontSize = 16;
-    let actualY = height - 4 * nextFontSize;
-    actualY = await addImages(actualY, spacing, font, page, details, bucket, qrPath, barCodePath, pdfDoc);
-
-    nextFontSize = 14;
-    actualY = actualY - (spacing + nextFontSize);
-    const xStart = 50;
-    page.drawText("Evento", {x: xStart, y: actualY, size: nextFontSize, font: fontBold});
-
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText(details.competition.name, {x: xStart + spacing, y: actualY, size: nextFontSize, font});
-
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Tshirts", {x: xStart, y: actualY, size: nextFontSize, font: fontBold});
-    nextFontSize = 12;
-    actualY = actualY - (spacing + nextFontSize);
-    page.drawText("Tamanhos:", {x: xStart + spacing, y: actualY, size: nextFontSize, font});
-
-    nextFontSize = 10;
-    actualY = actualY - (spacing + nextFontSize);
-    Object.entries(details.sizes).filter(([, count]) => count).forEach(([size, count]) => {
-      const y = actualY - 5;
-      page.drawText(`${size.toUpperCase()}- ${count}`, {x: 70, y: y, size: nextFontSize, font});
-      actualY = y;
-    });
-
-    actualY = actualY - spacing;
-    drawRectangle(width, spacing, height, actualY, page);
-    return await generateFile(bucket, pdfDoc, ticketPath);
-
-  } catch (error) {
-    logger.error("❌ Error generating ticket PDF:", error);
-    throw error;
-  }
-}
 
 /**
  * Processes a batch of QR codes.
@@ -281,6 +233,7 @@ async function processBatch(docIds: string[], retryCount: number) {
     const bucket = storage.bucket(QR_BUCKET_NAME);
     const snapshots = await db.getAll(...docIds.map((id) => db.collection("qrCodes").doc(id)));
 
+    const competitionCache = new Map<string, Competition>();
     const tasks = snapshots.map(async (docSnapshot) => {
       if (!docSnapshot.exists) {
         logger.warn(`⚠️ QR Code document ${docSnapshot.id} not found.`);
@@ -293,22 +246,35 @@ async function processBatch(docIds: string[], retryCount: number) {
       let qrPath: string, barCodePath: string, ticketPath: string
       let ticketFunction: () => Promise<void>;
 
+      const {competition: competitionInfo, provider} = data;
+      await manageCompetitionCache(competitionInfo.id, competitionCache);
+
+      if (!competitionInfo.id && !competitionCache.has(competitionInfo.id)) {
+        logger.warn(`⚠️ Competition ${competitionInfo.id} not found.`);
+        return;
+      }
+
+      const competition = competitionCache.get(competitionInfo.id)!;
+
+      if (!competition) {
+        logger.warn(`⚠️ Competition ${competitionInfo.id} not found.`);
+        return;
+      }
+
       if (data.type === "registration") {
-        const {competition, provider} = data;
-        const directory = `qr_codes/${competition.id}/registrations/${provider}/${docSnapshot.id}`;
+        const directory = `qr_codes/${competitionInfo.id}/registrations/${provider}/${docSnapshot.id}`;
         barCodePath = `${directory}/barcode.png`;
         qrPath = `${directory}/qr_code.png`;
         ticketPath = `${directory}/ticket.pdf`;
         const eventDetails = data as QRRegistrationDocument;
-        ticketFunction = () => generateTicketPdf(eventDetails, qrPath, barCodePath, ticketPath, bucket);
+        ticketFunction = () => generateTicketPdf(eventDetails, competition, qrPath, barCodePath, ticketPath, bucket);
       } else if (data.type === "addon" && (data as QRAddonDocument).addonType === "tshirt") {
-        const {competition} = data;
-        const directory = `qr_codes/${competition.id}/addons/tshirt/${docSnapshot.id}`;
+        const directory = `qr_codes/${competitionInfo.id}/addons/tshirt/${docSnapshot.id}`;
         barCodePath = `${directory}/barcode.png`;
         qrPath = `${directory}/qr_code.png`;
         ticketPath = `${directory}/ticket.pdf`;
         const tshirtDetails = data as QRTShirtDocument;
-        ticketFunction = () => generateTshirtPdf(tshirtDetails, qrPath, barCodePath, ticketPath, bucket);
+        ticketFunction = () => generateTshirtPdf(tshirtDetails, competition, qrPath, barCodePath, ticketPath, bucket);
       } else {
         logger.warn(`⚠️ Invalid type ${data.type} for ${docSnapshot.id}`);
         return;
@@ -349,9 +315,9 @@ async function processBatch(docIds: string[], retryCount: number) {
         const [ticketUrl] = await ticketFile.getSignedUrl({action: "read", expires: "01-01-2100"});
         await docSnapshot.ref.update({
           status: "ready",
-          "files.qr": {url: qrUrl, path: qrPath },
-          "files.barcode": {url: barCodeUrl, path: barCodePath },
-          "files.ticket": {url: ticketUrl, path: ticketPath }
+          "files.qr": {url: qrUrl, path: qrPath},
+          "files.barcode": {url: barCodeUrl, path: barCodePath},
+          "files.ticket": {url: ticketUrl, path: ticketPath}
         });
 
         logger.info(`✅ Successfully generated ticket for ${docSnapshot.id}`);
@@ -380,5 +346,17 @@ async function processBatch(docIds: string[], retryCount: number) {
     }
   }
 }
+
+export const manageCompetitionCache = async (competitionId: string, competitionCache: Map<string, Competition>) => {
+  if (!competitionCache.has(competitionId)) {
+    const competitionDoc = await db.collection("competitions").doc(competitionId).get();
+    if (!competitionDoc.exists) {
+      logger.warn(`⚠️ Competition document ${competitionId} not found.`);
+      return;
+    }
+    const competitionData = competitionDoc.data() as Competition;
+    competitionCache.set(competitionId, competitionData);
+  }
+};
 
 

@@ -78,9 +78,7 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
     const competitionData = competitionSnap.data() as Competition;
     const competitionInfo = {
       id: eventId,
-      name: competitionData.name,
-      address: competitionData.address,
-      checkinMinutesBefore: competitionData.checkinMinutesBefore
+      name: competitionData.name
     }
 
 
