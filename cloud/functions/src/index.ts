@@ -7,7 +7,7 @@ import {processEmailQueue} from "./pubsub/on-email";
 import {handleEmailQueue} from "./firestore/on-email-queue";
 import {userImportHandler} from "./file-upload/on-users";
 import {processQrCodes} from "./pubsub/on-qr";
-import {retryQrCodes} from "./http/manual-actions";
+import {resetQrCodes, retryQrCodes} from "./http/manual-actions";
 import {processAddonsCsv} from "./file-upload/on-addons";
 import {redeemAddon} from "./http/addons";
 import {authenticateAgent} from "./http/agents";
@@ -55,6 +55,8 @@ export const handleCheckin = checkInUser;
 export const handleAddonRedemption = redeemAddon;
 
 export const triggerRetryQrCodeFile = retryQrCodes;
+
+export const triggerResetQrCodes = resetQrCodes;
 
 export const triggerEmail = handleEmailQueue;
 export const sendQueueEmail = processEmailQueue;

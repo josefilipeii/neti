@@ -63,7 +63,8 @@
           <!-- QR Code Image -->
           <div v-if="qrFiles.qr" class="flex flex-col items-center">
             <p class="text-sm font-medium text-gray-800 mb-2">QR Code</p>
-            <a :href="qrFiles.qr" download class="text-blue-500 hover:underline text-sm mt-2">
+            <img :src="qrFiles.qr.url" alt="Barcode" class="w-40 h-12 border rounded-lg shadow-md">
+            <a :href="qrFiles.qr.url" download class="text-blue-500 hover:underline text-sm mt-2">
               Download QR Code
             </a>
           </div>
@@ -71,14 +72,14 @@
           <!-- Barcode Image -->
           <div v-if="qrFiles.barcode" class="flex flex-col items-center">
             <p class="text-sm font-medium text-gray-800 mb-2">Código de Barras</p>
-            <img :src="qrFiles.barcode" alt="Barcode" class="w-40 h-12 border rounded-lg shadow-md">
-            <a :href="qrFiles.barcode" download class="text-blue-500 hover:underline text-sm mt-2">
+            <img :src="qrFiles.barcode.url" alt="Barcode" class="w-40 h-12 border rounded-lg shadow-md">
+            <a :href="qrFiles.barcode.url" download class="text-blue-500 hover:underline text-sm mt-2">
               Download Código de Barras
             </a>
           </div>
           <div v-if="qrFiles.ticket" class="flex flex-col items-center">
             <p class="text-sm font-medium text-gray-800 mb-2">Bilhete</p>
-            <a :href="qrFiles.ticket" download class="text-blue-500 hover:underline text-sm mt-2">
+            <a :href="qrFiles.ticket.url" download  target="_blank" class="text-blue-500 hover:underline text-sm mt-2">
               Download Bilhete
             </a>
           </div>

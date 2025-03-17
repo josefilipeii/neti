@@ -57,12 +57,18 @@ type Action = {
 
 
 const triggerRetryQrCodeFile = httpsCallable(functions, "triggerRetryQrCodeFile");
+const triggerResetQrCodes = httpsCallable(functions, "triggerResetQrCodes");
 
 const actions: Action[] = [
   {
     id: 'triggerRetryQrCodeFile',
     name: 'Gerar Qr Codes',
     callback: triggerRetryQrCodeFile
+  },
+  {
+    id: 'triggerResetQrCodes',
+    name: 'Reiniciar QR Codes',
+    callback: triggerResetQrCodes
   }
 ]
 

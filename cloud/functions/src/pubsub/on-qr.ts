@@ -18,6 +18,7 @@ export const processQrCodes = onMessagePublished(
     region: FIRESTORE_REGION,
     topic: PUBSUB_QR_FILES_TOPIC,
     retry: false,
+    memory: "512MiB",
   },
   async (event) => {
     const message = event.data?.message;
@@ -348,9 +349,9 @@ async function processBatch(docIds: string[], retryCount: number) {
         const [ticketUrl] = await ticketFile.getSignedUrl({action: "read", expires: "01-01-2100"});
         await docSnapshot.ref.update({
           status: "ready",
-          "files.qr": qrUrl,
-          "files.barcode": barCodeUrl,
-          "files.ticket": ticketUrl,
+          "files.qr": {url: qrUrl, path: qrPath },
+          "files.barcode": {url: barCodeUrl, path: barCodePath },
+          "files.ticket": {url: ticketUrl, path: ticketPath }
         });
 
         logger.info(`✅ Successfully generated ticket for ${docSnapshot.id}`);

@@ -101,11 +101,17 @@ export interface QRDocument {
 
 
 export interface QRFiles {
-    qr: string;
-    barcode: string;
-    ticket: string;
+    qr: QRFile;
+    barcode: QRFile;
+    ticket: QRFile;
     name: string;
     email: string;
+}
+
+
+export interface QRFile{
+    url: string;
+    path: string;
 }
 
 export interface QRRegistrationDocument extends QRDocument {
