@@ -1,6 +1,5 @@
 <template>
   <aside class="bg-black shadow-lg p-4 overflow-y-auto rounded-lg sticky left-0 float-left">
-    <competition-selector></competition-selector>
     <h2 class="text-lg font-semibold text-center mb-4 text-[#F7B63B]">Actions</h2>
     <div v-for="action in actions || []" :key="action.id">
       <button
@@ -43,10 +42,6 @@ import ConfirmModal from '../components/ConfirmModal.vue';
 import {functions} from "../firebase.ts";
 import type {HttpsCallable} from "firebase/functions";
 import {httpsCallable} from "firebase/functions";
-import CompetitionSelector from "../components/CompetitionSelector.vue";
-import {useCompetitionStore} from "../data/competitions.ts";
-
-const competitionStore = useCompetitionStore();
 
 const showModal = ref<boolean>(false);
 const error = ref<string>('');
@@ -57,17 +52,23 @@ const selectedAction = ref<Action | null>(null)
 type Action = {
   id: string;
   name: string;
-  callback: () => Promise<unknown>;
+  callback: HttpsCallable;
 }
 
 
+const triggerRetryQrCodeFile = httpsCallable(functions, "triggerRetryQrCodeFile");
 const triggerResetQrCodes = httpsCallable(functions, "triggerResetQrCodes");
 
 const actions: Action[] = [
   {
     id: 'triggerRetryQrCodeFile',
-    name: 'Reiniciar Qr Codes',
-    callback: () => triggerResetQrCodes({competitionId: competitionStore.selectedCompetitionId})
+    name: 'Gerar Qr Codes',
+    callback: triggerRetryQrCodeFile
+  },
+  {
+    id: 'triggerResetQrCodes',
+    name: 'Reiniciar QR Codes',
+    callback: triggerResetQrCodes
   }
 ]
 

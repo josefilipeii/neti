@@ -6,13 +6,13 @@ import {checkInUser} from "./http/checkin";
 import {processEmailQueue} from "./pubsub/on-email";
 import {handleEmailQueue} from "./firestore/on-email-queue";
 import {userImportHandler} from "./file-upload/on-users";
-import {resetQrCodes} from "./http/manual-actions";
+import {processQrCodes} from "./pubsub/on-qr";
+import {resetQrCodes, retryQrCodes} from "./http/manual-actions";
 import {processAddonsCsv} from "./file-upload/on-addons";
 import {redeemAddon} from "./http/addons";
 import {authenticateAgent} from "./http/agents";
 import {processChunk} from "./firestore/on-chunck";
 import {processAddonChunks} from "./firestore/on-addon-chunks";
-import {processQrCodes} from "./firestore/on-qr-documents";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -53,6 +53,8 @@ export const onUsers = functions.storage
 
 export const handleCheckin = checkInUser;
 export const handleAddonRedemption = redeemAddon;
+
+export const triggerRetryQrCodeFile = retryQrCodes;
 
 export const triggerResetQrCodes = resetQrCodes;
 

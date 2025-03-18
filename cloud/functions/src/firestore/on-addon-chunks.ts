@@ -2,14 +2,17 @@ import {FIRESTORE_REGION} from "../constants";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {logger} from "firebase-functions";
 import {firestore} from "firebase-admin";
-import {db} from "../firebase";
+import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
 import {generateQrId} from "../lib/qr";
 import {Timestamp} from "firebase-admin/firestore";
 import {AddonRow} from "../domain";
 import {Competition} from "../../../../packages/shared";
 import {qrCollectionPath} from "../domain/collections";
+import {PubSub} from "@google-cloud/pubsub";
 
 const MAX_RETRIES = 3;
+const pubsub = new PubSub();
+const PUB_SUB_CHUNK_SIZE = 15;
 
 /**
  * 🔥 Step 3: Process Chunks from Firestore
@@ -62,6 +65,7 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
 
 
     let batchCount = 0;
+    let publishQr = [];
     for (let i = 0; i < rows.length; i++) {
       const row: AddonRow = rows[i];
       const referenceId = row.internalId || row.externalId as string;
@@ -91,7 +95,6 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
 
       const qrRef = db.collection(qrCollectionPath).doc(tshirtId);
       batch.set(qrRef, {
-        id: tshirtId,
         createdAt: new Date(),
         type: "addon",
         addonType: "tshirt",
@@ -104,12 +107,15 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
         provider: referenceProvider
       });
       batchCount++;
+      publishQr.push(tshirtId);
 
       if (batchCount >= 150 || i === rows.length - 1) {
         await batch.commit();
         logger.log(`✅ Committed batch of ${batchCount} registrations for chunk ${snap.id}`);
+        await publishQrToGenerate(publishQr);
         // Start a new batch
         batch = db.batch();
+        publishQr = [];
         batchCount = 0;
       }
 
@@ -127,5 +133,18 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
     } else {
       logger.error(`🛑 Chunk ${snap.id} failed after ${MAX_RETRIES} retries.`);
     }
+  }
+}
+
+
+const publishQrToGenerate= async (registrationsToQr: string[]) =>  {
+  const chunks = [];
+  for (let i = 0; i < registrationsToQr.length; i += PUB_SUB_CHUNK_SIZE) {
+    chunks.push(registrationsToQr.slice(i, i + PUB_SUB_CHUNK_SIZE));
+  }
+
+  for (const chunk of chunks) {
+    const messageBuffer = Buffer.from(JSON.stringify({docIds: chunk}));
+    await pubsub.topic(PUBSUB_QR_FILES_TOPIC).publishMessage({data: messageBuffer});
   }
 }
