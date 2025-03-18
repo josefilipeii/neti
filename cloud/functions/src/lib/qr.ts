@@ -17,15 +17,14 @@ export const generateQrAndBarcode = async (docId: string) => {
   const tmpBarcodePath = path.join("/tmp", `${docId}_barcode.png`);
 
   // Generate QR Code
-  const qrCodeBuffer = await QRCode.toBuffer(docId, {
+  await QRCode.toFile(tmpQrPath, docId, {
     errorCorrectionLevel: "H",
     width: 500,
     margin: 2,
   });
-  fs.writeFileSync(tmpQrPath, qrCodeBuffer);
 
   // Generate Barcode
-  const barCodeBuffer = await bwipjs.toBuffer({
+  fs.writeFileSync(tmpBarcodePath,  await bwipjs.toBuffer({
     bcid: "code128",
     text: docId,
     scale: 2,
@@ -37,8 +36,7 @@ export const generateQrAndBarcode = async (docId: string) => {
     textsize: 10,
     textyoffset: 10,
     rotate: "L",
-  });
-  fs.writeFileSync(tmpBarcodePath, barCodeBuffer);
+  }));
 
   return {tmpQrPath, tmpBarcodePath};
 };
