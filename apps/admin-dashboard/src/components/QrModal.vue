@@ -56,7 +56,7 @@
 
 
       <!-- QR Code & Barcode Display -->
-      <div v-if="qrFiles?.qr || qrFiles?.barcode" class="mt-6 text-center">
+      <div v-if="qrFiles?.qr || qrFiles?.barcode || qrFiles?.ticket" class="mt-6 text-center">
         <h4 class="font-medium text-gray-900 mb-4">Arquivos QR</h4>
 
         <div class="flex items-center gap-4">
