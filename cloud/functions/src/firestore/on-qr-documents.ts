@@ -30,7 +30,6 @@ export const processQrCodes = onDocumentWritten(
 
     try {
       await processQrDocument(event.params.qrId, after);
-      await db.collection("qrCodes").doc(event.params.qrId).update({status: "ready"});
     } catch (error) {
       logger.error(`❌ Error processing QR Code ${event.params.qrId}:`, error);
       await handleRetry(event.params.qrId, after);
