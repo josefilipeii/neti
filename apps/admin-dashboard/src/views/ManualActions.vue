@@ -41,6 +41,7 @@
 import {ref} from 'vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import {functions} from "../firebase.ts";
+import type {HttpsCallable} from "firebase/functions";
 import {httpsCallable} from "firebase/functions";
 import CompetitionSelector from "../components/CompetitionSelector.vue";
 import {useCompetitionStore} from "../data/competitions.ts";
