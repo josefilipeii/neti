@@ -61,12 +61,18 @@ type Action = {
 
 
 const triggerResetQrCodes = httpsCallable(functions, "triggerResetQrCodes");
+const triggerReprocessQrCodes = httpsCallable(functions, "triggerRetryProcessQrCodes");
 
 const actions: Action[] = [
   {
     id: 'triggerRetryQrCodeFile',
     name: 'Reiniciar Qr Codes',
     callback: () => triggerResetQrCodes({competitionId: competitionStore.selectedCompetitionId})
+  },
+  {
+    id: 'triggerRetryQrCodeFile',
+    name: 'Tentar Qr Codes Novamente',
+    callback: () => triggerReprocessQrCodes({competitionId: competitionStore.selectedCompetitionId})
   }
 ]
 
