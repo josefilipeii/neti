@@ -9,6 +9,7 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import {TDocumentDefinitions} from "pdfmake/interfaces";
 import {Competition, QRRegistrationDocument, QRTShirtDocument} from "../../../../packages/shared";
+import {logger} from "firebase-functions";
 
 const pubsub = new PubSub();
 
@@ -182,7 +183,7 @@ export const generateTshirtPdf = async (
       });
     });
   } catch (error) {
-    console.error("❌ Error generating ticket PDF:", error);
+    logger.error("❌ Error generating ticket PDF:", error);
     throw error;
   }
 };

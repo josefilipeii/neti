@@ -4,20 +4,10 @@ import {db} from "../firebase";
 import {DocumentReference, Timestamp, Transaction} from "firebase-admin/firestore";
 import {CallableRequest, HttpsError, onCall} from "firebase-functions/v2/https";
 import {QRAddonDocument, Redemption} from "../../../../packages/shared";
+import {enforceAllowedOrigin} from "../lib/security";
 
 
 type RequestType = { token: string };
-
-
-// Function to check allowed origins dynamically
-function enforceAllowedOrigin(request: CallableRequest<RequestType>, allowedOrigins: string[]) {
-  const origin = request.rawRequest.headers.origin;
-
-  if (!origin || !allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
-    logger.error(`Blocked request from origin: ${origin} : Expected ${allowedOrigins}`);
-    throw new HttpsError("permission-denied", "Unauthorized origin");
-  }
-}
 
 
 // Lobby Check-In Function (Heimdall-based origin)
@@ -56,7 +46,7 @@ export const redeemAddon = onCall(
         return {success: false, message: "QR code has already been redeemed."};
       }
 
-      if(qrDocument.addonType !== "tshirt"){
+      if (qrDocument.addonType !== "tshirt") {
         logger.log("QR code is not a tshirt addon. Return success");
         return {success: false, message: "QR code is not a tshirt addon."};
       }

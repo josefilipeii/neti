@@ -38,6 +38,10 @@ export interface Registration {
     qrId?: string;
     provider: string;
     providerId: string;
+    ticket?: {
+        sent: Timestamp;
+        scheduled: Timestamp;
+    }
 }
 
 export interface RegistrationParticipant{

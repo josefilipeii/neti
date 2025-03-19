@@ -18,6 +18,7 @@
         <th class="px-4 py-3">Contacto</th>
         <th class="px-6 py-3">Check-in</th>
         <th class="px-4 py-3">QR</th>
+        <th class="px-4 py-3">Email</th>
       </tr>
       </thead>
       <tbody>
@@ -61,6 +62,17 @@
         </td>
         <td class="px-4 py-3 hover:cursor-pointer" @click="openQrModal(registration.qrId)">
           <span>{{ registration.qrId }}</span>
+        </td>
+        <td class="px-4 py-3">
+          <button
+              v-if="registration.qrId && !registration.ticket?.scheduled && !registration.ticket?.sent"
+              @click="sendTicket(registration.qrId)"
+              class="text-blue-400 underline"
+          >
+            Enviar email
+          </button>
+          <span v-else-if="registration.ticket?.scheduled && !registration.ticket?.sent">A agendar...</span>
+          <span v-else-if="registration.ticket?.sent">Enviado</span>
         </td>
       </tr>
       </tbody>
@@ -127,11 +139,15 @@
 import {ref} from "vue";
 import CheckinInfo from "../components/CheckinInfo.vue";
 import CheckinActions from "../components/CheckinActions.vue";
-import {useCompetitionStore} from "../data/competitions.ts";
+import {useCompetitionStore} from "../data/competitions";
 import QrModal from "../components/QrModal.vue";
 import {useQrStore} from "../data/qr-codes.ts";
-import {useRegistrationsStore} from "../data/registrations.ts";
+import {useRegistrationsStore} from "../data/registrations";
+import {httpsCallable} from "firebase/functions";
+import {functions} from "../firebase";
 
+
+const triggerEmail = httpsCallable(functions, "triggerOnboardingEmail");
 const competitionsStore = useCompetitionStore();
 const store = useRegistrationsStore();
 const qrStore = useQrStore();
@@ -155,4 +171,13 @@ const openQrModal = (qr?: string) => {
     showQrModal.value = true;
   }
 };
+
+const sendTicket = async (qrId: string) => {
+  try {
+    await triggerEmail({tickets: [qrId]});
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 </script>

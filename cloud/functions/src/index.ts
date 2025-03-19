@@ -4,7 +4,7 @@ import {useCompetitionsHandler} from "./file-upload/on-competitions";
 import {processParticipants} from "./file-upload/on-participants";
 import {checkInUser} from "./http/checkin";
 import {processEmailQueue} from "./pubsub/on-email";
-import {handleEmailQueue} from "./firestore/on-email-queue";
+import {handleEmailQueue} from "./firestore/on-email";
 import {userImportHandler} from "./file-upload/on-users";
 import {processQrCodes} from "./pubsub/on-qr";
 import {resetQrCodes, retryQrCodes} from "./http/manual-actions";
@@ -13,6 +13,7 @@ import {redeemAddon} from "./http/addons";
 import {authenticateAgent} from "./http/agents";
 import {processChunk} from "./firestore/on-chunck";
 import {processAddonChunks} from "./firestore/on-addon-chunks";
+import {processOnboarding} from "./http/onboarding";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -59,6 +60,9 @@ export const triggerRetryQrCodeFile = retryQrCodes;
 export const triggerResetQrCodes = resetQrCodes;
 
 export const triggerEmail = handleEmailQueue;
+
+export const triggerOnboardingEmail = processOnboarding;
+
 export const sendQueueEmail = processEmailQueue;
 export const onQrCodes = processQrCodes
 

@@ -17,6 +17,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@getbrevo/brevo": "^2.2.0",
     "@google-cloud/functions-framework": "^3.4.5",
     "@google-cloud/pubsub": "^4.10.0",
     "bs58": "^6.0.0",

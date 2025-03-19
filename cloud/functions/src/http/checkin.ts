@@ -4,18 +4,11 @@ import {db} from "../firebase";
 import {DocumentReference, Timestamp, Transaction} from "firebase-admin/firestore";
 import {CallableRequest, HttpsError, onCall} from "firebase-functions/v2/https";
 import {QRRegistrationDocument, Redemption} from "../../../../packages/shared";
+import {enforceAllowedOrigin} from "../lib/security";
 
 type CheckinRequestType = { token: string };
 type ResponseType = { success: boolean; message: string };
 
-// Function to check allowed origins dynamically
-function enforceAllowedOrigin(request: CallableRequest<CheckinRequestType>, allowedOrigins: string[]) {
-  const origin = request.rawRequest.headers.origin;
-  if (!origin || !allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
-    logger.error(`Blocked request from origin: ${origin} : Expected ${allowedOrigins}`);
-    throw new HttpsError("permission-denied", "Unauthorized origin");
-  }
-}
 
 // Lobby Check-In Function
 export const checkInUser = onCall(

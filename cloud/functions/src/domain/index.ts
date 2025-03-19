@@ -15,14 +15,37 @@ export interface Email{
     to: Recipient[];
     cc?: Recipient[];
     ref: string;
-    type: "checkin" | "registration";
-    params: Record<string, unknown | undefined>;
+    type: "checkin" | "registration" | "tickets" | "addon-voucher";
+    params?: Record<string, unknown | undefined>;
     sentAt?: Date;
+    createdAt?: Timestamp;
+    storageAttachments?: StorageAttachement[];
+    linkAttachments?: LinkAttachement[];
+}
+
+
+export interface RegistrationEmail extends Email{
+    params: {
+        registrationId: string;
+        heatId: string;
+        competitionId: string;
+        dorsal: string;
+    };
+}
+
+
+export interface StorageAttachement {
+    bucket: string;
+    path: string;
+}
+
+export interface LinkAttachement {
+    url: string;
+    name: string;
 }
 
 
 export interface CheckinEmail extends Email{
-    type: "checkin";
     params: {
         heat: string;
         heatId: string;

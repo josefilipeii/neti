@@ -3,15 +3,16 @@ import {db, PUBSUB_QR_FILES_TOPIC} from "../firebase";
 import {PubSub} from "@google-cloud/pubsub";
 import {logger} from "firebase-functions";
 import {FIRESTORE_REGION} from "../constants";
-import {CallableRequest} from "firebase-functions/lib/v2/providers/https";
+import {CallableRequest} from "firebase-functions/v2/https";
 import {firestore} from "firebase-admin";
+import {enforceAllowedOrigin} from "../lib/security";
 import QueryDocumentSnapshot = firestore.QueryDocumentSnapshot;
 
 const pubsub = new PubSub();
 const BATCH_SIZE = 500; // Firestore limits batch writes to 500
 
 export const resetQrCodes = onCall(
-  { region: FIRESTORE_REGION, enforceAppCheck: true },
+  {region: FIRESTORE_REGION, enforceAppCheck: true},
   async (request) => {
     const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS_ADMIN?.split(",") || [
       "https://odin-hybrid-day-checkin.web.app",
@@ -33,7 +34,7 @@ export const resetQrCodes = onCall(
       logger.info("🔍 Starting QR code reset process...");
       let totalUpdated = await processBatch(); // Start recursive batch processing
       logger.info(`✅ Reset ${totalUpdated} QR codes to 'init'.`);
-      return { success: true, message: `Reset ${totalUpdated} QR codes.` };
+      return {success: true, message: `Reset ${totalUpdated} QR codes.`};
     } catch (error) {
       logger.error("❌ Error resetting QR codes:", error);
       throw new HttpsError("internal", "Error resetting QR codes.");
@@ -59,7 +60,7 @@ async function processBatch(lastDoc: QueryDocumentSnapshot | null = null, totalU
 
   const batch = db.batch();
   snapshot.docs.forEach((doc) => {
-    batch.update(doc.ref, { status: "init" });
+    batch.update(doc.ref, {status: "init"});
   });
 
   await batch.commit();
@@ -68,16 +69,6 @@ async function processBatch(lastDoc: QueryDocumentSnapshot | null = null, totalU
 
   // Recursive call for next batch
   return processBatch(snapshot.docs[snapshot.docs.length - 1], totalUpdated);
-}
-
-
-function enforceAllowedOrigin(request: CallableRequest, allowedOrigins: string[]) {
-  const origin = request.rawRequest.headers.origin;
-
-  if (!origin || !allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
-    logger.error(`Blocked request from origin: ${origin} : Expected ${allowedOrigins}`);
-    throw new HttpsError("permission-denied", "Unauthorized origin");
-  }
 }
 
 
