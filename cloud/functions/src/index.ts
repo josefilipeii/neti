@@ -14,6 +14,7 @@ import {authenticateAgent} from "./http/agents";
 import {processChunk} from "./firestore/on-chunck";
 import {processAddonChunks} from "./firestore/on-addon-chunks";
 import {processOnboarding} from "./http/onboarding";
+import {retryScheduledOnboarding} from "./http/email";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -62,6 +63,7 @@ export const triggerResetQrCodes = resetQrCodes;
 export const triggerEmail = handleEmailQueue;
 
 export const triggerOnboardingEmail = processOnboarding;
+export const triggerRetryEmail = retryScheduledOnboarding
 
 export const sendQueueEmail = processEmailQueue;
 export const onQrCodes = processQrCodes

@@ -61,6 +61,6 @@ export const insertOnboardingEmail = async (ticket: string, transaction: Firebas
   }
 
   transaction.set(emailRef, emailData);
-  transaction.set(registrationRef, {ticket: {scheduled:  time}}, {merge: true});
-  transaction.set(qrCodeRef, {email: {scheduled: time}}, {merge: true});
+  transaction.set(registrationRef, {ticket: {document: emailRef.id, scheduled:  time}}, {merge: true});
+  transaction.set(qrCodeRef, {email: {document: emailRef.id, scheduled: time}}, {merge: true});
 }

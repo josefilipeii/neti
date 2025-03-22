@@ -26,8 +26,8 @@
           <h2 class="text-xl font-semibold text-center mb-6 text-[#F7B63B]">
             Competições
           </h2>
-          <div>
-            <AdminTable class="w-full" />
+          <div class="w-full">
+            <AdminTable  />
           </div>
         </div>
         <div v-else class="text-center text-gray-400 mt-4">

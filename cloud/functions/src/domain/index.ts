@@ -45,21 +45,6 @@ export interface LinkAttachement {
 }
 
 
-export interface CheckinEmail extends Email{
-    params: {
-        heat: string;
-        heatId: string;
-        checkinTime: Date;
-        competition: string;
-        competitionId: string;
-        time?: string;
-        day?: string;
-        dorsal: string;
-        category: string;
-        type: string;
-    };
-}
-
 
 export interface User {
     email: string;

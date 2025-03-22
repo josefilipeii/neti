@@ -39,6 +39,7 @@ export interface Registration {
     provider: string;
     providerId: string;
     ticket?: {
+        document?: string;
         sent: Timestamp;
         scheduled: Timestamp;
     }

@@ -93,6 +93,8 @@ async function processChunkWithRetries(snap: firestore.DocumentSnapshot) {
 
       batchCount++;
 
+
+      //if provider is not GF should not build a qr code.
       const qrRef = db.collection("qrCodes").doc(row.registrationId);
 
       const qrData = {
